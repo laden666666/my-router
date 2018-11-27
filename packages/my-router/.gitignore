@@ -9,12 +9,10 @@ selenium-debug.log
 
 # Editor directories and files
 .idea
+.history
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
-.history/
-.cache/
-dist.zip
-build/config/.config.js
-src/biz/config/.config.ts
+coverage
+uploads
