@@ -11,9 +11,24 @@
             <th>其他路由</th>
         </tr>
         <tr>
+            <td>是否有location</td>
+            <td>有</td>
+            <td>无</td>
+        </tr>
+        <tr>
             <td>用户是否可以主动刷新</td>
             <td>能</td>
             <td>不能</td>
+        </tr>
+        <tr>
+            <td>页面是否有缓存</td>
+            <td>无缓存</td>
+            <td>有</td>
+        </tr>
+        <tr>
+            <td>可以访问浏览器记录</td>
+            <td>history能获取长度，但是获取不了具体内容</td>
+            <td>能</td>
         </tr>
         <tr>
             <td>可以监听用户返回操作</td>
