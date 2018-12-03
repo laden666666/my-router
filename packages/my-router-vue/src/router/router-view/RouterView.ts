@@ -154,9 +154,9 @@ export default {
 
             try {
                 //老页面
-                var oldPage:RoutePageData = from.otherData ? from.otherData.page : undefined;
+                var oldPage:RoutePageData = from && from.otherData ? from.otherData.page : undefined;
                 //新页面
-                var newPage:RoutePageData = to.otherData ? to.otherData.page : undefined;
+                var newPage:RoutePageData = to && to.otherData ? to.otherData.page : undefined;
 
                 //创建动画名称，是否是路由访问的第一页，如果是不显示动画
                 if(!this._first){
@@ -164,6 +164,7 @@ export default {
                 } else {
                     this.animationName = result.toLowerCase()
                 }
+
 
                 if(oldPage && oldPage.dom && typeof oldPage.dom.$emit === 'function'){
                     // 执行beforeRouteLeave

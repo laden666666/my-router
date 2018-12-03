@@ -25,7 +25,7 @@ for(var index in dev) {
 
 module.exports = {
     entry: {
-        core: './src/core/index.ts',
+        core: './src/index.ts',
     },
     externals: externals,
     output: {

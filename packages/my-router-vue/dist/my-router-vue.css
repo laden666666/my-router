@@ -1,0 +1,39 @@
+
+@charset "UTF-8";
+.router-view[data-v-0fb8a451] {
+  position: relative;
+}
+
+/* 可以设置不同的进入和离开动画 */
+/* 设置持续时间和动画函数 */
+.pop-enter-active[data-v-0fb8a451], .push-enter-active[data-v-0fb8a451] {
+  transition: all .3s ease;
+}
+.pop-enter[data-v-0fb8a451] {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.push-enter[data-v-0fb8a451] {
+  transform: translateX(100%);
+  opacity: 0;
+}
+
+.loading-bar[data-v-570a0b48] {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 1px;
+  z-index: 100000;
+}
+.loading-bar_bar[data-v-570a0b48] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 1px;
+  width: 0;
+  background-color: #66CCFF;
+  transition: width .2s;
+}
+
+/*# sourceMappingURL=my-router-vue.css.map*/

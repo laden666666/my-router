@@ -159,6 +159,7 @@ export class RouterManager implements IRouterManager{
 
         //浏览器事件的回调
         const listenFn = async (url:IRouterURL)=>{
+
             /**
              * 将from的state信息，to的state信息，都封装为对外暴露的routeData
              */
