@@ -8,7 +8,7 @@
                 <dt class="dt">路由ID:</dt>
                 <dd class="dd">{{route.routerURL.id}}</dd>
                 
-                <dt class="dt">当前路径path:</dt>
+                <dt class="dt">路径path:</dt>
                 <dd class="dd">{{route.routerURL.path}}</dd>
                 
                 <dt class="dt">查询参数:</dt>
