@@ -85,6 +85,15 @@ export default {
     }
     .card.current{
         box-shadow: 0 0 5px rgba(255, 0, 0, .8);
+        position: relative;
+    }
+    .card.current::before{
+        content: '当前页面的访问记录';
+        font-size: 12px;
+        position: absolute;
+        top: -10px;
+        left: 10px;
+        background-color: #fff;
     }
     .dl{
         display: flex;
