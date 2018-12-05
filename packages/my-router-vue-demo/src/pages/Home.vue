@@ -1,5 +1,5 @@
 <template>
-    <div class="hello">
+    <div class="page">
         <h1>路由例子</h1>
         <h2>不同形式的跳转</h2>
         <ul class="ul" c2s-class="ul0">
@@ -38,23 +38,25 @@ export default {
     methods: {
         async navigateTo(){
             await this.$router.navigateTo('NavigateTo', {
-                data: '跳转navigateTo'
+                data: '0'
             })
-            alert('返回成功')
+            this.$message('返回成功');
         },
         async redirectTo(){
             await this.$router.navigateTo('RedirectTo', {
                 data: '0'
             })
-            alert('返回成功')
+            this.$message('返回成功');
         },
         async lazyLoad(){
             await this.$router.navigateTo('LazyLoad')
-            alert('返回成功')
+            this.$message('返回成功');
         },
         async navigateBack(){
             let result = await this.$router.navigateTo('NavigateBack')
-            alert('返回成功,传回的值是：' + result)
+            this.$alert('返回成功,传回的值是：' + result, '提示', {
+                confirmButtonText: '确定',
+            });
         },
         go404(){
             this.$router.navigateTo('404')
