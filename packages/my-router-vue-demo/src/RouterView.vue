@@ -1,6 +1,6 @@
 <template>
     <div class="router-state-view">
-        <span class="tip">路由保存的信息</span>
+        <span class="tip">缓存的浏览记录</span>
         <div class="card" v-for="route in routeList" 
                 :key="route.routerURL.id" 
                 :class="{current: currentId == route.routerURL.id}">
