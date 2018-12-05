@@ -1,6 +1,6 @@
 <template>
     <div class="page">
-        <el-form ref="form" :model="form" label-width="160px">
+        <el-form ref="form" label-width="160px">
             <el-form-item label="返回给上一个页面的值">
                 <el-input v-model="input" placeholder="输入返回的内容"></el-input>
             </el-form-item>

@@ -84,7 +84,7 @@ export default {
         font-size: 12px;
     }
     .card.current{
-        box-shadow: 0 0 5px rgb(255, 0, 0);
+        box-shadow: 0 0 5px rgba(255, 0, 0, .8);
     }
     .dl{
         display: flex;
