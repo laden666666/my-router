@@ -1,113 +1,30 @@
 <template>
     <div class="hello">
-        <h1>{{ msg }}</h1>
-        <h2>Essential Links</h2>
-        <ul>
-            <li>
-                <a
-                    href="https://vuejs.org"
-                    target="_blank"
-                >
-                    Core Docs
-                </a>
-            </li>
-            <li>
-                <a
-                    href="https://forum.vuejs.org"
-                    target="_blank"
-                >
-                    Forum
-                </a>
-            </li>
-            <li>
-                <a
-                    href="https://chat.vuejs.org"
-                    target="_blank"
-                >
-                    Community Chat
-                </a>
-            </li>
-            <li>
-                <a
-                    href="https://twitter.com/vuejs"
-                    target="_blank"
-                >
-                    Twitter
-                </a>
-            </li>
-            <br>
-            <li>
-                <a
-                    href="http://vuejs-templates.github.io/webpack/"
-                    target="_blank"
-                >
-                    Docs for This Template
-                </a>
-            </li>
-        </ul>
-        <h2>Ecosystem</h2>
-        <ul>
-            <li>
-                <a
-                    href="http://router.vuejs.org/"
-                    target="_blank"
-                >
-                    vue-router
-                </a>
-            </li>
-            <li>
-                <a
-                    href="http://vuex.vuejs.org/"
-                    target="_blank"
-                >
-                    vuex
-                </a>
-            </li>
-            <li>
-                <a
-                    href="http://vue-loader.vuejs.org/"
-                    target="_blank"
-                >
-                    vue-loader
-                </a>
-            </li>
-            <li>
-                <a
-                    href="https://github.com/vuejs/awesome-vue"
-                    target="_blank"
-                >
-                    awesome-vue
-                </a>
-            </li>
-        </ul>
+        <p>未找到路径是“{{$router.getCurrentURL().path}}”的页面，点击返回<a @click="goHome">首页</a></p>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'HelloWorld',
-    data () {
-        return {
-            msg: 'Welcome to Your Vue.js App'
-        }
-    }
+    methods: {
+        goHome(){
+            // 返回前清除缓存的页面
+            this.$router.destroyState()
+            this.$router.navigateTo('/')
+        },
+    },
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-    font-weight: normal;
-}
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-li {
-    display: inline-block;
-    margin: 0 10px;
-}
-a {
-    color: #42b983;
-}
+    a {
+        box-sizing : border-box ;
+        background : transparent ;
+        color : rgb(0, 154, 97) ;
+        text-decoration-line : none ;
+        outline : 0px ;
+        border-bottom : 1px solid rgba(0, 154, 97, 0.25) ;
+        padding-bottom : 1px ;
+        cursor: pointer;
+    }
 </style>

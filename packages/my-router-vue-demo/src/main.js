@@ -4,6 +4,12 @@ import Vue from 'vue'
 
 import {RouterManager} from 'my-router'
 import {MyRouterVue} from 'my-router-vue'
+import 'my-router-vue/dist/my-router-vue.css'
+import NavigateTo from './pages/NavigateTo.vue'
+import RedirectTo from './pages/RedirectTo.vue'
+import NavigateBack from './pages/NavigateBack.vue'
+import Page404 from './pages/404.vue'
+const LazyLoad = ()=>import('./pages/LazyLoad.vue')
 import Home from './pages/Home.vue'
 Vue.use(MyRouterVue)
 let router = new RouterManager({
@@ -11,7 +17,22 @@ let router = new RouterManager({
     routes: [{
         path: '/',
         component: Home,
-    },]
+    },{
+        path: '/NavigateTo',
+        component: NavigateTo,
+    },{
+        path: '/RedirectTo',
+        component: RedirectTo,
+    },{
+        path: '/LazyLoad',
+        component: LazyLoad,
+    },{
+        path: '/NavigateBack',
+        component: NavigateBack,
+    },{
+        path: '/**',
+        component: Page404,
+    }]
 })
 
 import ElementUI from 'element-ui';

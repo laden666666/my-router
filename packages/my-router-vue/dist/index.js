@@ -612,8 +612,6 @@ exports.default = _RouterView2.default; //
 //
 //
 //
-//
-//
 
 /***/ }),
 /* 28 */
@@ -1136,10 +1134,24 @@ var MyRouterVue = {
     install: function install(Vue) {
         Vue.component('MyRouterView', RouterView_1.default);
         Vue.mixin({
+            inject: {
+                'myRoutePage': { default: null }
+            },
             beforeCreate: function beforeCreate() {
                 if (!installed) {
                     this.$root.$options['router'].reload();
                     installed = true;
+                }
+            },
+
+            computed: {
+                $router: function $router() {
+                    return this.$root.$options['router'];
+                },
+                $route: function $route() {
+                    if (this.myRoutePage) {
+                        return this.myRoutePage.$route;
+                    }
                 }
             }
         });
@@ -1245,6 +1257,7 @@ var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
+var Page = __webpack_require__(108);
 //禁用浏览器自带的滚动条响应事件，由框架帮助页面处理滚动条位置。这样好处是兼容性好
 history.scrollRestoration = 'manual';
 //用于标记页面的id种子
@@ -1437,15 +1450,36 @@ exports.default = {
                 };
             }
             //加载pageComponent后，将name增添到pageComponent对象中
-            loadComponent = function (loadComponent) {
+            loadComponent = function (loadComponent, routeData) {
                 return function () {
                     return loadComponent().then(function (pageComponent) {
-                        page.pageComponent = (0, _assign2.default)({}, pageComponent, { name: name });
-                        // page.pageComponent = {template: `<div>${name}</div>`, name}
+                        if (pageComponent['__esModule']) {
+                            pageComponent = pageComponent['default'];
+                        }
+                        page.pageComponent = {
+                            name: name,
+                            provide: function provide() {
+                                return {
+                                    myRoutePage: this
+                                };
+                            },
+
+                            computed: {
+                                $route: function $route() {
+                                    return routeData;
+                                }
+                            },
+                            render: function render(h) {
+                                return h(pageComponent, {
+                                    name: name,
+                                    pageComponent: pageComponent
+                                });
+                            }
+                        };
                         return page.pageComponent;
                     });
                 };
-            }(loadComponent);
+            }(loadComponent, routeData.routeData);
             var page = {
                 id: routeData.id,
                 routeData: routeData.routeData || {},
@@ -3432,19 +3466,7 @@ var render = function() {
                       ? _c(_vm.pageComponent, {
                           key: _vm.pageComponent.name,
                           ref: "showPage",
-                          tag: "component",
-                          attrs: {
-                            routedata: _vm.cachePageMap[_vm.pageComponent.name]
-                              ? _vm.cachePageMap[_vm.pageComponent.name]
-                                  .routeData
-                              : {},
-                            routefirstvisit: _vm.cachePageMap[
-                              _vm.pageComponent.name
-                            ]
-                              ? _vm.cachePageMap[_vm.pageComponent.name]
-                                  .routeFirstVisit
-                              : false
-                          }
+                          tag: "component"
                         })
                       : _vm._e()
                   ],
@@ -3463,18 +3485,7 @@ var render = function() {
                   ? _c(_vm.pageComponent, {
                       key: _vm.pageComponent.name,
                       ref: "showPage",
-                      tag: "component",
-                      attrs: {
-                        routedata: _vm.cachePageMap[_vm.pageComponent.name]
-                          ? _vm.cachePageMap[_vm.pageComponent.name].routeData
-                          : {},
-                        routefirstvisit: _vm.cachePageMap[
-                          _vm.pageComponent.name
-                        ]
-                          ? _vm.cachePageMap[_vm.pageComponent.name]
-                              .routeFirstVisit
-                          : false
-                      }
+                      tag: "component"
                     })
                   : _vm._e()
               ],
@@ -3493,6 +3504,135 @@ if (false) {
   module.hot.accept()
   if (module.hot.data) {
     require("vue-hot-reload-api")      .rerender("data-v-0fb8a451", esExports)
+  }
+}
+
+/***/ }),
+/* 96 */,
+/* 97 */,
+/* 98 */,
+/* 99 */,
+/* 100 */,
+/* 101 */,
+/* 102 */,
+/* 103 */,
+/* 104 */,
+/* 105 */,
+/* 106 */,
+/* 107 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+    value: true
+});
+//
+//
+//
+//
+//
+
+exports.default = {
+    props: {
+        pageComponent: {
+            isRequired: true
+        },
+        name: {
+            isRequired: true
+        }
+    },
+    provide: function provide() {
+        return {
+            myRoutePage: this
+        };
+    },
+
+    computed: {
+        $route: function $route() {
+            return routeData;
+        }
+    }
+};
+
+/***/ }),
+/* 108 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue__ = __webpack_require__(107);
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue___default = __webpack_require__.n(__WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue__);
+/* harmony namespace reexport (unknown) */ for(var __WEBPACK_IMPORT_KEY__ in __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue__) if(__WEBPACK_IMPORT_KEY__ !== 'default') (function(key) { __webpack_require__.d(__webpack_exports__, key, function() { return __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue__[key]; }) }(__WEBPACK_IMPORT_KEY__));
+/* harmony import */ var __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_228abddc_hasScoped_false_transformToRequire_video_src_source_src_img_src_image_xlink_href_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Page_vue__ = __webpack_require__(109);
+var disposed = false
+var normalizeComponent = __webpack_require__(26)
+/* script */
+
+
+/* template */
+
+/* template functional */
+var __vue_template_functional__ = false
+/* styles */
+var __vue_styles__ = null
+/* scopeId */
+var __vue_scopeId__ = null
+/* moduleIdentifier (server only) */
+var __vue_module_identifier__ = null
+var Component = normalizeComponent(
+  __WEBPACK_IMPORTED_MODULE_0__babel_loader_node_modules_vue_loader_lib_selector_type_script_index_0_Page_vue___default.a,
+  __WEBPACK_IMPORTED_MODULE_1__node_modules_vue_loader_lib_template_compiler_index_id_data_v_228abddc_hasScoped_false_transformToRequire_video_src_source_src_img_src_image_xlink_href_buble_transforms_node_modules_vue_loader_lib_selector_type_template_index_0_Page_vue__["a" /* default */],
+  __vue_template_functional__,
+  __vue_styles__,
+  __vue_scopeId__,
+  __vue_module_identifier__
+)
+Component.options.__file = "src/router/router-view/Page.vue"
+
+/* hot reload */
+if (false) {(function () {
+  var hotAPI = require("vue-hot-reload-api")
+  hotAPI.install(require("vue"), false)
+  if (!hotAPI.compatible) return
+  module.hot.accept()
+  if (!module.hot.data) {
+    hotAPI.createRecord("data-v-228abddc", Component.options)
+  } else {
+    hotAPI.reload("data-v-228abddc", Component.options)
+  }
+  module.hot.dispose(function (data) {
+    disposed = true
+  })
+})()}
+
+/* harmony default export */ __webpack_exports__["default"] = (Component.exports);
+
+
+/***/ }),
+/* 109 */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+var render = function() {
+  var _vm = this
+  var _h = _vm.$createElement
+  var _c = _vm._self._c || _h
+  return _c(_vm.pageComponent, {
+    key: _vm.name,
+    ref: "showPage",
+    tag: "component"
+  })
+}
+var staticRenderFns = []
+render._withStripped = true
+var esExports = { render: render, staticRenderFns: staticRenderFns }
+/* harmony default export */ __webpack_exports__["a"] = (esExports);
+if (false) {
+  module.hot.accept()
+  if (module.hot.data) {
+    require("vue-hot-reload-api")      .rerender("data-v-228abddc", esExports)
   }
 }
 

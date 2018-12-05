@@ -25,6 +25,9 @@ exports.cssLoaders = function (options) {
   const postcssLoader = {
     loader: 'postcss-loader',
     options: {
+      config: {
+          path: './..postcssrc.js'
+      },
       sourceMap: options.sourceMap
     }
   }

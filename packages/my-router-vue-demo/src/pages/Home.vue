@@ -1,113 +1,89 @@
 <template>
     <div class="hello">
-        <h1>{{ msg }}</h1>
-        <h2>Essential Links</h2>
-        <ul>
-            <li>
-                <a
-                    href="https://vuejs.org"
-                    target="_blank"
-                >
-                    Core Docs
+        <h1>路由例子</h1>
+        <h2>不同形式的跳转</h2>
+        <ul class="ul" c2s-class="ul0">
+            <li class="ul_li">
+                <a class="ul_lip0a1" @click="navigateTo">
+                    普通跳转
                 </a>
             </li>
-            <li>
-                <a
-                    href="https://forum.vuejs.org"
-                    target="_blank"
-                >
-                    Forum
+            <li class="ul_li">
+                <a class="ul_lip0a1" @click="redirectTo">
+                    replace页面跳转
                 </a>
             </li>
-            <li>
-                <a
-                    href="https://chat.vuejs.org"
-                    target="_blank"
-                >
-                    Community Chat
+            <li class="ul_li">
+                <a class="ul_lip0a1" @click="lazyLoad">
+                    异步加载页面
                 </a>
             </li>
-            <li>
-                <a
-                    href="https://twitter.com/vuejs"
-                    target="_blank"
-                >
-                    Twitter
+            <li class="ul_li">
+                <a class="ul_lip0a1" @click="navigateBack">
+                    带参数返回
                 </a>
             </li>
-            <br>
-            <li>
-                <a
-                    href="http://vuejs-templates.github.io/webpack/"
-                    target="_blank"
-                >
-                    Docs for This Template
+            <li class="ul_li">
+                <a class="ul_lip0a1" @click="go404">
+                    404页面
                 </a>
             </li>
-        </ul>
-        <h2>Ecosystem</h2>
-        <ul>
-            <li>
-                <a
-                    href="http://router.vuejs.org/"
-                    target="_blank"
-                >
-                    vue-router
-                </a>
-            </li>
-            <li>
-                <a
-                    href="http://vuex.vuejs.org/"
-                    target="_blank"
-                >
-                    vuex
-                </a>
-            </li>
-            <li>
-                <a
-                    href="http://vue-loader.vuejs.org/"
-                    target="_blank"
-                >
-                    vue-loader
-                </a>
-            </li>
-            <li>
-                <a
-                    href="https://github.com/vuejs/awesome-vue"
-                    target="_blank"
-                >
-                    awesome-vue
-                </a>
-            </li>
+            
         </ul>
     </div>
 </template>
 
 <script>
 export default {
-    name: 'HelloWorld',
-    data () {
-        return {
-            msg: 'Welcome to Your Vue.js App'
-        }
-    }
+    methods: {
+        async navigateTo(){
+            await this.$router.navigateTo('NavigateTo', {
+                data: '跳转navigateTo'
+            })
+            alert('返回成功')
+        },
+        async redirectTo(){
+            await this.$router.navigateTo('RedirectTo', {
+                data: '0'
+            })
+            alert('返回成功')
+        },
+        async lazyLoad(){
+            await this.$router.navigateTo('LazyLoad')
+            alert('返回成功')
+        },
+        async navigateBack(){
+            let result = await this.$router.navigateTo('NavigateBack')
+            alert('返回成功,传回的值是：' + result)
+        },
+        go404(){
+            this.$router.navigateTo('404')
+        },
+    },
 }
 </script>
 
-<!-- Add "scoped" attribute to limit CSS to this component only -->
 <style scoped>
-h1, h2 {
-    font-weight: normal;
-}
-ul {
-    list-style-type: none;
-    padding: 0;
-}
-li {
-    display: inline-block;
-    margin: 0 10px;
-}
-a {
-    color: #42b983;
-}
+    .ul {
+        box-sizing : border-box ;
+        margin : 1.5em 0px 1.5em 3em ;
+        padding-left : 0px ;
+        color : rgb(51, 51, 51) ;
+        font-family : -apple-system, BlinkMacSystemFont, "Helvetica Neue", "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", "WenQuanYi Micro Hei", sans-serif ;
+        font-size : 15px ;
+    }
+    .ul_li {
+        box-sizing : border-box ;
+        margin : 0.3em 0px ;
+    }
+    .ul_lip0a1 {
+        box-sizing : border-box ;
+        background : transparent ;
+        color : rgb(0, 154, 97) ;
+        text-decoration-line : none ;
+        outline : 0px ;
+        border-bottom : 1px solid rgba(0, 154, 97, 0.25) ;
+        padding-bottom : 1px ;
+        cursor: pointer;
+    }
 </style>

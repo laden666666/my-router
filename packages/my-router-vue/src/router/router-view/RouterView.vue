@@ -7,8 +7,7 @@
             <transition :name="animationName">
                 <keep-alive :include="cachePageNameList">
                     <component v-if="pageComponent" :is="pageComponent" :key="pageComponent.name"
-                        :routedata="cachePageMap[pageComponent.name] ? cachePageMap[pageComponent.name].routeData : {}"
-                        :routefirstvisit="cachePageMap[pageComponent.name] ? cachePageMap[pageComponent.name].routeFirstVisit : false" ref="showPage">
+                         ref="showPage">
                     </component>
                 </keep-alive>
             </transition>
@@ -16,8 +15,7 @@
         <template v-else>
             <keep-alive :include="cachePageNameList">
                 <component v-if="pageComponent" :is="pageComponent" :key="pageComponent.name"
-                    :routedata="cachePageMap[pageComponent.name] ? cachePageMap[pageComponent.name].routeData : {}"
-                    :routefirstvisit="cachePageMap[pageComponent.name] ? cachePageMap[pageComponent.name].routeFirstVisit : false" ref="showPage">
+                    ref="showPage">
                 </component>
             </keep-alive>
         </template>

@@ -7,9 +7,10 @@ import {
     RouterManager,
     RouteData as CoreRouteData,
 } from 'my-router'
-import Vue from 'vue'
+import Vue, {VueConstructor} from 'vue'
 
 declare function require(name: string): any;
+var Page = require('./Page.vue') as VueConstructor
 
 //禁用浏览器自带的滚动条响应事件，由框架帮助页面处理滚动条位置。这样好处是兼容性好
 history.scrollRestoration = 'manual'
@@ -256,15 +257,34 @@ export default {
             }
 
             //加载pageComponent后，将name增添到pageComponent对象中
-            loadComponent = (loadComponent=>{
+            loadComponent = ((loadComponent, routeData)=>{
                 return ()=>loadComponent().then(pageComponent=> {
+                    if(pageComponent['__esModule']){
+                        pageComponent = pageComponent['default']
+                    }
 
-                    page.pageComponent = {...pageComponent, name}
-
-                    // page.pageComponent = {template: `<div>${name}</div>`, name}
+                    page.pageComponent = {
+                        name,
+                        provide () {
+                            return {
+                                myRoutePage: this
+                            }
+                        },
+                        computed: {
+                            $route(){
+                                return routeData
+                            }
+                        },
+                        render(h){
+                            return h(pageComponent, {
+                                name,
+                                pageComponent,
+                            })
+                        },
+                    }
                     return page.pageComponent
                 })
-            })(loadComponent)
+            })(loadComponent, routeData.routeData)
 
             var page = {
                 id: routeData.id,
