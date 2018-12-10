@@ -1,16 +1,50 @@
 class MyHistory{
-    constructor(){
-        
+    private constructor(){
+        this.initGoBack()
+    }
+
+    static _instance: MyHistory
+    
+    private _sysID: 0
+
+    static instance(): MyHistory{
+        if(!this._instance){
+            this._instance = new MyHistory
+        }  
+        return this._instance
     }
     
     // 初始化goBack
     initGoBack(){
-        if(!sessionStorage.getItem('initGoBack') || !history.state){
+        if(!sessionStorage.getItem('initGoBack') || typeof history.state != 'number'){
             // 让goback页面比当前页面的时间戳小,这样能够判断出是后退
             history.replaceState(Date.now() - 1, '', '#goback')
             // 使用时间戳做页面的state
             history.pushState(Date.now(), '')
-            sessionStorage.getItem('initGoBack') = true
+            sessionStorage.setItem('initGoBack', 'true')
+        }
+    }
+    
+    // 初始化URL
+    initURL(){
+        if(!location.hash || !this._testHash(location.hash)){
+            history.replaceState(Date.now() - 1, '', this._hash2URL(location.hash || '#'))
+        }
+    }
+
+    baseURL(){
+        return location.pathname + location.search
+    }
+
+    private _testHash(hash: string){
+        return /^#(\/?)([a-zA-Z0-9\-\.\?\,\'\/\\\+&amp;%\$#_]*)?/.test(hash) && (~hash.indexOf('?_') || ~hash.indexOf('&_'))
+    }
+
+    private _hash2URL(hash: string){
+        if(~hash.indexOf('?')){
+            return hash + '&_=' + this._sysID++
+        } else{
+            return  hash + '?_=' + this._sysID++
         }
     }
         
@@ -41,7 +75,8 @@ class MyHistory{
         }, false)
     }
     
-    assign(){
+    assign(url){
+
     }
     goback(){
     }
