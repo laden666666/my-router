@@ -1,7 +1,11 @@
-class MyHistory{
+export class MyHistory{
+
+    private _state = 0;
+
+    private list = []
+
     private constructor(){
         this.initGoBack()
-
                 
         // 初始化时间
         var now = Date.now()
@@ -26,11 +30,10 @@ class MyHistory{
         })
         sessionStorage.inited = true
 
-        this.state = 1
+        this._state = 1
 
         // 路由事件消化
         var eventList = []
-        window.d = function(){debugger}
         let timeout
         function nextTick(fn){
             eventList.push(fn)
@@ -40,7 +43,7 @@ class MyHistory{
                     try {
                         fn()
                     } catch (error) {
-                        this.eventlist.push(error)
+                        console.log(error)
                     }
                     return false
                 })
@@ -63,9 +66,9 @@ class MyHistory{
         // 是否
         window.onhashchange = ()=>{
 
-            if(this.state == 2 && this.state == 3){
+            if(this._state == 2 || this._state == 3){
                 return
-            } else if(this.state == 1){
+            } else if(this._state == 1){
                 let hash = location.hash
                 if(hash == '#goback' && history.state && history.state == list[0].time){
                     if(list.length > 2){
@@ -84,8 +87,7 @@ class MyHistory{
                     // 3.如果系统变量等于当前的uid，但是不等于hash，表示是修改过的。
                     // 当遇到这种情况，后退到两步到goback页面，然后再将url生成系统的url，前进到该地址。这个过程中忽略其他路由
                     let _hash =  hash.split('_=')[0]
-                    this.state = 3
-                    this.eventlist.push(_hash)
+                    this._state = 3
                     if(!issafariBrowser){
                         history.go(-2)
                         nextTick(()=>{
@@ -95,7 +97,7 @@ class MyHistory{
                                 time: now,
                                 url: (_hash || '#') + '_=' + uid
                             })
-                            this.state = 1
+                            this._state = 1
                         })
                     } else {
                         history.back()
@@ -109,7 +111,7 @@ class MyHistory{
                                         time: now,
                                         url: (_hash || '#') + '_=' + uid
                                     })
-                                    this.state = 1
+                                    this._state = 1
                                 })
                             })
                         })
