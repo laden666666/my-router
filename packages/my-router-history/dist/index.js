@@ -987,16 +987,12 @@ var MyHistory = function () {
             };
             if (history.state && history.state.isGoback === true) {
                 // 如果当前页面是goback，表示goback已经初始化完成
-                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                document.title = this._config.gobackName;
                 return false;
             } else if (history.state && history.state.isNextToGoback === true) {
                 // 如果当前处理goback后面的页面，表示goback已经初始化完成，并且已经在上一页
                 return true;
             } else {
                 // 否则初始化goback页面
-                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                document.title = this._config.gobackName;
                 this._replaceState(this._gobackState);
                 // 因为目前还处于goback页面，所有返回false
                 return false;
@@ -1022,35 +1018,19 @@ var MyHistory = function () {
                 location: initialLocation,
                 timeStamp: timeStamp
             };
-            var tempTitle = document.title;
             // 初始化goback
             var isGobackNextLocation = this._initGoback(timeStamp);
             // 将当前路径压入栈中
             this._push(initialLocationState, !isGobackNextLocation);
-            document.title = tempTitle;
             // 初始化监听器
             this._initEventListener();
             // 
             historyCount++;
+            this._state = 1;
         }
     }, {
         key: "_hashchangeHandler",
         value: function _hashchangeHandler(event) {
-            var _this = this;
-
-            /**
-             * 从一个浏览器地址栏的url解析出系统path
-             * @param {string} url
-             * @returns {string}
-             */
-            var getURLHashPath = function getURLHashPath(url) {
-                var index = url.indexOf('#');
-                if (index === -1) {
-                    return _this._decodePath('/');
-                } else {
-                    return _this._decodePath(url.slice(index));
-                }
-            };
             if (this._state === 2) {
                 var state = history.state;
                 // 在返回和纠正url的时候，如果出现了异常的url，要做异常纠正
@@ -1064,34 +1044,29 @@ var MyHistory = function () {
                         isGoback: false,
                         isNextToGoback: true
                     };
-                    this._push(_state);
+                    this._state = 1;
+                    this._push(_state, true);
                 } else {
                     this._correct();
                     return;
                 }
             } else if (this._state === 1) {
                 if (history.state && history.state.isGoback) {
+                    //用户退回道goback页面
                     this._stateStack.pop();
                     if (this._stateStack.length === 0) {
-                        var rootLocation = this._getDOMLocation(this._config.root);
-                        var rootState = {
-                            isGoback: false,
-                            isNextToGoback: false,
-                            location: rootLocation,
-                            timeStamp: Date.now()
-                        };
-                        this._stateStack.push(rootState);
+                        history.back();
                     }
                     var lastState = this._stackTop;
-                    this._replaceState(lastState);
-                } else if (!history.state && getURLHashPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href) {
+                    this._replace(lastState, true);
+                } else if (!history.state && this._getHashPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href) {
                     // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                     // 1.当前history没有state，或者state不等于State变量
                     // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
-                    this._state = 3;
-                    this._stateData = getURLHashPath(event.oldURL);
+                    this._state = 2;
+                    this._stateData = this._getHashPath(event.newURL);
                     // 后退两次
-                    history.back();
+                    history.go(-2);
                 }
             } else {
                 if (history.state && history.state.isGoback) {
@@ -1113,14 +1088,15 @@ var MyHistory = function () {
         value: function _destroyEventListener() {
             window.removeEventListener('hashchange', this._hashchangeHandler);
         }
-        // 获取hashpath。
+        // 获取hash中保存的路径。
 
     }, {
         key: "_getHashPath",
         value: function _getHashPath() {
+            var href = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.href;
+
             // We can't use window.location.hash here because it's not
             // consistent across browsers - Firefox will pre-decode it!
-            var href = window.location.href;
             var hashIndex = href.indexOf('#');
             return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
         }
@@ -1179,7 +1155,11 @@ var MyHistory = function () {
             var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
             if (push) {
+                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                document.title = this._config.gobackName;
+                var tempTitle = document.title;
                 this._pushState(state);
+                document.title = tempTitle;
             } else {
                 this._replaceState(state);
             }
@@ -1190,11 +1170,14 @@ var MyHistory = function () {
         value: function _replace(state) {
             var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
-            this._replaceState(state);
             this._stateStack.pop();
             this._stateStack.push(state);
             if (push) {
+                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                document.title = this._config.gobackName;
+                var tempTitle = document.title;
                 this._pushState(state);
+                document.title = tempTitle;
             } else {
                 this._replaceState(state);
             }
@@ -1269,7 +1252,7 @@ var MyHistory = function () {
                 }, _callee, this);
             }));
 
-            function assign(_x5) {
+            function assign(_x6) {
                 return _ref.apply(this, arguments);
             }
 
@@ -1303,7 +1286,7 @@ var MyHistory = function () {
                 }, _callee2, this);
             }));
 
-            function replace(_x6) {
+            function replace(_x7) {
                 return _ref2.apply(this, arguments);
             }
 
@@ -1353,7 +1336,7 @@ var MyHistory = function () {
                 }, _callee4, this);
             }));
 
-            function goback(_x7) {
+            function goback(_x8) {
                 return _ref4.apply(this, arguments);
             }
 
