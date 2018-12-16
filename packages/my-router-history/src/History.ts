@@ -1,4 +1,4 @@
-import { IHistory } from './model/IHistory';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
 import { createLocation } from './LocationUtils';
@@ -262,30 +262,42 @@ export class MyHistory implements IHistory {
         return createLocation(path, timeStamp + '');
     }
 
-    private _push(state: State, push = false){
-        if(push){
-            // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-            document.title = this._config.gobackName
-            let tempTitle = document.title
-            this._pushState(state)
-            document.title = tempTitle
-        } else {
-            this._replaceState(state)
+    private async _push(state: State, push = false){
+        let oldLocation = this._stackTop
+        let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state, [oldLocation], [state])
+
+        if(result !== false){
+            if(push){
+                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                document.title = this._config.gobackName
+                let tempTitle = document.title
+                this._pushState(state)
+                document.title = tempTitle
+            } else {
+                this._replaceState(state)
+            }
+            this._stateStack.push(state)
+            await this._execCallback(this.onChange, 'replace', oldLocation, state, [oldLocation], [state])
         }
-        this._stateStack.push(state)
     }
 
-    private _replace(state: State, push = false){
-        this._stateStack.pop()
-        this._stateStack.push(state)
-        if(push){
-            // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-            document.title = this._config.gobackName
-            let tempTitle = document.title
-            this._pushState(state)
-            document.title = tempTitle
-        } else {
-            this._replaceState(state)
+    private async _replace(state: State, push = false){
+        let oldLocation = this._stackTop
+        let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state, [oldLocation], [state])
+
+        if(result !== false){
+            this._stateStack.pop()
+            this._stateStack.push(state)
+            if(push){
+                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                document.title = this._config.gobackName
+                let tempTitle = document.title
+                this._pushState(state)
+                document.title = tempTitle
+            } else {
+                this._replaceState(state)
+            }
+            await this._execCallback(this.onChange, 'replace', oldLocation, state, [oldLocation], [state])
         }
     }
 
@@ -379,4 +391,15 @@ export class MyHistory implements IHistory {
         return this._stackTop.location
     }
 
+    onBeforeChange: BeforeChangeEventCallback = null
+
+    onChange: ChangeEventCallback = null
+
+    _execCallback(callback: Function, ...args: any[]){
+        if(typeof callback === 'function'){
+            return callback.apply(this, args)
+        } else {
+            return Promise.resolve()
+        }
+    }
 }

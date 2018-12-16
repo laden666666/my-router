@@ -2,24 +2,18 @@ import { ILocation } from './ILocation';
 import { IHistoryConfig } from './IHistoryConfig';
 
 /**
- * 用于
+ * 用于封装只读
  */
 type Readonly<T> = {
-    readonly [P in keyof T]: T[P];
+    readonly [P in keyof T]: Readonly<T[P]>;
 }
 
+export type ChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
+    newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): void | Promise<void> };
 
+export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
+    newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): boolean | Promise<void> };
 
-type URLChangeEventCallback = {};
-type BeforeURLChangeEventCallback = {};
-type GobackEventCallback = {};
-type BeforeGobackEventCallback = {};
-type PushEventCallback = {};
-type BeforePushEventCallback = {};
-type ReplaceEventCallback = {};
-type BeforeReplaceEventCallback = {};
-type ReloadEventCallback = {};
-type BeforeReloadEventCallback = {};
 
 export interface IHistory{
     /**
@@ -29,6 +23,7 @@ export interface IHistory{
      * @memberOf IHistory
      */
     push(path: string): Promise<ILocation>
+
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
      * @param {string} path                 去往的地址
@@ -36,6 +31,7 @@ export interface IHistory{
      * @memberOf IHistory
      */
     replace(path: string): Promise<ILocation>
+
     /**
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
      * @param {number} n                    退回的步数
@@ -44,6 +40,7 @@ export interface IHistory{
      * @memberOf IHistory
      */
     goback(n: number): Promise<ILocation>
+
     /**
      * 退回到指定的path，如果为找到合适path，跳回到root
      * @param {string} path                 指定的path
@@ -52,6 +49,7 @@ export interface IHistory{
      * @memberOf IHistory
      */
     goback(path: string): Promise<ILocation>
+
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
      * @param {(fn: Readonly<ILocation>, stack: Readonly<ILocation>[])=>boolean} fn 
@@ -60,6 +58,7 @@ export interface IHistory{
      * @memberOf IHistory
      */
     goback(fn: (fn: Readonly<ILocation>, stack: Readonly<ILocation>[])=>boolean): Promise<ILocation>
+
     /**
      * 刷新当前页面，其实和replace当前的url一致，名字取自location.replace
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
@@ -94,19 +93,35 @@ export interface IHistory{
      */
     destroy(): Promise<void>
 
+    /**
+     * 注册URLchange监听器，事件支持异步，不允许注册多个事件
+     * @param {any} ChangeEventCallback          监听函数。
+     *           4个参数：
+     *               action { 'init' | 'push' | 'goback' | 'replace' | 'reload'} URL改变的类型
+     *               oldLoction: 上一个页面的loction对象
+     *               newLoction: 当前页面的location对象
+     *               discardLoctions: 跳转过程中出栈的location对象
+     *               includeLoctions: 跳转过程中入栈的location对象
+     *           返回值：
+     *               是void或者Promise<void>。如果是Promise<void>，路由会处于终止状态，直到事件处理完成，所以尽量不要使用异步
+     * @memberOf IHistory
+     */
+    onChange: ChangeEventCallback
 
-    listenURLChange(): ()=>void
-    listenBeforeURLChange(): ()=>void
+    /**注册BeforeURLURLchange监听器，history的特点是可以监听变化，然后确定是否要应用改变，
+     * 因此可以在BeforeChange事件中阻止改变生效，可以实现如阻止回调等功能,
+     * 事件支持异步，不允许注册多个事件
+     * @param {any} BeforeChangeEventCallback       监听函数。
+     *           4个参数：
+     *               action { 'init' | 'push' | 'goback' | 'replace' | 'reload'} URL改变的类型
+     *               oldLoction: 当前页面页面的loction对象
+     *               newLoction: 下一个页面的location对象
+     *               discardLoctions: 跳转过程中出栈的location对象
+     *           返回值：
+     *               是boolean或者Promise<boolean>。如果是Promise<boolean>，路由会处于终止状态，直到事件处理完成，所以尽量不要使用异步
+     *               如果boolean值是false（false以外的falsy不可），将阻止改变发生
+     * @memberOf IHistory
+     */
+    onBeforeChange: BeforeChangeEventCallback
 
-    listenReplce(): ()=>void
-    listenBeforeReplce(): ()=>void
-    
-    listenPush(): ()=>void
-    listenBeforePush(): ()=>void
-    
-    listenReload(): ()=>void
-    listenBeforeReload(): ()=>void
-    
-    listenGoback(): ()=>void
-    listenBeforeGoback(): ()=>void
 }
