@@ -2,7 +2,7 @@ import { IHistory } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
 import { createLocation } from './LocationUtils';
-import { addLeadingSlash, stripTrailingSlash, hasBasename, stripBasename } from './PathUtils';
+import { addLeadingSlash, stripTrailingSlash } from './PathUtils';
 import { canUseDOM } from './DOMUtils';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
@@ -24,15 +24,22 @@ export interface State{
 
 export class MyHistory implements IHistory {
 
-    // 当前history的状态：0未初始化， 1正常， 2修正中， 3返回中
+    // 当前history的状态：
+    // 0未初始化    history没有完成初始化的时候
+    // 1正常        history正常运行中
+    // 2修正中      当用户手动修改hash，会被视为一次用户触发的跳转。此次跳转会先退回到goback页面，再前进回跳转的页面（为了保持history在浏览器中仅有两个浏览器记录——当前页面和退回页面），这个过程我们叫修改中
+    // 3返回中      保留状态
+    // 4销毁中      在history销毁过程中的状态。
+    // 5退出中      当用户要求退出到系统以外，系统会一直触发goback，直到页面刷新为止
     private _state = 0;
-    private _stateData: any;
 
+    // state处于一些状态中，临时保存状态的过程数据的地方
+    private _stateData: any;
 
     // 保存location数据的栈
     private _stateStack: State[] = []
 
-    // goback的State
+    // goback页面的State
     private _gobackState: State
 
     get _stackTop(): State{
@@ -51,7 +58,6 @@ export class MyHistory implements IHistory {
 
         this._config = {
             gobackName: 'go back',
-            basename: '',
             root: '/',
             ..._config
         }
@@ -62,6 +68,7 @@ export class MyHistory implements IHistory {
 
     }
 
+    // 全局的history对象
     private _globalHistory = window.history;
 
     /**
@@ -76,12 +83,12 @@ export class MyHistory implements IHistory {
      */
     private _initGoback(now: number): boolean{
         // 先查看是否已经创建好了一个goback的location，因为浏览器中无法查看history对象里面保存的历史记录，所以使用history.state保存这个状态。
+
         // state里面用于记录当前是否处于goback的下一页。
-        
         this._gobackState = {
             // 让goback比当前时间戳小，这样能够判断出是后退
             timeStamp: now - 1,
-            location: this._getDOMLocation('/goback', now - 1),
+            location: this._pathToLocation('/goback', now - 1),
             isNextToGoback: false,
             isGoback: true
         }
@@ -114,8 +121,8 @@ export class MyHistory implements IHistory {
         let timeStamp = Date.now()
 
         // 获取当前的路径，将其转换为合法路径后，
-        let initialPath = this._decodePath(this._getHashPath());
-        let initialLocation = this._getDOMLocation(initialPath, timeStamp)
+        let initialPath = this._decodePath(this._getHrefToPath());
+        let initialLocation = this._pathToLocation(initialPath, timeStamp)
         let initialLocationState: State = {
             isGoback: false,
             isNextToGoback: true,
@@ -132,29 +139,42 @@ export class MyHistory implements IHistory {
         // 初始化监听器
         this._initEventListener()
 
-        // 
+        // 全部初始化完成，记录初始化成功
         historyCount++
         this._state = 1
     }
 
+    /**
+     * 注册到HashChange事件的监听器。这个函数会在构造器中bind，以在addEventListener保持this不变
+     * @private
+     * @param {HashChangeEvent} event 
+     * @memberOf MyHistory
+     */
     private _hashchangeHandler(event: HashChangeEvent){
 
         if(this._state === 2){
+            // 对纠正的处理步骤
+            // 1. 一直后退，直到后退到goback页面
+            // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
+
             let state = (history.state as State)
-            // 在返回和纠正url的时候，如果出现了异常的url，要做异常纠正
             if(state && state.isNextToGoback){
+                // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
                 this._globalHistory.back()
             } else if(state && state.isGoback){
+                // 如果已经在goback页面了，则跳转到用户手输入的地址
                 let now = Date.now()
                 let state: State = {
-                    location: this._getDOMLocation(this._stateData, now),
+                    location: this._pathToLocation(this._stateData, now),
                     timeStamp: now,
                     isGoback: false,
                     isNextToGoback: true
                 }
+
                 this._state = 1
                 this._push(state, true)
             } else {
+                // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
                 this._correct()
                 return
             }
@@ -168,12 +188,12 @@ export class MyHistory implements IHistory {
         
                 let lastState = this._stackTop
                 this._replace(lastState, true)
-            } else if(!history.state && this._getHashPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
+            } else if(!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
                 // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                 // 1.当前history没有state，或者state不等于State变量
                 // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
                 this._state = 2
-                this._stateData = this._getHashPath(event.newURL)
+                this._stateData = this._getHrefToPath(event.newURL)
 
                 // 后退两次
                 history.go(-2)
@@ -195,14 +215,6 @@ export class MyHistory implements IHistory {
 
     private _destroyEventListener(){
         window.removeEventListener('hashchange', this._hashchangeHandler)
-    }
-
-    // 获取hash中保存的路径。
-    private _getHashPath(href = window.location.href): string {
-        // We can't use window.location.hash here because it's not
-        // consistent across browsers - Firefox will pre-decode it!
-        const hashIndex = href.indexOf('#');
-        return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
     }
 
     /**
@@ -227,6 +239,14 @@ export class MyHistory implements IHistory {
         return addLeadingSlash(path)
     }
 
+    // 获取hash中保存的路径。
+    private _getHrefToPath(href = window.location.href): string {
+        // We can't use window.location.hash here because it's not
+        // consistent across browsers - Firefox will pre-decode it!
+        const hashIndex = href.indexOf('#');
+        return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
+    }
+
     /**
      * 将给定的path封装成一个location
      * @private
@@ -234,18 +254,9 @@ export class MyHistory implements IHistory {
      * @returns 
      * @memberOf MyHistory
      */
-    private _getDOMLocation(path: string, timeStamp: number = Date.now()): ILocation {
+    private _pathToLocation(path: string, timeStamp: number = Date.now()): ILocation {
+        
         path = this._decodePath(path);
-        const basename = this._config.basename
-            ? stripTrailingSlash(addLeadingSlash(this._config.basename))
-            : '';
-
-        if(!basename || hasBasename(path, basename)){
-            console.warn(`You are attempting to use a basename on a page whose URL path does not begin with the basename. Expected path "${path}" to begin with "${basename}".`)
-        }
-    
-        // 将basename拼到给定的path上面
-        if (basename) path = stripBasename(path, basename);
     
         // 创建的location
         return createLocation(path, timeStamp + '');
@@ -285,7 +296,7 @@ export class MyHistory implements IHistory {
         this._stateStack.splice(Math.max(0, this._stateStack.length - n))
 
         if(this._stateStack.length === 0){
-            let rootLocation = this._getDOMLocation(this._config.root)
+            let rootLocation = this._pathToLocation(this._config.root)
             let rootState: State = {
                 isGoback: false,
                 isNextToGoback: false,
@@ -317,10 +328,10 @@ export class MyHistory implements IHistory {
         console.error('异常', this._stateStack, history.state, location.hash)
     }
     
-    async assign(path: string){
+    async push(path: string){
         let now = Date.now()
         let state: State = {
-            location: this._getDOMLocation(path),
+            location: this._pathToLocation(path),
             isGoback: false,
             isNextToGoback: true,
             timeStamp: now,
@@ -332,7 +343,7 @@ export class MyHistory implements IHistory {
     async replace(path: string){
         let now = Date.now()
         let state: State = {
-            location: this._getDOMLocation(path),
+            location: this._pathToLocation(path),
             isGoback: false,
             isNextToGoback: true,
             timeStamp: now,

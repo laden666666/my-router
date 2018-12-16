@@ -21,28 +21,6 @@ export function stripLeadingSlash(path: string): string {
 }
 
 /**
- * 判断path是否是使用baseURL
- * @export
- * @param {string} path 
- * @param {string} prefix 
- * @returns {string} 
- */
-export function hasBasename(path: string, prefix: string): boolean {
-    return new RegExp('^' + prefix + '(\\/|\\?|#|$)', 'i').test(path);
-}
-
-/**
- * 移除path中的baseURL
- * @export
- * @param {string} path 
- * @param {string} prefix 
- * @returns {string} 
- */
-export function stripBasename(path: string, prefix: string): string {
-    return hasBasename(path, prefix) ? path.substr(prefix.length) : path;
-}
-
-/**
  * 移除path最后的'/'
  * @export
  * @param {string} path 
@@ -74,8 +52,8 @@ export function parsePath(path: string): ILocation {
         search = pathname.substr(searchIndex);
         pathname = pathname.substr(0, searchIndex);
     }
-
-    let location: ILocation = {
+    
+    return {
         pathname,
         search: search === '?' ? '' : search,
         hash: hash === '#' ? '' : hash,
@@ -84,8 +62,6 @@ export function parsePath(path: string): ILocation {
             return this.pathname + this.search + this.hash
         }
     };
-
-    return location
 }
 
 /**

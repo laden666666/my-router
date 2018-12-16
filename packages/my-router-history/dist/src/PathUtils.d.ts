@@ -14,22 +14,6 @@ export declare function addLeadingSlash(path: string): string;
  */
 export declare function stripLeadingSlash(path: string): string;
 /**
- * 判断path是否是使用baseURL
- * @export
- * @param {string} path
- * @param {string} prefix
- * @returns {string}
- */
-export declare function hasBasename(path: string, prefix: string): boolean;
-/**
- * 移除path中的baseURL
- * @export
- * @param {string} path
- * @param {string} prefix
- * @returns {string}
- */
-export declare function stripBasename(path: string, prefix: string): string;
-/**
  * 移除path最后的'/'
  * @export
  * @param {string} path

@@ -28,10 +28,15 @@ export declare class MyHistory implements IHistory {
      */
     private _initGoback;
     private _initHistory;
+    /**
+     * 注册到HashChange事件的监听器。这个函数会在构造器中bind，以在addEventListener保持this不变
+     * @private
+     * @param {HashChangeEvent} event
+     * @memberOf MyHistory
+     */
     private _hashchangeHandler;
     private _initEventListener;
     private _destroyEventListener;
-    private _getHashPath;
     /**
      * 将用户给定的path转为系统显示的path
      * @private
@@ -48,6 +53,7 @@ export declare class MyHistory implements IHistory {
      * @memberOf MyHistory
      */
     private _decodePath;
+    private _getHrefToPath;
     /**
      * 将给定的path封装成一个location
      * @private
@@ -55,14 +61,14 @@ export declare class MyHistory implements IHistory {
      * @returns
      * @memberOf MyHistory
      */
-    private _getDOMLocation;
+    private _pathToLocation;
     private _push;
     private _replace;
     private _goback;
     _replaceState(state: State): void;
     _pushState(state: State): void;
     _correct(): void;
-    assign(path: string): Promise<ILocation>;
+    push(path: string): Promise<ILocation>;
     replace(path: string): Promise<ILocation>;
     destroy(): Promise<void>;
     goback(n: number | string | {

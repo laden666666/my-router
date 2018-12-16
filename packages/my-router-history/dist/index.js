@@ -810,28 +810,6 @@ function stripLeadingSlash(path) {
 }
 exports.stripLeadingSlash = stripLeadingSlash;
 /**
- * 判断path是否是使用baseURL
- * @export
- * @param {string} path
- * @param {string} prefix
- * @returns {string}
- */
-function hasBasename(path, prefix) {
-    return new RegExp('^' + prefix + '(\\/|\\?|#|$)', 'i').test(path);
-}
-exports.hasBasename = hasBasename;
-/**
- * 移除path中的baseURL
- * @export
- * @param {string} path
- * @param {string} prefix
- * @returns {string}
- */
-function stripBasename(path, prefix) {
-    return hasBasename(path, prefix) ? path.substr(prefix.length) : path;
-}
-exports.stripBasename = stripBasename;
-/**
  * 移除path最后的'/'
  * @export
  * @param {string} path
@@ -861,7 +839,7 @@ function parsePath(path) {
         search = pathname.substr(searchIndex);
         pathname = pathname.substr(0, searchIndex);
     }
-    var location = {
+    return {
         pathname: pathname,
         search: search === '?' ? '' : search,
         hash: hash === '#' ? '' : hash,
@@ -870,7 +848,6 @@ function parsePath(path) {
             return this.pathname + this.search + this.hash;
         }
     };
-    return location;
 }
 exports.parsePath = parsePath;
 /**
@@ -948,16 +925,23 @@ var MyHistory = function () {
         (0, _classCallCheck3.default)(this, MyHistory);
 
         this._config = _config;
-        // 当前history的状态：0未初始化， 1正常， 2修正中， 3返回中
+        // 当前history的状态：
+        // 0未初始化    history没有完成初始化的时候
+        // 1正常        history正常运行中
+        // 2修正中      当用户手动修改hash，会被视为一次用户触发的跳转。此次跳转会先退回到goback页面，再前进回跳转的页面（为了保持history在浏览器中仅有两个浏览器记录——当前页面和退回页面），这个过程我们叫修改中
+        // 3返回中      保留状态
+        // 4销毁中      在history销毁过程中的状态。
+        // 5退出中      当用户要求退出到系统以外，系统会一直触发goback，直到页面刷新为止
         this._state = 0;
         // 保存location数据的栈
         this._stateStack = [];
+        // 全局的history对象
         this._globalHistory = window.history;
         // 同一时刻，不允许有两个history实例运行
         if (historyCount > 0) {
             throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.');
         }
-        this._config = (0, _assign2.default)({ gobackName: 'go back', basename: '', root: '/' }, _config);
+        this._config = (0, _assign2.default)({ gobackName: 'go back', root: '/' }, _config);
         this._hashchangeHandler = this._hashchangeHandler.bind(this);
         this._initHistory();
     }
@@ -981,7 +965,7 @@ var MyHistory = function () {
             this._gobackState = {
                 // 让goback比当前时间戳小，这样能够判断出是后退
                 timeStamp: now - 1,
-                location: this._getDOMLocation('/goback', now - 1),
+                location: this._pathToLocation('/goback', now - 1),
                 isNextToGoback: false,
                 isGoback: true
             };
@@ -1010,8 +994,8 @@ var MyHistory = function () {
             // 获取当前时间戳
             var timeStamp = Date.now();
             // 获取当前的路径，将其转换为合法路径后，
-            var initialPath = this._decodePath(this._getHashPath());
-            var initialLocation = this._getDOMLocation(initialPath, timeStamp);
+            var initialPath = this._decodePath(this._getHrefToPath());
+            var initialLocation = this._pathToLocation(initialPath, timeStamp);
             var initialLocationState = {
                 isGoback: false,
                 isNextToGoback: true,
@@ -1024,22 +1008,33 @@ var MyHistory = function () {
             this._push(initialLocationState, !isGobackNextLocation);
             // 初始化监听器
             this._initEventListener();
-            // 
+            // 全部初始化完成，记录初始化成功
             historyCount++;
             this._state = 1;
         }
+        /**
+         * 注册到HashChange事件的监听器。这个函数会在构造器中bind，以在addEventListener保持this不变
+         * @private
+         * @param {HashChangeEvent} event
+         * @memberOf MyHistory
+         */
+
     }, {
         key: "_hashchangeHandler",
         value: function _hashchangeHandler(event) {
             if (this._state === 2) {
+                // 对纠正的处理步骤
+                // 1. 一直后退，直到后退到goback页面
+                // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
                 var state = history.state;
-                // 在返回和纠正url的时候，如果出现了异常的url，要做异常纠正
                 if (state && state.isNextToGoback) {
+                    // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
                     this._globalHistory.back();
                 } else if (state && state.isGoback) {
+                    // 如果已经在goback页面了，则跳转到用户手输入的地址
                     var now = Date.now();
                     var _state = {
-                        location: this._getDOMLocation(this._stateData, now),
+                        location: this._pathToLocation(this._stateData, now),
                         timeStamp: now,
                         isGoback: false,
                         isNextToGoback: true
@@ -1047,6 +1042,7 @@ var MyHistory = function () {
                     this._state = 1;
                     this._push(_state, true);
                 } else {
+                    // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
                     this._correct();
                     return;
                 }
@@ -1059,12 +1055,12 @@ var MyHistory = function () {
                     }
                     var lastState = this._stackTop;
                     this._replace(lastState, true);
-                } else if (!history.state && this._getHashPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href) {
+                } else if (!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href) {
                     // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                     // 1.当前history没有state，或者state不等于State变量
                     // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
                     this._state = 2;
-                    this._stateData = this._getHashPath(event.newURL);
+                    this._stateData = this._getHrefToPath(event.newURL);
                     // 后退两次
                     history.go(-2);
                 }
@@ -1087,18 +1083,6 @@ var MyHistory = function () {
         key: "_destroyEventListener",
         value: function _destroyEventListener() {
             window.removeEventListener('hashchange', this._hashchangeHandler);
-        }
-        // 获取hash中保存的路径。
-
-    }, {
-        key: "_getHashPath",
-        value: function _getHashPath() {
-            var href = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.href;
-
-            // We can't use window.location.hash here because it's not
-            // consistent across browsers - Firefox will pre-decode it!
-            var hashIndex = href.indexOf('#');
-            return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
         }
         /**
          * 将用户给定的path转为系统显示的path
@@ -1126,6 +1110,18 @@ var MyHistory = function () {
         value: function _decodePath(path) {
             return PathUtils_1.addLeadingSlash(path);
         }
+        // 获取hash中保存的路径。
+
+    }, {
+        key: "_getHrefToPath",
+        value: function _getHrefToPath() {
+            var href = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.href;
+
+            // We can't use window.location.hash here because it's not
+            // consistent across browsers - Firefox will pre-decode it!
+            var hashIndex = href.indexOf('#');
+            return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
+        }
         /**
          * 将给定的path封装成一个location
          * @private
@@ -1135,17 +1131,11 @@ var MyHistory = function () {
          */
 
     }, {
-        key: "_getDOMLocation",
-        value: function _getDOMLocation(path) {
+        key: "_pathToLocation",
+        value: function _pathToLocation(path) {
             var timeStamp = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : Date.now();
 
             path = this._decodePath(path);
-            var basename = this._config.basename ? PathUtils_1.stripTrailingSlash(PathUtils_1.addLeadingSlash(this._config.basename)) : '';
-            if (!basename || PathUtils_1.hasBasename(path, basename)) {
-                console.warn("You are attempting to use a basename on a page whose URL path does not begin with the basename. Expected path \"" + path + "\" to begin with \"" + basename + "\".");
-            }
-            // 将basename拼到给定的path上面
-            if (basename) path = PathUtils_1.stripBasename(path, basename);
             // 创建的location
             return LocationUtils_1.createLocation(path, timeStamp + '');
         }
@@ -1192,7 +1182,7 @@ var MyHistory = function () {
             }
             this._stateStack.splice(Math.max(0, this._stateStack.length - n));
             if (this._stateStack.length === 0) {
-                var rootLocation = this._getDOMLocation(this._config.root);
+                var rootLocation = this._pathToLocation(this._config.root);
                 var rootState = {
                     isGoback: false,
                     isNextToGoback: false,
@@ -1225,7 +1215,7 @@ var MyHistory = function () {
             console.error('异常', this._stateStack, history.state, location.hash);
         }
     }, {
-        key: "assign",
+        key: "push",
         value: function () {
             var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(path) {
                 var now, state;
@@ -1235,7 +1225,7 @@ var MyHistory = function () {
                             case 0:
                                 now = Date.now();
                                 state = {
-                                    location: this._getDOMLocation(path),
+                                    location: this._pathToLocation(path),
                                     isGoback: false,
                                     isNextToGoback: true,
                                     timeStamp: now
@@ -1252,11 +1242,11 @@ var MyHistory = function () {
                 }, _callee, this);
             }));
 
-            function assign(_x6) {
+            function push(_x6) {
                 return _ref.apply(this, arguments);
             }
 
-            return assign;
+            return push;
         }()
     }, {
         key: "replace",
@@ -1269,7 +1259,7 @@ var MyHistory = function () {
                             case 0:
                                 now = Date.now();
                                 state = {
-                                    location: this._getDOMLocation(path),
+                                    location: this._pathToLocation(path),
                                     isGoback: false,
                                     isNextToGoback: true,
                                     timeStamp: now

@@ -1,18 +1,34 @@
 import { ILocation } from './ILocation';
 import { IHistoryConfig } from './IHistoryConfig';
 
+/**
+ * 用于
+ */
 type Readonly<T> = {
     readonly [P in keyof T]: T[P];
 }
 
+
+
+type URLChangeEventCallback = {};
+type BeforeURLChangeEventCallback = {};
+type GobackEventCallback = {};
+type BeforeGobackEventCallback = {};
+type PushEventCallback = {};
+type BeforePushEventCallback = {};
+type ReplaceEventCallback = {};
+type BeforeReplaceEventCallback = {};
+type ReloadEventCallback = {};
+type BeforeReloadEventCallback = {};
+
 export interface IHistory{
     /**
-     * 前进去往一个页面，名字取自location.assign
+     * 前进去往一个页面，名字取自history.push
      * @param {string} path                 去往的地址
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    assign(path: string): Promise<ILocation>
+    push(path: string): Promise<ILocation>
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
      * @param {string} path                 去往的地址
@@ -77,4 +93,20 @@ export interface IHistory{
      * @memberOf IHistory
      */
     destroy(): Promise<void>
+
+
+    listenURLChange(): ()=>void
+    listenBeforeURLChange(): ()=>void
+
+    listenReplce(): ()=>void
+    listenBeforeReplce(): ()=>void
+    
+    listenPush(): ()=>void
+    listenBeforePush(): ()=>void
+    
+    listenReload(): ()=>void
+    listenBeforeReload(): ()=>void
+    
+    listenGoback(): ()=>void
+    listenBeforeGoback(): ()=>void
 }
