@@ -70,7 +70,7 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 40);
+/******/ 	return __webpack_require__(__webpack_require__.s = 41);
 /******/ })
 /************************************************************************/
 /******/ ([
@@ -89,8 +89,8 @@ if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 /* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var store = __webpack_require__(28)('wks');
-var uid = __webpack_require__(29);
+var store = __webpack_require__(29)('wks');
+var uid = __webpack_require__(30);
 var Symbol = __webpack_require__(0).Symbol;
 var USE_SYMBOL = typeof Symbol == 'function';
 
@@ -194,7 +194,7 @@ module.exports = $export;
 /***/ (function(module, exports, __webpack_require__) {
 
 var dP = __webpack_require__(7);
-var createDesc = __webpack_require__(24);
+var createDesc = __webpack_require__(25);
 module.exports = __webpack_require__(6) ? function (object, key, value) {
   return dP.f(object, key, createDesc(1, value));
 } : function (object, key, value) {
@@ -369,7 +369,7 @@ module.exports = function (it) {
 /***/ (function(module, exports, __webpack_require__) {
 
 // to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = __webpack_require__(26);
+var IObject = __webpack_require__(27);
 var defined = __webpack_require__(15);
 module.exports = function (it) {
   return IObject(defined(it));
@@ -380,8 +380,8 @@ module.exports = function (it) {
 /* 20 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var shared = __webpack_require__(28)('keys');
-var uid = __webpack_require__(29);
+var shared = __webpack_require__(29)('keys');
+var uid = __webpack_require__(30);
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
@@ -427,6 +427,12 @@ module.exports.f = function (C) {
 
 /***/ }),
 /* 23 */
+/***/ (function(module, exports, __webpack_require__) {
+
+module.exports = { "default": __webpack_require__(47), __esModule: true };
+
+/***/ }),
+/* 24 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -502,7 +508,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
 
 
 /***/ }),
-/* 24 */
+/* 25 */
 /***/ (function(module, exports) {
 
 module.exports = function (bitmap, value) {
@@ -516,12 +522,12 @@ module.exports = function (bitmap, value) {
 
 
 /***/ }),
-/* 25 */
+/* 26 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = __webpack_require__(57);
-var enumBugKeys = __webpack_require__(30);
+var enumBugKeys = __webpack_require__(31);
 
 module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
@@ -529,7 +535,7 @@ module.exports = Object.keys || function keys(O) {
 
 
 /***/ }),
-/* 26 */
+/* 27 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
@@ -541,7 +547,7 @@ module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
 
 
 /***/ }),
-/* 27 */
+/* 28 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.15 ToLength
@@ -553,7 +559,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 28 */
+/* 29 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var core = __webpack_require__(2);
@@ -571,7 +577,7 @@ var store = global[SHARED] || (global[SHARED] = {});
 
 
 /***/ }),
-/* 29 */
+/* 30 */
 /***/ (function(module, exports) {
 
 var id = 0;
@@ -582,7 +588,7 @@ module.exports = function (key) {
 
 
 /***/ }),
-/* 30 */
+/* 31 */
 /***/ (function(module, exports) {
 
 // IE 8- don't enum bug keys
@@ -592,7 +598,7 @@ module.exports = (
 
 
 /***/ }),
-/* 31 */
+/* 32 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var document = __webpack_require__(0).document;
@@ -600,7 +606,7 @@ module.exports = document && document.documentElement;
 
 
 /***/ }),
-/* 32 */
+/* 33 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.1.13 ToObject(argument)
@@ -611,7 +617,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 33 */
+/* 34 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // getting tag from 19.1.3.6 Object.prototype.toString()
@@ -640,7 +646,7 @@ module.exports = function (it) {
 
 
 /***/ }),
-/* 34 */
+/* 35 */
 /***/ (function(module, exports, __webpack_require__) {
 
 // 7.3.20 SpeciesConstructor(O, defaultConstructor)
@@ -655,12 +661,12 @@ module.exports = function (O, D) {
 
 
 /***/ }),
-/* 35 */
+/* 36 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var ctx = __webpack_require__(10);
 var invoke = __webpack_require__(71);
-var html = __webpack_require__(31);
+var html = __webpack_require__(32);
 var cel = __webpack_require__(18);
 var global = __webpack_require__(0);
 var process = global.process;
@@ -745,7 +751,7 @@ module.exports = {
 
 
 /***/ }),
-/* 36 */
+/* 37 */
 /***/ (function(module, exports) {
 
 module.exports = function (exec) {
@@ -758,7 +764,7 @@ module.exports = function (exec) {
 
 
 /***/ }),
-/* 37 */
+/* 38 */
 /***/ (function(module, exports, __webpack_require__) {
 
 var anObject = __webpack_require__(3);
@@ -776,13 +782,13 @@ module.exports = function (C, x) {
 
 
 /***/ }),
-/* 38 */
+/* 39 */
 /***/ (function(module, exports, __webpack_require__) {
 
 module.exports = { "default": __webpack_require__(79), __esModule: true };
 
 /***/ }),
-/* 39 */
+/* 40 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -869,7 +875,7 @@ function createPath(location) {
 exports.createPath = createPath;
 
 /***/ }),
-/* 40 */
+/* 41 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -881,24 +887,24 @@ function __export(m) {
     }
 }
 Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(41));
+__export(__webpack_require__(42));
 
 /***/ }),
-/* 41 */
+/* 42 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
-var _regenerator = __webpack_require__(42);
+var _regenerator = __webpack_require__(43);
 
 var _regenerator2 = _interopRequireDefault(_regenerator);
 
-var _asyncToGenerator2 = __webpack_require__(45);
+var _asyncToGenerator2 = __webpack_require__(46);
 
 var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
 
-var _assign = __webpack_require__(38);
+var _assign = __webpack_require__(39);
 
 var _assign2 = _interopRequireDefault(_assign);
 
@@ -910,15 +916,36 @@ var _createClass2 = __webpack_require__(85);
 
 var _createClass3 = _interopRequireDefault(_createClass2);
 
+var _promise = __webpack_require__(23);
+
+var _promise2 = _interopRequireDefault(_promise);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var LocationUtils_1 = __webpack_require__(89);
-var PathUtils_1 = __webpack_require__(39);
+var PathUtils_1 = __webpack_require__(40);
 var DOMUtils_1 = __webpack_require__(91);
 var MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback';
 // 记录MyHistory实例数，确保constructor仅能够运行一个实例
 var historyCount = 0;
+/**
+ * 用于mixin的基类
+ */
+var baseHistoryState = {
+    push: function push() {
+        return _promise2.default.reject();
+    },
+    replace: function replace() {
+        return _promise2.default.reject();
+    },
+    goback: function goback() {
+        return _promise2.default.reject();
+    },
+    reload: function reload(path) {
+        return _promise2.default.reject();
+    }
+};
 
 var MyHistory = function () {
     function MyHistory(_config) {
@@ -929,19 +956,23 @@ var MyHistory = function () {
         // 0未初始化    history没有完成初始化的时候
         // 1正常        history正常运行中
         // 2修正中      当用户手动修改hash，会被视为一次用户触发的跳转。此次跳转会先退回到goback页面，再前进回跳转的页面（为了保持history在浏览器中仅有两个浏览器记录——当前页面和退回页面），这个过程我们叫修改中
-        // 3返回中      保留状态
+        // 3返回中      当用户要求跳转回退，或者正在回退
         // 4销毁中      在history销毁过程中的状态。
         // 5退出中      当用户要求退出到系统以外，系统会一直触发goback，直到页面刷新为止
-        this._state = 0;
+        // 6跳转中      当用户要求跳转（包括push、replace、reload）
+        this._state = (0, _assign2.default)({}, baseHistoryState, { type: 0, hashChange: function hashChange() {}
+        });
         // 保存location数据的栈
         this._stateStack = [];
         // 全局的history对象
         this._globalHistory = window.history;
+        this.onBeforeChange = null;
+        this.onChange = null;
         // 同一时刻，不允许有两个history实例运行
         if (historyCount > 0) {
             throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.');
         }
-        this._config = (0, _assign2.default)({ gobackName: 'go back', root: '/' }, _config);
+        this._config = (0, _assign2.default)({ gobackName: 'go back', root: '/', insertRoot: true }, _config);
         this._hashchangeHandler = this._hashchangeHandler.bind(this);
         this._initHistory();
     }
@@ -962,17 +993,12 @@ var MyHistory = function () {
         value: function _initGoback(now) {
             // 先查看是否已经创建好了一个goback的location，因为浏览器中无法查看history对象里面保存的历史记录，所以使用history.state保存这个状态。
             // state里面用于记录当前是否处于goback的下一页。
-            this._gobackState = {
-                // 让goback比当前时间戳小，这样能够判断出是后退
-                timeStamp: now - 1,
-                location: this._pathToLocation('/goback', now - 1),
-                isNextToGoback: false,
-                isGoback: true
-            };
-            if (history.state && history.state.isGoback === true) {
+            // 让goback比当前时间戳小，这样能够判断出是后退
+            this._gobackState = this._pathToState('/goback', 'GOBACK', now - 1);
+            if (history.state && history.state.type === 'GOBACK') {
                 // 如果当前页面是goback，表示goback已经初始化完成
                 return false;
-            } else if (history.state && history.state.isNextToGoback === true) {
+            } else if (history.state && history.state.type === 'BE_GOING_BACK') {
                 // 如果当前处理goback后面的页面，表示goback已经初始化完成，并且已经在上一页
                 return true;
             } else {
@@ -995,13 +1021,7 @@ var MyHistory = function () {
             var timeStamp = Date.now();
             // 获取当前的路径，将其转换为合法路径后，
             var initialPath = this._decodePath(this._getHrefToPath());
-            var initialLocation = this._pathToLocation(initialPath, timeStamp);
-            var initialLocationState = {
-                isGoback: false,
-                isNextToGoback: true,
-                location: initialLocation,
-                timeStamp: timeStamp
-            };
+            var initialLocationState = this._pathToState(initialPath, 'NORMAL', timeStamp);
             // 初始化goback
             var isGobackNextLocation = this._initGoback(timeStamp);
             // 将当前路径压入栈中
@@ -1010,7 +1030,7 @@ var MyHistory = function () {
             this._initEventListener();
             // 全部初始化完成，记录初始化成功
             historyCount++;
-            this._state = 1;
+            this._switchState(1);
         }
         /**
          * 注册到HashChange事件的监听器。这个函数会在构造器中bind，以在addEventListener保持this不变
@@ -1022,56 +1042,7 @@ var MyHistory = function () {
     }, {
         key: "_hashchangeHandler",
         value: function _hashchangeHandler(event) {
-            if (this._state === 2) {
-                // 对纠正的处理步骤
-                // 1. 一直后退，直到后退到goback页面
-                // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
-                var state = history.state;
-                if (state && state.isNextToGoback) {
-                    // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
-                    this._globalHistory.back();
-                } else if (state && state.isGoback) {
-                    // 如果已经在goback页面了，则跳转到用户手输入的地址
-                    var now = Date.now();
-                    var _state = {
-                        location: this._pathToLocation(this._stateData, now),
-                        timeStamp: now,
-                        isGoback: false,
-                        isNextToGoback: true
-                    };
-                    this._state = 1;
-                    this._push(_state, true);
-                } else {
-                    // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
-                    this._correct();
-                    return;
-                }
-            } else if (this._state === 1) {
-                if (history.state && history.state.isGoback) {
-                    //用户退回道goback页面
-                    this._stateStack.pop();
-                    if (this._stateStack.length === 0) {
-                        history.back();
-                    }
-                    var lastState = this._stackTop;
-                    this._replace(lastState, true);
-                } else if (!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href) {
-                    // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
-                    // 1.当前history没有state，或者state不等于State变量
-                    // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
-                    this._state = 2;
-                    this._stateData = this._getHrefToPath(event.newURL);
-                    // 后退两次
-                    history.go(-2);
-                }
-            } else {
-                if (history.state && history.state.isGoback) {
-                    this._goback(1, true);
-                } else {
-                    // 以上情况都不是，则纠正
-                    this._correct();
-                }
-            }
+            this._state.hashChange(event);
         }
     }, {
         key: "_initEventListener",
@@ -1083,6 +1054,324 @@ var MyHistory = function () {
         key: "_destroyEventListener",
         value: function _destroyEventListener() {
             window.removeEventListener('hashchange', this._hashchangeHandler);
+        }
+        /**
+         * 切换状态
+         * @private
+         * @param {any} stateType
+         *
+         * @memberOf MyHistory
+         */
+
+    }, {
+        key: "_switchState",
+        value: function _switchState(stateType) {
+            var _this = this;
+
+            switch (stateType) {
+                case 1:
+                    this._state = {
+                        type: 1,
+                        push: function () {
+                            var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(path) {
+                                var state, oldLocation, result, error;
+                                return _regenerator2.default.wrap(function _callee$(_context) {
+                                    while (1) {
+                                        switch (_context.prev = _context.next) {
+                                            case 0:
+                                                // 先切换到状态6，保护在跳转过程中不受其他操作影响
+                                                _this._switchState(6);
+                                                _context.prev = 1;
+                                                state = _this._pathToState(path, 'NORMAL');
+                                                oldLocation = _this._stackTop;
+                                                _context.next = 6;
+                                                return _this._execCallback(_this.onBeforeChange, 'push', oldLocation, state, [], [state]);
+
+                                            case 6:
+                                                result = _context.sent;
+
+                                                if (!(result !== false)) {
+                                                    _context.next = 14;
+                                                    break;
+                                                }
+
+                                                _this._push(state);
+                                                _context.next = 11;
+                                                return _this._execCallback(_this.onChange, 'push', oldLocation, state, [], [state]);
+
+                                            case 11:
+                                                return _context.abrupt("return", state.location);
+
+                                            case 14:
+                                                error = new Error('User cancelled');
+
+                                                error.isCancelled = true;
+                                                throw error;
+
+                                            case 17:
+                                                _context.prev = 17;
+
+                                                // 完成后切换状态1
+                                                _this._switchState(1);
+                                                return _context.finish(17);
+
+                                            case 20:
+                                            case "end":
+                                                return _context.stop();
+                                        }
+                                    }
+                                }, _callee, _this, [[1,, 17, 20]]);
+                            }));
+
+                            return function push(_x) {
+                                return _ref.apply(this, arguments);
+                            };
+                        }(),
+                        replace: function () {
+                            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(path) {
+                                var now, state, oldLocation, result, error;
+                                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                                    while (1) {
+                                        switch (_context2.prev = _context2.next) {
+                                            case 0:
+                                                _this._switchState(6);
+                                                _context2.prev = 1;
+                                                now = Date.now();
+                                                state = _this._pathToState(path, 'NORMAL', now);
+                                                oldLocation = _this._stackTop;
+                                                _context2.next = 7;
+                                                return _this._execCallback(_this.onBeforeChange, 'replace', oldLocation, state, [oldLocation], [state]);
+
+                                            case 7:
+                                                result = _context2.sent;
+
+                                                if (!(result !== false)) {
+                                                    _context2.next = 15;
+                                                    break;
+                                                }
+
+                                                _this._replace(state);
+                                                _context2.next = 12;
+                                                return _this._execCallback(_this.onChange, 'replace', oldLocation, state, [oldLocation], [state]);
+
+                                            case 12:
+                                                return _context2.abrupt("return", state.location);
+
+                                            case 15:
+                                                error = new Error('User cancelled');
+
+                                                error.isCancelled = true;
+                                                throw error;
+
+                                            case 18:
+                                                _context2.prev = 18;
+
+                                                // 完成后切换状态1
+                                                _this._switchState(1);
+                                                return _context2.finish(18);
+
+                                            case 21:
+                                            case "end":
+                                                return _context2.stop();
+                                        }
+                                    }
+                                }, _callee2, _this, [[1,, 18, 21]]);
+                            }));
+
+                            return function replace(_x2) {
+                                return _ref2.apply(this, arguments);
+                            };
+                        }(),
+                        goback: function () {
+                            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(n) {
+                                var oldLocation, discardLoctions, newState, needInclude, fn, index, result, error;
+                                return _regenerator2.default.wrap(function _callee3$(_context3) {
+                                    while (1) {
+                                        switch (_context3.prev = _context3.next) {
+                                            case 0:
+                                                _this._switchState(3);
+                                                _context3.prev = 1;
+
+                                                // 当前页面
+                                                oldLocation = void 0;
+                                                // 丢弃的页面
+
+                                                discardLoctions = void 0;
+                                                // 退回到的页面
+
+                                                newState = void 0;
+                                                // 是否有符合退回条件的页面，如果没有插入一条
+
+                                                needInclude = false;
+                                                // 判断是否符合页面的条件
+
+                                                fn = void 0;
+
+                                                if (!(typeof n === 'number')) {
+                                                    _context3.next = 15;
+                                                    break;
+                                                }
+
+                                                if (!(n <= 0)) {
+                                                    _context3.next = 12;
+                                                    break;
+                                                }
+
+                                                return _context3.abrupt("return", null);
+
+                                            case 12:
+                                                if (n >= _this._stateStack.length) {
+                                                    fn = function fn() {
+                                                        return false;
+                                                    };
+                                                } else {
+                                                    fn = function fn(location, index) {
+                                                        return _this._stateStack.length - index === n;
+                                                    };
+                                                }
+
+                                            case 13:
+                                                _context3.next = 16;
+                                                break;
+
+                                            case 15:
+                                                if (typeof n === 'string') {
+                                                    // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
+                                                    fn = function fn(location) {
+                                                        return location.href === n;
+                                                    };
+                                                } else if (typeof n === 'function') {
+                                                    fn = n;
+                                                }
+
+                                            case 16:
+                                                index = _this._stateStack.findIndex(function (item, index) {
+                                                    return fn(item.location, index);
+                                                });
+
+                                                oldLocation = _this._stackTop.location;
+                                                if (index === -1) {
+                                                    // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
+                                                    newState = _this._pathToState(_this._pathToLocation(typeof n === 'string' ? n : _this._config.root), 'NORMAL');
+                                                    discardLoctions = _this._stateStack.map(function (item) {
+                                                        return item.location;
+                                                    });
+                                                    needInclude = true;
+                                                } else {
+                                                    // 取出退回位置的state
+                                                    newState = _this._stateStack[index];
+                                                    discardLoctions = _this._stateStack.slice(index).map(function (item) {
+                                                        return item.location;
+                                                    });
+                                                }
+                                                _context3.next = 21;
+                                                return _this._execCallback(_this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+
+                                            case 21:
+                                                result = _context3.sent;
+
+                                                if (!(result !== false)) {
+                                                    _context3.next = 29;
+                                                    break;
+                                                }
+
+                                                _this._goback(discardLoctions.length, needInclude ? newState : null, false);
+                                                _context3.next = 26;
+                                                return _this._execCallback(_this.onChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+
+                                            case 26:
+                                                return _context3.abrupt("return", newState.location);
+
+                                            case 29:
+                                                error = new Error('User cancelled');
+
+                                                error.isCancelled = true;
+                                                throw error;
+
+                                            case 32:
+                                                _context3.prev = 32;
+
+                                                _this._switchState(1);
+                                                return _context3.finish(32);
+
+                                            case 35:
+                                            case "end":
+                                                return _context3.stop();
+                                        }
+                                    }
+                                }, _callee3, _this, [[1,, 32, 35]]);
+                            }));
+
+                            return function goback(_x3) {
+                                return _ref3.apply(this, arguments);
+                            };
+                        }(),
+                        reload: function reload() {
+                            return _this._state.replace(_this._stackTop.location.href);
+                        },
+                        hashChange: function hashChange(event) {
+                            if (history.state && history.state.type === 'GOBACK') {
+                                // 用户手动退回，前进一个页面，让history的修正
+                                _this._pushState(_this._stackTop);
+                                _this._state.goback(1);
+                            } else if (!history.state && _this._getHrefToPath(event.oldURL) === _this._stateStack[_this._stateStack.length - 1].location.href) {
+                                // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
+                                // 1.当前history没有state，或者state不等于State变量
+                                // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
+                                // 先切户到手动修正用户修改url的状态2，保留用户要跳转的url
+                                _this._switchState(2);
+                                _this._stateData = _this._getHrefToPath(event.newURL);
+                                // 后退两次，退回到goback页面
+                                history.go(-2);
+                            } else {
+                                // 如果不是从栈顶的url转跳转到该状态，就无法确定返回页面就在当前页面的前面，因此触发修正
+                                _this._correct();
+                            }
+                        }
+                    };
+                    break;
+                case 2:
+                    this._state = (0, _assign2.default)({ type: 2 }, baseHistoryState, { hashChange: function hashChange(event) {
+                            // 对纠正的处理步骤
+                            // 1. 一直后退，直到后退到goback页面
+                            // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
+                            var state = history.state;
+                            if (state && state.type === 'NORMAL') {
+                                // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
+                                _this._globalHistory.back();
+                            } else if (state && state.type === 'GOBACK') {
+                                // 如果已经在goback页面了，则跳转到用户手输入的地址
+                                var now = Date.now();
+                                var _location = _this._pathToLocation(_this._stateData, now);
+                                // 切回正在状态，这样就完成了对页面的修正
+                                _this._switchState(1);
+                                _this._pushState(_this._stackTop);
+                                _this._state.push(_location.href);
+                            } else {
+                                // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
+                                _this._correct();
+                            }
+                        } });
+                    break;
+                case 3:
+                case 6:
+                    this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
+                            if (!history.state && _this._getHrefToPath(event.oldURL) === _this._stateStack[_this._stateStack.length - 1].location.href) {
+                                // 如果用户在此期间手动修改url，直接就在
+                                _this._correct();
+                            } else {
+                                // 用户手动退回，前进一个页面，让history的修正
+                                _this._pushState(_this._stackTop);
+                            }
+                        } });
+                    break;
+                case 4:
+                case 5:
+                    this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
+                            _this._globalHistory.back();
+                        } });
+                    break;
+            }
         }
         /**
          * 将用户给定的path转为系统显示的path
@@ -1126,6 +1415,7 @@ var MyHistory = function () {
          * 将给定的path封装成一个location
          * @private
          * @param {string} path
+         * @param {number} [timeStamp=Date.now()]
          * @returns
          * @memberOf MyHistory
          */
@@ -1139,57 +1429,140 @@ var MyHistory = function () {
             // 创建的location
             return LocationUtils_1.createLocation(path, timeStamp + '');
         }
+        /**
+         * 将给定的path封装成一个State
+         * @private
+         * @memberOf MyHistory
+         */
+
+    }, {
+        key: "_pathToState",
+        value: function _pathToState(path, type) {
+            var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Date.now();
+
+            return {
+                location: typeof path === 'string' ? this._pathToLocation(path) : path,
+                type: type,
+                timeStamp: timeStamp
+            };
+        }
     }, {
         key: "_push",
-        value: function _push(state) {
-            var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        value: function () {
+            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(state) {
+                var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+                var tempTitle;
+                return _regenerator2.default.wrap(function _callee4$(_context4) {
+                    while (1) {
+                        switch (_context4.prev = _context4.next) {
+                            case 0:
+                                if (push) {
+                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                                    document.title = this._config.gobackName;
+                                    tempTitle = document.title;
 
-            if (push) {
-                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                document.title = this._config.gobackName;
-                var tempTitle = document.title;
-                this._pushState(state);
-                document.title = tempTitle;
-            } else {
-                this._replaceState(state);
+                                    this._pushState(state);
+                                    document.title = tempTitle;
+                                } else {
+                                    this._replaceState(state);
+                                }
+                                this._stateStack.push(state);
+
+                            case 2:
+                            case "end":
+                                return _context4.stop();
+                        }
+                    }
+                }, _callee4, this);
+            }));
+
+            function _push(_x7) {
+                return _ref4.apply(this, arguments);
             }
-            this._stateStack.push(state);
-        }
+
+            return _push;
+        }()
     }, {
         key: "_replace",
-        value: function _replace(state) {
-            var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+        value: function () {
+            var _ref5 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee5(state) {
+                var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+                var tempTitle;
+                return _regenerator2.default.wrap(function _callee5$(_context5) {
+                    while (1) {
+                        switch (_context5.prev = _context5.next) {
+                            case 0:
+                                this._stateStack.pop();
+                                this._stateStack.push(state);
+                                if (push) {
+                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
+                                    document.title = this._config.gobackName;
+                                    tempTitle = document.title;
 
-            this._stateStack.pop();
-            this._stateStack.push(state);
-            if (push) {
-                // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                document.title = this._config.gobackName;
-                var tempTitle = document.title;
-                this._pushState(state);
-                document.title = tempTitle;
-            } else {
-                this._replaceState(state);
+                                    this._pushState(state);
+                                    document.title = tempTitle;
+                                } else {
+                                    this._replaceState(state);
+                                }
+
+                            case 3:
+                            case "end":
+                                return _context5.stop();
+                        }
+                    }
+                }, _callee5, this);
+            }));
+
+            function _replace(_x9) {
+                return _ref5.apply(this, arguments);
             }
-        }
+
+            return _replace;
+        }()
+    }, {
+        key: "_beGoingBack",
+        value: function () {
+            var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6() {
+                var push = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+                var state;
+                return _regenerator2.default.wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                state = this._pathToState('/be_going_back', 'BE_GOING_BACK');
+
+                                if (push) {
+                                    this._pushState(state);
+                                } else {
+                                    this._replaceState(state);
+                                }
+
+                            case 2:
+                            case "end":
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function _beGoingBack() {
+                return _ref6.apply(this, arguments);
+            }
+
+            return _beGoingBack;
+        }()
     }, {
         key: "_goback",
         value: function _goback(n) {
-            var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+            var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+            var push = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 
             if (n <= 0) {
                 return;
             }
             this._stateStack.splice(Math.max(0, this._stateStack.length - n));
-            if (this._stateStack.length === 0) {
-                var rootLocation = this._pathToLocation(this._config.root);
-                var rootState = {
-                    isGoback: false,
-                    isNextToGoback: false,
-                    location: rootLocation,
-                    timeStamp: Date.now()
-                };
-                this._stateStack.push(rootState);
+            if (state) {
+                this._stateStack.push(state);
             }
             var lastState = this._stateStack[this._stateStack.length - 1];
             if (push) {
@@ -1217,33 +1590,27 @@ var MyHistory = function () {
     }, {
         key: "push",
         value: function () {
-            var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(path) {
-                var now, state;
-                return _regenerator2.default.wrap(function _callee$(_context) {
+            var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7(path) {
+                return _regenerator2.default.wrap(function _callee7$(_context7) {
                     while (1) {
-                        switch (_context.prev = _context.next) {
+                        switch (_context7.prev = _context7.next) {
                             case 0:
-                                now = Date.now();
-                                state = {
-                                    location: this._pathToLocation(path),
-                                    isGoback: false,
-                                    isNextToGoback: true,
-                                    timeStamp: now
-                                };
+                                _context7.next = 2;
+                                return this._state.push(path);
 
-                                this._push(state);
-                                return _context.abrupt("return", state.location);
+                            case 2:
+                                return _context7.abrupt("return", _context7.sent);
 
-                            case 4:
+                            case 3:
                             case "end":
-                                return _context.stop();
+                                return _context7.stop();
                         }
                     }
-                }, _callee, this);
+                }, _callee7, this);
             }));
 
-            function push(_x6) {
-                return _ref.apply(this, arguments);
+            function push(_x14) {
+                return _ref7.apply(this, arguments);
             }
 
             return push;
@@ -1251,83 +1618,55 @@ var MyHistory = function () {
     }, {
         key: "replace",
         value: function () {
-            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(path) {
-                var now, state;
-                return _regenerator2.default.wrap(function _callee2$(_context2) {
+            var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(path) {
+                return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
-                        switch (_context2.prev = _context2.next) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
-                                now = Date.now();
-                                state = {
-                                    location: this._pathToLocation(path),
-                                    isGoback: false,
-                                    isNextToGoback: true,
-                                    timeStamp: now
-                                };
+                                _context8.next = 2;
+                                return this._state.replace(path);
 
-                                this._replace(state);
-                                return _context2.abrupt("return", state.location);
+                            case 2:
+                                return _context8.abrupt("return", _context8.sent);
 
-                            case 4:
+                            case 3:
                             case "end":
-                                return _context2.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee2, this);
+                }, _callee8, this);
             }));
 
-            function replace(_x7) {
-                return _ref2.apply(this, arguments);
+            function replace(_x15) {
+                return _ref8.apply(this, arguments);
             }
 
             return replace;
         }()
     }, {
-        key: "destroy",
-        value: function () {
-            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
-                return _regenerator2.default.wrap(function _callee3$(_context3) {
-                    while (1) {
-                        switch (_context3.prev = _context3.next) {
-                            case 0:
-                                this._destroyEventListener();
-                                historyCount--;
-
-                            case 2:
-                            case "end":
-                                return _context3.stop();
-                        }
-                    }
-                }, _callee3, this);
-            }));
-
-            function destroy() {
-                return _ref3.apply(this, arguments);
-            }
-
-            return destroy;
-        }()
-    }, {
         key: "goback",
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(n) {
-                return _regenerator2.default.wrap(function _callee4$(_context4) {
+            var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9(n) {
+                return _regenerator2.default.wrap(function _callee9$(_context9) {
                     while (1) {
-                        switch (_context4.prev = _context4.next) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
-                                this._goback(typeof n === 'number' ? n : 1);
-                                return _context4.abrupt("return", this._stackTop.location);
+                                _context9.next = 2;
+                                return this._state.goback(n);
 
                             case 2:
+                                return _context9.abrupt("return", _context9.sent);
+
+                            case 3:
                             case "end":
-                                return _context4.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee4, this);
+                }, _callee9, this);
             }));
 
-            function goback(_x8) {
-                return _ref4.apply(this, arguments);
+            function goback(_x16) {
+                return _ref9.apply(this, arguments);
             }
 
             return goback;
@@ -1335,7 +1674,45 @@ var MyHistory = function () {
     }, {
         key: "reload",
         value: function reload() {
-            return this.replace(this._stackTop.location.href);
+            return this._state.reload();
+        }
+    }, {
+        key: "destroy",
+        value: function () {
+            var _ref10 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee10() {
+                return _regenerator2.default.wrap(function _callee10$(_context10) {
+                    while (1) {
+                        switch (_context10.prev = _context10.next) {
+                            case 0:
+                                this._destroyEventListener();
+                                historyCount--;
+
+                            case 2:
+                            case "end":
+                                return _context10.stop();
+                        }
+                    }
+                }, _callee10, this);
+            }));
+
+            function destroy() {
+                return _ref10.apply(this, arguments);
+            }
+
+            return destroy;
+        }()
+    }, {
+        key: "_execCallback",
+        value: function _execCallback(callback) {
+            if (typeof callback === 'function') {
+                for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
+                    args[_key - 1] = arguments[_key];
+                }
+
+                return callback.apply(this, args);
+            } else {
+                return _promise2.default.resolve();
+            }
         }
     }, {
         key: "_stackTop",
@@ -1370,14 +1747,14 @@ var MyHistory = function () {
 exports.MyHistory = MyHistory;
 
 /***/ }),
-/* 42 */
+/* 43 */
 /***/ (function(module, exports, __webpack_require__) {
 
-module.exports = __webpack_require__(43);
+module.exports = __webpack_require__(44);
 
 
 /***/ }),
-/* 43 */
+/* 44 */
 /***/ (function(module, exports, __webpack_require__) {
 
 /**
@@ -1402,7 +1779,7 @@ var oldRuntime = hadRuntime && g.regeneratorRuntime;
 // Force reevalutation of runtime.js.
 g.regeneratorRuntime = undefined;
 
-module.exports = __webpack_require__(44);
+module.exports = __webpack_require__(45);
 
 if (hadRuntime) {
   // Restore the original runtime.
@@ -1418,7 +1795,7 @@ if (hadRuntime) {
 
 
 /***/ }),
-/* 44 */
+/* 45 */
 /***/ (function(module, exports) {
 
 /**
@@ -2151,7 +2528,7 @@ if (hadRuntime) {
 
 
 /***/ }),
-/* 45 */
+/* 46 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
@@ -2159,7 +2536,7 @@ if (hadRuntime) {
 
 exports.__esModule = true;
 
-var _promise = __webpack_require__(46);
+var _promise = __webpack_require__(23);
 
 var _promise2 = _interopRequireDefault(_promise);
 
@@ -2195,12 +2572,6 @@ exports.default = function (fn) {
 };
 
 /***/ }),
-/* 46 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(47), __esModule: true };
-
-/***/ }),
 /* 47 */
 /***/ (function(module, exports, __webpack_require__) {
 
@@ -2228,7 +2599,7 @@ module.exports = __webpack_require__(2).Promise;
 var $at = __webpack_require__(50)(true);
 
 // 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(23)(String, 'String', function (iterated) {
+__webpack_require__(24)(String, 'String', function (iterated) {
   this._t = String(iterated); // target
   this._i = 0;                // next index
 // 21.1.5.2.1 %StringIteratorPrototype%.next()
@@ -2307,7 +2678,7 @@ module.exports = __webpack_require__(5);
 "use strict";
 
 var create = __webpack_require__(55);
-var descriptor = __webpack_require__(24);
+var descriptor = __webpack_require__(25);
 var setToStringTag = __webpack_require__(21);
 var IteratorPrototype = {};
 
@@ -2327,7 +2698,7 @@ module.exports = function (Constructor, NAME, next) {
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject = __webpack_require__(3);
 var dPs = __webpack_require__(56);
-var enumBugKeys = __webpack_require__(30);
+var enumBugKeys = __webpack_require__(31);
 var IE_PROTO = __webpack_require__(20)('IE_PROTO');
 var Empty = function () { /* empty */ };
 var PROTOTYPE = 'prototype';
@@ -2341,7 +2712,7 @@ var createDict = function () {
   var gt = '>';
   var iframeDocument;
   iframe.style.display = 'none';
-  __webpack_require__(31).appendChild(iframe);
+  __webpack_require__(32).appendChild(iframe);
   iframe.src = 'javascript:'; // eslint-disable-line no-script-url
   // createDict = iframe.contentWindow.Object;
   // html.removeChild(iframe);
@@ -2373,7 +2744,7 @@ module.exports = Object.create || function create(O, Properties) {
 
 var dP = __webpack_require__(7);
 var anObject = __webpack_require__(3);
-var getKeys = __webpack_require__(25);
+var getKeys = __webpack_require__(26);
 
 module.exports = __webpack_require__(6) ? Object.defineProperties : function defineProperties(O, Properties) {
   anObject(O);
@@ -2416,7 +2787,7 @@ module.exports = function (object, names) {
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = __webpack_require__(19);
-var toLength = __webpack_require__(27);
+var toLength = __webpack_require__(28);
 var toAbsoluteIndex = __webpack_require__(59);
 module.exports = function (IS_INCLUDES) {
   return function ($this, el, fromIndex) {
@@ -2457,7 +2828,7 @@ module.exports = function (index, length) {
 
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = __webpack_require__(12);
-var toObject = __webpack_require__(32);
+var toObject = __webpack_require__(33);
 var IE_PROTO = __webpack_require__(20)('IE_PROTO');
 var ObjectProto = Object.prototype;
 
@@ -2510,7 +2881,7 @@ var toIObject = __webpack_require__(19);
 // 22.1.3.13 Array.prototype.keys()
 // 22.1.3.29 Array.prototype.values()
 // 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(23)(Array, 'Array', function (iterated, kind) {
+module.exports = __webpack_require__(24)(Array, 'Array', function (iterated, kind) {
   this._t = toIObject(iterated); // target
   this._i = 0;                   // next index
   this._k = kind;                // kind
@@ -2561,19 +2932,19 @@ module.exports = function (done, value) {
 var LIBRARY = __webpack_require__(16);
 var global = __webpack_require__(0);
 var ctx = __webpack_require__(10);
-var classof = __webpack_require__(33);
+var classof = __webpack_require__(34);
 var $export = __webpack_require__(4);
 var isObject = __webpack_require__(8);
 var aFunction = __webpack_require__(11);
 var anInstance = __webpack_require__(66);
 var forOf = __webpack_require__(67);
-var speciesConstructor = __webpack_require__(34);
-var task = __webpack_require__(35).set;
+var speciesConstructor = __webpack_require__(35);
+var task = __webpack_require__(36).set;
 var microtask = __webpack_require__(72)();
 var newPromiseCapabilityModule = __webpack_require__(22);
-var perform = __webpack_require__(36);
+var perform = __webpack_require__(37);
 var userAgent = __webpack_require__(73);
-var promiseResolve = __webpack_require__(37);
+var promiseResolve = __webpack_require__(38);
 var PROMISE = 'Promise';
 var TypeError = global.TypeError;
 var process = global.process;
@@ -2864,7 +3235,7 @@ var ctx = __webpack_require__(10);
 var call = __webpack_require__(68);
 var isArrayIter = __webpack_require__(69);
 var anObject = __webpack_require__(3);
-var toLength = __webpack_require__(27);
+var toLength = __webpack_require__(28);
 var getIterFn = __webpack_require__(70);
 var BREAK = {};
 var RETURN = {};
@@ -2923,7 +3294,7 @@ module.exports = function (it) {
 /* 70 */
 /***/ (function(module, exports, __webpack_require__) {
 
-var classof = __webpack_require__(33);
+var classof = __webpack_require__(34);
 var ITERATOR = __webpack_require__(1)('iterator');
 var Iterators = __webpack_require__(9);
 module.exports = __webpack_require__(2).getIteratorMethod = function (it) {
@@ -2960,7 +3331,7 @@ module.exports = function (fn, args, that) {
 /***/ (function(module, exports, __webpack_require__) {
 
 var global = __webpack_require__(0);
-var macrotask = __webpack_require__(35).set;
+var macrotask = __webpack_require__(36).set;
 var Observer = global.MutationObserver || global.WebKitMutationObserver;
 var process = global.process;
 var Promise = global.Promise;
@@ -3112,8 +3483,8 @@ module.exports = function (exec, skipClosing) {
 var $export = __webpack_require__(4);
 var core = __webpack_require__(2);
 var global = __webpack_require__(0);
-var speciesConstructor = __webpack_require__(34);
-var promiseResolve = __webpack_require__(37);
+var speciesConstructor = __webpack_require__(35);
+var promiseResolve = __webpack_require__(38);
 
 $export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
   var C = speciesConstructor(this, core.Promise || global.Promise);
@@ -3138,7 +3509,7 @@ $export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
 // https://github.com/tc39/proposal-promise-try
 var $export = __webpack_require__(4);
 var newPromiseCapability = __webpack_require__(22);
-var perform = __webpack_require__(36);
+var perform = __webpack_require__(37);
 
 $export($export.S, 'Promise', { 'try': function (callbackfn) {
   var promiseCapability = newPromiseCapability.f(this);
@@ -3173,11 +3544,11 @@ $export($export.S + $export.F, 'Object', { assign: __webpack_require__(81) });
 "use strict";
 
 // 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = __webpack_require__(25);
+var getKeys = __webpack_require__(26);
 var gOPS = __webpack_require__(82);
 var pIE = __webpack_require__(83);
-var toObject = __webpack_require__(32);
-var IObject = __webpack_require__(26);
+var toObject = __webpack_require__(33);
+var IObject = __webpack_require__(27);
 var $assign = Object.assign;
 
 // should work with symbols and should have deterministic property order (V8 bug)
@@ -3302,7 +3673,7 @@ $export($export.S + $export.F * !__webpack_require__(6), 'Object', { definePrope
 "use strict";
 
 
-var _assign = __webpack_require__(38);
+var _assign = __webpack_require__(39);
 
 var _assign2 = _interopRequireDefault(_assign);
 
@@ -3310,7 +3681,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 Object.defineProperty(exports, "__esModule", { value: true });
 var resolve_pathname_1 = __webpack_require__(90);
-var PathUtils_1 = __webpack_require__(39);
+var PathUtils_1 = __webpack_require__(40);
 /**
  *
  * @export

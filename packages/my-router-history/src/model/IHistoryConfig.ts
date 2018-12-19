@@ -3,4 +3,6 @@ export interface IHistoryConfig{
     gobackName?: string
     // 根路径
     root?: string
+    // 当页面访问栈底不是根页面的时候，插入一条根页面到栈底
+    insertRoot?: boolean
 }

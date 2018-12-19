@@ -1,11 +1,30 @@
-import { IHistory } from './model/IHistory';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
-export interface State {
+interface State {
     location: ILocation;
     timeStamp: number;
-    isNextToGoback: boolean;
-    isGoback: boolean;
+    type: 'GOBACK' | 'NORMAL' | 'BE_GOING_BACK';
+}
+/**
+ * 路由错误
+ * @export
+ * @interface HistoryError
+ * @extends {Error}
+ */
+export interface HistoryError extends Error {
+    /**
+     * 用户取消，一般指在beforeChange钩子中，用户取消了跳转
+     * @type {boolean}
+     * @memberOf HistoryError
+     */
+    isCancelled?: boolean;
+    /**
+     * 路由忙，无法响应请求。一般指路由处于非1状态，无法响应路由变化
+     * @type {boolean}
+     * @memberOf HistoryError
+     */
+    isBusy?: boolean;
 }
 export declare class MyHistory implements IHistory {
     private _config;
@@ -38,6 +57,14 @@ export declare class MyHistory implements IHistory {
     private _initEventListener;
     private _destroyEventListener;
     /**
+     * 切换状态
+     * @private
+     * @param {any} stateType
+     *
+     * @memberOf MyHistory
+     */
+    private _switchState;
+    /**
      * 将用户给定的path转为系统显示的path
      * @private
      * @param {string} path         用户给定的path
@@ -58,24 +85,36 @@ export declare class MyHistory implements IHistory {
      * 将给定的path封装成一个location
      * @private
      * @param {string} path
+     * @param {number} [timeStamp=Date.now()]
      * @returns
      * @memberOf MyHistory
      */
     private _pathToLocation;
+    /**
+     * 将给定的path封装成一个State
+     * @private
+     * @memberOf MyHistory
+     */
+    private _pathToState;
     private _push;
     private _replace;
+    private _beGoingBack;
     private _goback;
     _replaceState(state: State): void;
     _pushState(state: State): void;
     _correct(): void;
     push(path: string): Promise<ILocation>;
     replace(path: string): Promise<ILocation>;
-    destroy(): Promise<void>;
     goback(n: number | string | {
-        (fn: Readonly<ILocation>, stack: Readonly<ILocation>[]): boolean;
+        (fn: Readonly<ILocation>): boolean;
     }): Promise<ILocation>;
     reload(): Promise<ILocation>;
+    destroy(): Promise<void>;
     readonly stack: ILocation[];
     readonly length: number;
     readonly location: ILocation;
+    onBeforeChange: BeforeChangeEventCallback;
+    onChange: ChangeEventCallback;
+    _execCallback(callback: Function, ...args: any[]): any;
 }
+export {};
