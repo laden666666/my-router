@@ -52,12 +52,12 @@ export interface IHistory{
 
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
-     * @param {(fn: Readonly<ILocation>, stack: Readonly<ILocation>[])=>boolean} fn 
+     * @param {(fn: Readonly<ILocation>)=>boolean} fn 
      *                                      条件函数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    goback(fn: (fn: Readonly<ILocation>, stack: Readonly<ILocation>[])=>boolean): Promise<ILocation>
+    goback(fn: (fn: Readonly<ILocation>)=>boolean): Promise<ILocation>
 
     /**
      * 刷新当前页面，其实和replace当前的url一致，名字取自location.replace
