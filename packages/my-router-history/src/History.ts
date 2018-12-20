@@ -189,6 +189,10 @@ export class MyHistory implements IHistory {
         historyCount++
 
         this._switchState(1)
+
+        setTimeout(()=>{
+            this._execCallback(this.onChange, 'init', null, initialLocationState.location, [], [initialLocationState.location])
+        }, 0)
     }
 
     /**
@@ -557,6 +561,15 @@ export class MyHistory implements IHistory {
 
     async destroy(){
         this._destroyEventListener()
+        let state: State = this._globalHistory.state
+        if(state.type === 'NORMAL' || state.type === 'BE_GOING_BACK'){
+            this._globalHistory.back()
+        }
+        this._globalHistory.pushState(null, null, this._stackTop.location.href)
+        this._stateStack = null
+        this._config = null
+        this._stateData = null
+        this._state = null
         historyCount--
     }
 

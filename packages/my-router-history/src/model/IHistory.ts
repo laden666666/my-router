@@ -11,7 +11,7 @@ type Readonly<T> = {
 export type ChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
     newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): void | Promise<void> };
 
-export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
+export type BeforeChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
     newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): boolean | Promise<void> };
 
 
