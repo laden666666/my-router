@@ -182,6 +182,11 @@ export class MyHistory implements IHistory {
         // 将当前路径压入栈中
         this._push(initialLocationState, !isGobackNextLocation)
 
+        // 如果第一个节点不等于根的路径，插入根节点到栈底
+        if(this._config.insertRoot && this._stackTop.location.href !== this._config.root){
+            this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', timeStamp))
+        }
+
         // 初始化监听器
         this._initEventListener()
 
@@ -190,9 +195,11 @@ export class MyHistory implements IHistory {
 
         this._switchState(1)
 
-        setTimeout(()=>{
+        // 使用微队列，用于异步初始化
+        Promise.resolve()
+        .then(()=>{
             this._execCallback(this.onChange, 'init', null, initialLocationState.location, [], [initialLocationState.location])
-        }, 0)
+        })
     }
 
     /**
@@ -231,12 +238,12 @@ export class MyHistory implements IHistory {
                         this._switchState(6)
                         try{
                             let state: State = this._pathToState(path, 'NORMAL')
-                            let oldLocation = this._stackTop
-                            let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state, [], [state])
+                            let oldLocation = this._stackTop.location
+                            let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state.location, [], [state.location])
                     
                             if(result !== false){
                                 this._push(state)
-                                await this._execCallback(this.onChange, 'push', oldLocation, state, [], [state])
+                                await this._execCallback(this.onChange, 'push', oldLocation, state.location, [], [state.location])
                                 return state.location
                             } else {
                                 let error: HistoryError = new Error('User cancelled')
@@ -254,12 +261,12 @@ export class MyHistory implements IHistory {
                             let now = Date.now()
                             let state: State = this._pathToState(path, 'NORMAL', now)
     
-                            let oldLocation = this._stackTop
-                            let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state, [oldLocation], [state])
+                            let oldLocation = this._stackTop.location
+                            let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
                     
                             if(result !== false){
                                 this._replace(state)
-                                await this._execCallback(this.onChange, 'replace', oldLocation, state, [oldLocation], [state])
+                                await this._execCallback(this.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
                                 return state.location
                             } else {
                                 let error: HistoryError = new Error('User cancelled')
@@ -293,11 +300,11 @@ export class MyHistory implements IHistory {
                                 } else if(n >= this._stateStack.length){
                                     fn = ()=> false
                                 } else {
-                                    fn = (location, index: number)=> this._stateStack.length - index === n
+                                    fn = (location, index: number)=> this._stateStack.length - index - 1 === n
                                 }
                             } else if(typeof n === 'string'){
                                 // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
-                                fn = (location)=> location.href === n
+                                fn = (location)=> location.href === this._pathToLocation(n).href
                             } else if(typeof n === 'function'){
                                 fn = n
                             }
@@ -305,6 +312,7 @@ export class MyHistory implements IHistory {
                             let index = this._stateStack.findIndex((item, index)=>fn(item.location, index))
                             oldLocation = this._stackTop.location
                             if(index === -1){
+
                                 // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
                                 newState = this._pathToState(this._pathToLocation(typeof n === 'string' ? n : this._config.root), 'NORMAL')
                                 discardLoctions = this._stateStack.map(item=> item.location)
@@ -312,7 +320,7 @@ export class MyHistory implements IHistory {
                             } else {
                                 // 取出退回位置的state
                                 newState = this._stateStack[index]
-                                discardLoctions = this._stateStack.slice(index).map(item=>item.location)
+                                discardLoctions = this._stateStack.slice(index + 1).map(item=>item.location)
                             }
 
                             let result = await this._execCallback(this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, 
@@ -570,6 +578,8 @@ export class MyHistory implements IHistory {
         this._config = null
         this._stateData = null
         this._state = null
+        this.onBeforeChange = null
+        this.onChange = null
         historyCount--
     }
 
@@ -589,7 +599,7 @@ export class MyHistory implements IHistory {
 
     onChange: ChangeEventCallback = null
 
-    _execCallback(callback: Function, ...args: any[]){
+    _execCallback<T extends Function>(callback: T, ...args: any[]){
         if(typeof callback === 'function'){
             return callback.apply(this, args)
         } else {
