@@ -464,6 +464,24 @@ describe('测试history', function(){
             assert.equal(myHistory.location.href, '/')
         });
 
+        
+        it('测试goback 浏览器back', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.push('test1')
+            await myHistory.push('test2')
+            await myHistory.push('test3')
+
+            assert.equal(myHistory.stack.length, 4)
+
+            window.history.go(-2)
+            
+            assert.equal(myHistory.stack.length, 1)
+            assert.equal(myHistory.location.href, '/')
+        });
+
         it('测试onChange的goback(n)监听器', async function() {
             myHistory = new MyHistory({
                 root: '/'
