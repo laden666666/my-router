@@ -17,7 +17,7 @@ interface State{
     // 当前的时间戳
     timeStamp: number
     // 页面的类型
-    type: 'GOBACK' | 'NORMAL' | 'BE_GOING_BACK'
+    type: 'GOBACK' | 'NORMAL'
 }
 
 /**
@@ -149,9 +149,6 @@ export class MyHistory implements IHistory {
         if(history.state && (history.state as State).type === 'GOBACK'){
             // 如果当前页面是goback，表示goback已经初始化完成
             return false
-        } else if(history.state && (history.state as State).type === 'BE_GOING_BACK'){
-            // 如果当前处理goback后面的页面，表示goback已经初始化完成，并且已经在上一页
-            return true
         } else {
             // 否则初始化goback页面
             this._replaceState(this._gobackState)
@@ -320,7 +317,7 @@ export class MyHistory implements IHistory {
                             } else {
                                 // 取出退回位置的state
                                 newState = this._stateStack[index]
-                                discardLoctions = this._stateStack.slice(index + 1).map(item=>item.location)
+                                discardLoctions = this._stateStack.slice(index + 1).map(item=>item.location).reverse()
                             }
 
                             let result = await this._execCallback(this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, 
@@ -512,15 +509,6 @@ export class MyHistory implements IHistory {
         }
     }
     
-    private async _beGoingBack(push = false){
-        let state: State = this._pathToState('/be_going_back', 'BE_GOING_BACK')
-        if(push){
-            this._pushState(state)
-        } else {
-            this._replaceState(state)
-        }
-    }
-
     private _goback(n: number, state: State = null, push = false){
         if(n <= 0){
             return
@@ -570,16 +558,18 @@ export class MyHistory implements IHistory {
     async destroy(){
         this._destroyEventListener()
         let state: State = this._globalHistory.state
-        if(state.type === 'NORMAL' || state.type === 'BE_GOING_BACK'){
+        this.onBeforeChange = null
+        this.onChange = null
+        if(state.type === 'NORMAL'){
             this._globalHistory.back()
         }
+        // 延时，等back执行完
+        await new Promise(r=> setTimeout(r, 10))
         this._globalHistory.pushState(null, null, this._stackTop.location.href)
         this._stateStack = null
         this._config = null
         this._stateData = null
         this._state = null
-        this.onBeforeChange = null
-        this.onChange = null
         historyCount--
     }
 
