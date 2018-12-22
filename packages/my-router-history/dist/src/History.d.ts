@@ -4,7 +4,7 @@ import { IHistoryConfig } from './model/IHistoryConfig';
 interface State {
     location: ILocation;
     timeStamp: number;
-    type: 'GOBACK' | 'NORMAL' | 'BE_GOING_BACK';
+    type: 'GOBACK' | 'NORMAL';
 }
 /**
  * 路由错误
@@ -98,7 +98,6 @@ export declare class MyHistory implements IHistory {
     private _pathToState;
     private _push;
     private _replace;
-    private _beGoingBack;
     private _goback;
     _replaceState(state: State): void;
     _pushState(state: State): void;
@@ -115,6 +114,6 @@ export declare class MyHistory implements IHistory {
     readonly location: ILocation;
     onBeforeChange: BeforeChangeEventCallback;
     onChange: ChangeEventCallback;
-    _execCallback(callback: Function, ...args: any[]): any;
+    _execCallback<T extends Function>(callback: T, ...args: any[]): any;
 }
 export {};

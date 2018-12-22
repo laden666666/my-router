@@ -998,9 +998,6 @@ var MyHistory = function () {
             if (history.state && history.state.type === 'GOBACK') {
                 // 如果当前页面是goback，表示goback已经初始化完成
                 return false;
-            } else if (history.state && history.state.type === 'BE_GOING_BACK') {
-                // 如果当前处理goback后面的页面，表示goback已经初始化完成，并且已经在上一页
-                return true;
             } else {
                 // 否则初始化goback页面
                 this._replaceState(this._gobackState);
@@ -1013,6 +1010,8 @@ var MyHistory = function () {
     }, {
         key: "_initHistory",
         value: function _initHistory() {
+            var _this = this;
+
             // 创建hash路由
             if (!DOMUtils_1.canUseDOM) {
                 throw new Error('Hash history needs a DOM');
@@ -1026,11 +1025,19 @@ var MyHistory = function () {
             var isGobackNextLocation = this._initGoback(timeStamp);
             // 将当前路径压入栈中
             this._push(initialLocationState, !isGobackNextLocation);
+            // 如果第一个节点不等于根的路径，插入根节点到栈底
+            if (this._config.insertRoot && this._stackTop.location.href !== this._config.root) {
+                this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', timeStamp));
+            }
             // 初始化监听器
             this._initEventListener();
             // 全部初始化完成，记录初始化成功
             historyCount++;
             this._switchState(1);
+            // 使用微队列，用于异步初始化
+            _promise2.default.resolve().then(function () {
+                _this._execCallback(_this.onChange, 'init', null, initialLocationState.location, [], [initialLocationState.location]);
+            });
         }
         /**
          * 注册到HashChange事件的监听器。这个函数会在构造器中bind，以在addEventListener保持this不变
@@ -1066,7 +1073,7 @@ var MyHistory = function () {
     }, {
         key: "_switchState",
         value: function _switchState(stateType) {
-            var _this = this;
+            var _this2 = this;
 
             switch (stateType) {
                 case 1:
@@ -1080,12 +1087,12 @@ var MyHistory = function () {
                                         switch (_context.prev = _context.next) {
                                             case 0:
                                                 // 先切换到状态6，保护在跳转过程中不受其他操作影响
-                                                _this._switchState(6);
+                                                _this2._switchState(6);
                                                 _context.prev = 1;
-                                                state = _this._pathToState(path, 'NORMAL');
-                                                oldLocation = _this._stackTop;
+                                                state = _this2._pathToState(path, 'NORMAL');
+                                                oldLocation = _this2._stackTop.location;
                                                 _context.next = 6;
-                                                return _this._execCallback(_this.onBeforeChange, 'push', oldLocation, state, [], [state]);
+                                                return _this2._execCallback(_this2.onBeforeChange, 'push', oldLocation, state.location, [], [state.location]);
 
                                             case 6:
                                                 result = _context.sent;
@@ -1095,9 +1102,9 @@ var MyHistory = function () {
                                                     break;
                                                 }
 
-                                                _this._push(state);
+                                                _this2._push(state);
                                                 _context.next = 11;
-                                                return _this._execCallback(_this.onChange, 'push', oldLocation, state, [], [state]);
+                                                return _this2._execCallback(_this2.onChange, 'push', oldLocation, state.location, [], [state.location]);
 
                                             case 11:
                                                 return _context.abrupt("return", state.location);
@@ -1112,7 +1119,7 @@ var MyHistory = function () {
                                                 _context.prev = 17;
 
                                                 // 完成后切换状态1
-                                                _this._switchState(1);
+                                                _this2._switchState(1);
                                                 return _context.finish(17);
 
                                             case 20:
@@ -1120,7 +1127,7 @@ var MyHistory = function () {
                                                 return _context.stop();
                                         }
                                     }
-                                }, _callee, _this, [[1,, 17, 20]]);
+                                }, _callee, _this2, [[1,, 17, 20]]);
                             }));
 
                             return function push(_x) {
@@ -1134,13 +1141,13 @@ var MyHistory = function () {
                                     while (1) {
                                         switch (_context2.prev = _context2.next) {
                                             case 0:
-                                                _this._switchState(6);
+                                                _this2._switchState(6);
                                                 _context2.prev = 1;
                                                 now = Date.now();
-                                                state = _this._pathToState(path, 'NORMAL', now);
-                                                oldLocation = _this._stackTop;
+                                                state = _this2._pathToState(path, 'NORMAL', now);
+                                                oldLocation = _this2._stackTop.location;
                                                 _context2.next = 7;
-                                                return _this._execCallback(_this.onBeforeChange, 'replace', oldLocation, state, [oldLocation], [state]);
+                                                return _this2._execCallback(_this2.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location]);
 
                                             case 7:
                                                 result = _context2.sent;
@@ -1150,9 +1157,9 @@ var MyHistory = function () {
                                                     break;
                                                 }
 
-                                                _this._replace(state);
+                                                _this2._replace(state);
                                                 _context2.next = 12;
-                                                return _this._execCallback(_this.onChange, 'replace', oldLocation, state, [oldLocation], [state]);
+                                                return _this2._execCallback(_this2.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location]);
 
                                             case 12:
                                                 return _context2.abrupt("return", state.location);
@@ -1167,7 +1174,7 @@ var MyHistory = function () {
                                                 _context2.prev = 18;
 
                                                 // 完成后切换状态1
-                                                _this._switchState(1);
+                                                _this2._switchState(1);
                                                 return _context2.finish(18);
 
                                             case 21:
@@ -1175,7 +1182,7 @@ var MyHistory = function () {
                                                 return _context2.stop();
                                         }
                                     }
-                                }, _callee2, _this, [[1,, 18, 21]]);
+                                }, _callee2, _this2, [[1,, 18, 21]]);
                             }));
 
                             return function replace(_x2) {
@@ -1189,7 +1196,7 @@ var MyHistory = function () {
                                     while (1) {
                                         switch (_context3.prev = _context3.next) {
                                             case 0:
-                                                _this._switchState(3);
+                                                _this2._switchState(3);
                                                 _context3.prev = 1;
 
                                                 // 当前页面
@@ -1220,13 +1227,13 @@ var MyHistory = function () {
                                                 return _context3.abrupt("return", null);
 
                                             case 12:
-                                                if (n >= _this._stateStack.length) {
+                                                if (n >= _this2._stateStack.length) {
                                                     fn = function fn() {
                                                         return false;
                                                     };
                                                 } else {
                                                     fn = function fn(location, index) {
-                                                        return _this._stateStack.length - index === n;
+                                                        return _this2._stateStack.length - index - 1 === n;
                                                     };
                                                 }
 
@@ -1238,34 +1245,34 @@ var MyHistory = function () {
                                                 if (typeof n === 'string') {
                                                     // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
                                                     fn = function fn(location) {
-                                                        return location.href === n;
+                                                        return location.href === _this2._pathToLocation(n).href;
                                                     };
                                                 } else if (typeof n === 'function') {
                                                     fn = n;
                                                 }
 
                                             case 16:
-                                                index = _this._stateStack.findIndex(function (item, index) {
+                                                index = _this2._stateStack.findIndex(function (item, index) {
                                                     return fn(item.location, index);
                                                 });
 
-                                                oldLocation = _this._stackTop.location;
+                                                oldLocation = _this2._stackTop.location;
                                                 if (index === -1) {
                                                     // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
-                                                    newState = _this._pathToState(_this._pathToLocation(typeof n === 'string' ? n : _this._config.root), 'NORMAL');
-                                                    discardLoctions = _this._stateStack.map(function (item) {
+                                                    newState = _this2._pathToState(_this2._pathToLocation(typeof n === 'string' ? n : _this2._config.root), 'NORMAL');
+                                                    discardLoctions = _this2._stateStack.map(function (item) {
                                                         return item.location;
                                                     });
                                                     needInclude = true;
                                                 } else {
                                                     // 取出退回位置的state
-                                                    newState = _this._stateStack[index];
-                                                    discardLoctions = _this._stateStack.slice(index).map(function (item) {
+                                                    newState = _this2._stateStack[index];
+                                                    discardLoctions = _this2._stateStack.slice(index + 1).map(function (item) {
                                                         return item.location;
-                                                    });
+                                                    }).reverse();
                                                 }
                                                 _context3.next = 21;
-                                                return _this._execCallback(_this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+                                                return _this2._execCallback(_this2.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
 
                                             case 21:
                                                 result = _context3.sent;
@@ -1275,9 +1282,9 @@ var MyHistory = function () {
                                                     break;
                                                 }
 
-                                                _this._goback(discardLoctions.length, needInclude ? newState : null, false);
+                                                _this2._goback(discardLoctions.length, needInclude ? newState : null, false);
                                                 _context3.next = 26;
-                                                return _this._execCallback(_this.onChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+                                                return _this2._execCallback(_this2.onChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
 
                                             case 26:
                                                 return _context3.abrupt("return", newState.location);
@@ -1291,7 +1298,7 @@ var MyHistory = function () {
                                             case 32:
                                                 _context3.prev = 32;
 
-                                                _this._switchState(1);
+                                                _this2._switchState(1);
                                                 return _context3.finish(32);
 
                                             case 35:
@@ -1299,7 +1306,7 @@ var MyHistory = function () {
                                                 return _context3.stop();
                                         }
                                     }
-                                }, _callee3, _this, [[1,, 32, 35]]);
+                                }, _callee3, _this2, [[1,, 32, 35]]);
                             }));
 
                             return function goback(_x3) {
@@ -1307,25 +1314,25 @@ var MyHistory = function () {
                             };
                         }(),
                         reload: function reload() {
-                            return _this._state.replace(_this._stackTop.location.href);
+                            return _this2._state.replace(_this2._stackTop.location.href);
                         },
                         hashChange: function hashChange(event) {
                             if (history.state && history.state.type === 'GOBACK') {
                                 // 用户手动退回，前进一个页面，让history的修正
-                                _this._pushState(_this._stackTop);
-                                _this._state.goback(1);
-                            } else if (!history.state && _this._getHrefToPath(event.oldURL) === _this._stateStack[_this._stateStack.length - 1].location.href) {
+                                _this2._pushState(_this2._stackTop);
+                                _this2._state.goback(1);
+                            } else if (!history.state && _this2._getHrefToPath(event.oldURL) === _this2._stateStack[_this2._stateStack.length - 1].location.href) {
                                 // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                                 // 1.当前history没有state，或者state不等于State变量
                                 // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
                                 // 先切户到手动修正用户修改url的状态2，保留用户要跳转的url
-                                _this._switchState(2);
-                                _this._stateData = _this._getHrefToPath(event.newURL);
+                                _this2._switchState(2);
+                                _this2._stateData = _this2._getHrefToPath(event.newURL);
                                 // 后退两次，退回到goback页面
                                 history.go(-2);
                             } else {
                                 // 如果不是从栈顶的url转跳转到该状态，就无法确定返回页面就在当前页面的前面，因此触发修正
-                                _this._correct();
+                                _this2._correct();
                             }
                         }
                     };
@@ -1338,37 +1345,37 @@ var MyHistory = function () {
                             var state = history.state;
                             if (state && state.type === 'NORMAL') {
                                 // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
-                                _this._globalHistory.back();
+                                _this2._globalHistory.back();
                             } else if (state && state.type === 'GOBACK') {
                                 // 如果已经在goback页面了，则跳转到用户手输入的地址
                                 var now = Date.now();
-                                var _location = _this._pathToLocation(_this._stateData, now);
+                                var _location = _this2._pathToLocation(_this2._stateData, now);
                                 // 切回正在状态，这样就完成了对页面的修正
-                                _this._switchState(1);
-                                _this._pushState(_this._stackTop);
-                                _this._state.push(_location.href);
+                                _this2._switchState(1);
+                                _this2._pushState(_this2._stackTop);
+                                _this2._state.push(_location.href);
                             } else {
                                 // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
-                                _this._correct();
+                                _this2._correct();
                             }
                         } });
                     break;
                 case 3:
                 case 6:
                     this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
-                            if (!history.state && _this._getHrefToPath(event.oldURL) === _this._stateStack[_this._stateStack.length - 1].location.href) {
+                            if (!history.state && _this2._getHrefToPath(event.oldURL) === _this2._stateStack[_this2._stateStack.length - 1].location.href) {
                                 // 如果用户在此期间手动修改url，直接就在
-                                _this._correct();
+                                _this2._correct();
                             } else {
                                 // 用户手动退回，前进一个页面，让history的修正
-                                _this._pushState(_this._stackTop);
+                                _this2._pushState(_this2._stackTop);
                             }
                         } });
                     break;
                 case 4:
                 case 5:
                     this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
-                            _this._globalHistory.back();
+                            _this2._globalHistory.back();
                         } });
                     break;
             }
@@ -1520,38 +1527,6 @@ var MyHistory = function () {
             return _replace;
         }()
     }, {
-        key: "_beGoingBack",
-        value: function () {
-            var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6() {
-                var push = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-                var state;
-                return _regenerator2.default.wrap(function _callee6$(_context6) {
-                    while (1) {
-                        switch (_context6.prev = _context6.next) {
-                            case 0:
-                                state = this._pathToState('/be_going_back', 'BE_GOING_BACK');
-
-                                if (push) {
-                                    this._pushState(state);
-                                } else {
-                                    this._replaceState(state);
-                                }
-
-                            case 2:
-                            case "end":
-                                return _context6.stop();
-                        }
-                    }
-                }, _callee6, this);
-            }));
-
-            function _beGoingBack() {
-                return _ref6.apply(this, arguments);
-            }
-
-            return _beGoingBack;
-        }()
-    }, {
         key: "_goback",
         value: function _goback(n) {
             var state = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
@@ -1590,13 +1565,41 @@ var MyHistory = function () {
     }, {
         key: "push",
         value: function () {
+            var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6(path) {
+                return _regenerator2.default.wrap(function _callee6$(_context6) {
+                    while (1) {
+                        switch (_context6.prev = _context6.next) {
+                            case 0:
+                                _context6.next = 2;
+                                return this._state.push(path);
+
+                            case 2:
+                                return _context6.abrupt("return", _context6.sent);
+
+                            case 3:
+                            case "end":
+                                return _context6.stop();
+                        }
+                    }
+                }, _callee6, this);
+            }));
+
+            function push(_x13) {
+                return _ref6.apply(this, arguments);
+            }
+
+            return push;
+        }()
+    }, {
+        key: "replace",
+        value: function () {
             var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7(path) {
                 return _regenerator2.default.wrap(function _callee7$(_context7) {
                     while (1) {
                         switch (_context7.prev = _context7.next) {
                             case 0:
                                 _context7.next = 2;
-                                return this._state.push(path);
+                                return this._state.replace(path);
 
                             case 2:
                                 return _context7.abrupt("return", _context7.sent);
@@ -1609,22 +1612,22 @@ var MyHistory = function () {
                 }, _callee7, this);
             }));
 
-            function push(_x14) {
+            function replace(_x14) {
                 return _ref7.apply(this, arguments);
             }
 
-            return push;
+            return replace;
         }()
     }, {
-        key: "replace",
+        key: "goback",
         value: function () {
-            var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(path) {
+            var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(n) {
                 return _regenerator2.default.wrap(function _callee8$(_context8) {
                     while (1) {
                         switch (_context8.prev = _context8.next) {
                             case 0:
                                 _context8.next = 2;
-                                return this._state.replace(path);
+                                return this._state.goback(n);
 
                             case 2:
                                 return _context8.abrupt("return", _context8.sent);
@@ -1637,36 +1640,8 @@ var MyHistory = function () {
                 }, _callee8, this);
             }));
 
-            function replace(_x15) {
+            function goback(_x15) {
                 return _ref8.apply(this, arguments);
-            }
-
-            return replace;
-        }()
-    }, {
-        key: "goback",
-        value: function () {
-            var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9(n) {
-                return _regenerator2.default.wrap(function _callee9$(_context9) {
-                    while (1) {
-                        switch (_context9.prev = _context9.next) {
-                            case 0:
-                                _context9.next = 2;
-                                return this._state.goback(n);
-
-                            case 2:
-                                return _context9.abrupt("return", _context9.sent);
-
-                            case 3:
-                            case "end":
-                                return _context9.stop();
-                        }
-                    }
-                }, _callee9, this);
-            }));
-
-            function goback(_x16) {
-                return _ref9.apply(this, arguments);
             }
 
             return goback;
@@ -1679,24 +1654,44 @@ var MyHistory = function () {
     }, {
         key: "destroy",
         value: function () {
-            var _ref10 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee10() {
-                return _regenerator2.default.wrap(function _callee10$(_context10) {
+            var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9() {
+                var state;
+                return _regenerator2.default.wrap(function _callee9$(_context9) {
                     while (1) {
-                        switch (_context10.prev = _context10.next) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
                                 this._destroyEventListener();
+                                state = this._globalHistory.state;
+
+                                this.onBeforeChange = null;
+                                this.onChange = null;
+                                if (state.type === 'NORMAL') {
+                                    this._globalHistory.back();
+                                }
+                                // 延时，等back执行完
+                                _context9.next = 7;
+                                return new _promise2.default(function (r) {
+                                    return setTimeout(r, 10);
+                                });
+
+                            case 7:
+                                this._globalHistory.pushState(null, null, this._stackTop.location.href);
+                                this._stateStack = null;
+                                this._config = null;
+                                this._stateData = null;
+                                this._state = null;
                                 historyCount--;
 
-                            case 2:
+                            case 13:
                             case "end":
-                                return _context10.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee10, this);
+                }, _callee9, this);
             }));
 
             function destroy() {
-                return _ref10.apply(this, arguments);
+                return _ref9.apply(this, arguments);
             }
 
             return destroy;

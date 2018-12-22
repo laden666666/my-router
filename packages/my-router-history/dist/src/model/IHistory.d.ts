@@ -9,7 +9,7 @@ export declare type ChangeEventCallback = {
     (action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): void | Promise<void>;
 };
 export declare type BeforeChangeEventCallback = {
-    (action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): boolean | Promise<void>;
+    (action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): boolean | Promise<void>;
 };
 export interface IHistory {
     /**
