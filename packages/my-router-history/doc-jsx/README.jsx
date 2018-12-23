@@ -25,4 +25,8 @@
     <h2>原理</h2>
     <p><strong>my-reoute-history</strong>实现原理是返回键劫持，当用户打开页面时候，my-reoute-history会动态插入一个返回键劫持页面，用于监听用户的返回动作。同时使用hashchange事件监听url的hash改变。无论用户前进、后退都会先返回到返回页面，然后再由返回页面进行前进、后台、替换的行为。</p>
 
+    <h3>目标是提升用户体验</h3>
+    <p>目前返回键劫持主要用于在页面中嵌入广告等不法的操作，而<strong>my-reoute-history</strong>致力于提升用户体验，希望大家能够正确的使用<strong>my-reoute-history</strong>，不要用其做不利于用户的事情。</p>
+
+    <p>目前Chrome浏览器已经开始准备禁止<strong>返回键劫持</strong>，<strong>my-reoute-history</strong>会持续跟进改进。</p>
 </doc>
