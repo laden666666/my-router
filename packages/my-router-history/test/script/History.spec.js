@@ -475,8 +475,8 @@ describe('测试history', function(){
             await myHistory.push('test3')
 
             assert.equal(myHistory.stack.length, 4)
-            await new Promise(r=>{
-                myHistory.onChange = ()=>{
+            let promise = new Promise(r=>{
+                myHistory.onChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
                     try{
                         if(action === 'init'){
                             return
@@ -501,6 +501,8 @@ describe('测试history', function(){
                 }
             })
             window.history.back()
+
+            await promise
             
         });
 
