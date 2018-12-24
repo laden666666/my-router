@@ -6,7 +6,7 @@
     <h2>主要功能</h2>
 
     <p><strong>my-reoute-history</strong>的主要功能如下：</p>
-    <li>向浏览器增加返回劫持记录</li>
+    <li>增加返回劫持记录</li>
     <p><strong>my-reoute-history</strong>会自动的向浏览器增加返回劫持记录，用于监听用户的返回行为。如下图用户进入demo应用后，会自动的增加一条名为“返回”的记录。</p>
     <img src="./GIF.gif" alt=""/>
 
