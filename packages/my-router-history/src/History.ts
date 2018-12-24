@@ -226,6 +226,28 @@ export class MyHistory implements IHistory {
      * @memberOf MyHistory
      */
     private _switchState(stateType){
+
+        // 处理beforeChange中的取消逻辑。如果用户返回false、Error、Function都视为取消跳转。其中Function会在跳转结束后自执行
+        let handleCancell = function(result: boolean | void | Error | Function){
+
+            let isFalse = result === false, isFunction = typeof result === 'function'
+            if(isFalse || isFunction){
+                // 使用一个微任务提示异常（考虑是否应该使用postmessage那种任务式的，而不是用微任务）
+                if(isFunction){
+                    Promise.resolve().then(()=>{
+                        (result as Function).call(this)
+                    })
+                }
+
+                // 抛出用户取消异常
+                let error: HistoryError = new Error('User cancelled')
+                error.isCancelled = true
+                throw error
+            } else if(result instanceof Error){
+                throw result
+            }
+        }
+
         switch(stateType){
             case(1):
                 this._state = {
@@ -238,18 +260,17 @@ export class MyHistory implements IHistory {
                             let oldLocation = this._stackTop.location
                             let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state.location, [], [state.location])
                     
-                            if(result !== false){
-                                this._push(state)
-                                await this._execCallback(this.onChange, 'push', oldLocation, state.location, [], [state.location])
-                                return state.location
-                            } else {
-                                let error: HistoryError = new Error('User cancelled')
-                                error.isCancelled = true
-                                throw error
-                            }
-                        } finally{
+                            // 处理取消情况
+                            handleCancell(result)
+
+                            this._push(state)
+                            await this._execCallback(this.onChange, 'push', oldLocation, state.location, [], [state.location])
+                            this._switchState(1)
+                            return state.location
+                        } catch(e){
                             // 完成后切换状态1
                             this._switchState(1)
+                            throw e
                         }
                     },
                     replace: async (path: string)=> {
@@ -261,18 +282,17 @@ export class MyHistory implements IHistory {
                             let oldLocation = this._stackTop.location
                             let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
                     
-                            if(result !== false){
-                                this._replace(state)
-                                await this._execCallback(this.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
-                                return state.location
-                            } else {
-                                let error: HistoryError = new Error('User cancelled')
-                                error.isCancelled = true
-                                throw error
-                            }
-                        } finally{
+                            // 处理取消情况
+                            handleCancell(result)
+
+                            this._replace(state)
+                            await this._execCallback(this.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
+                            this._switchState(1)
+                            return state.location
+                        } catch(e){
                             // 完成后切换状态1
                             this._switchState(1)
+                            throw e
                         }
                     },
                     goback: async (n: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>=>{
@@ -322,19 +342,19 @@ export class MyHistory implements IHistory {
 
                             let result = await this._execCallback(this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, 
                                 needInclude ? [newState.location] : [])
-                    
-                            if(result !== false){
-                                this._goback(discardLoctions.length, needInclude ? newState : null, false)
-                                await this._execCallback(this.onChange, 'goback', oldLocation, newState.location, discardLoctions, 
-                                    needInclude ? [newState.location] : [])
-                                return newState.location
-                            } else {
-                                let error: HistoryError = new Error('User cancelled')
-                                error.isCancelled = true
-                                throw error
-                            }
-                        } finally{
+                            
+                            // 处理取消情况
+                            handleCancell(result)
+
+                            this._goback(discardLoctions.length, needInclude ? newState : null, false)
+                            await this._execCallback(this.onChange, 'goback', oldLocation, newState.location, discardLoctions, 
+                                needInclude ? [newState.location] : [])
                             this._switchState(1)
+                            return newState.location
+                        } catch(e){
+                            // 完成后切换状态1
+                            this._switchState(1)
+                            throw e
                         }
                     },
                     reload: ()=>{

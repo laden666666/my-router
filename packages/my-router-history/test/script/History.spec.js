@@ -475,11 +475,33 @@ describe('测试history', function(){
             await myHistory.push('test3')
 
             assert.equal(myHistory.stack.length, 4)
-
-            window.history.go(-2)
+            await new Promise(r=>{
+                myHistory.onChange = ()=>{
+                    try{
+                        if(action === 'init'){
+                            return
+                        }
+    
+                        assert.equal(action, 'goback')
+                        assert.equal(oldLocation.href, '/test3')
+                        assert.equal(location.href, '/test2')
+                        assert.equal(discardLoctions.length, 1)
+                        assert.equal(newLocation.length, 0)
+                        assert.deepEqual(discardLoctions[0], oldLocation)
+                        assert.equal(myHistory.stack.length, 3)
+                        assert.equal(myHistory.location.href, '/test2')
+                        r()
+    
+                        myHistory.onChange = null
+    
+                        return Promise.resolve()
+                    } catch(e){
+                        console.error('测试goback 浏览器back', e)
+                    }
+                }
+            })
+            window.history.back()
             
-            assert.equal(myHistory.stack.length, 1)
-            assert.equal(myHistory.location.href, '/')
         });
 
         it('测试onChange的goback(n)监听器', async function() {
