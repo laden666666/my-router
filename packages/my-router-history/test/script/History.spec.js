@@ -4,12 +4,19 @@ import {assert} from 'chai'
 let myHistory
 
 describe('测试history', function(){
-    
     this.timeout(2000)
-
     beforeEach(async function() {
         if(myHistory){
             await myHistory.destroy()
+            myHistory = null
+        }
+        history.replaceState(null, null, '/')
+    });
+    afterEach(async function() {
+        if(myHistory){
+            await myHistory.destroy()
+            myHistory = null
+
         }
         history.replaceState(null, null, '/')
     });
@@ -35,8 +42,10 @@ describe('测试history', function(){
                         assert.deepEqual(newLocation[0], location)
 
                         r()
+
+                        myHistory.onChange = null
                     } catch(e){
-                        console.error('测试创建', e)
+                        console.error('测试创建', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 })
             })
@@ -90,7 +99,6 @@ describe('测试history', function(){
     });
 
     describe('history的push', function() {
-
         it('测试push', async function() {
             myHistory = new MyHistory({
                 root: '/'
@@ -127,7 +135,7 @@ describe('测试history', function(){
 
                         myHistory.onChange = null
                     } catch(e){
-                        console.error('测试onChange的push监听器', e)
+                        console.error('测试onChange的push监听器', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -135,6 +143,98 @@ describe('测试history', function(){
             myHistory.push('test')
 
             await promise
+        });
+
+        it('测试onBeforeChange的push监听器，false取消', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            let promise = new Promise(r=>{
+                myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                    try{
+                        if(action === 'init'){
+                            return
+                        }
+
+                        assert.equal(action, 'push')
+                        assert.equal(oldLocation.href, '/')
+                        assert.equal(location.href, '/test')
+                        assert.equal(discardLoctions.length, 0)
+                        assert.equal(newLocation.length, 1)
+                        assert.deepEqual(newLocation[0], location)
+                        assert.equal(myHistory.location.href, '/')
+        
+                        r()
+
+                        myHistory.onBeforeChange = null
+
+                        return Promise.resolve(false)
+                    } catch(e){
+                        console.error('测试onBeforeChange的push监听器，false取消', e, action, oldLocation, location, discardLoctions, newLocation)
+                    }
+                }
+            })
+
+            await new Promise(r=>{
+                myHistory.push('test')
+                    .catch(e=>{
+                        if(e.isCancelled){
+                            r(e)
+                        }
+                    })
+            })
+
+            await promise
+
+            assert.equal(myHistory.location.href, '/')
+            assert.equal(myHistory.stack.length, 1)
+
+        });
+
+        it('测试onBeforeChange的push监听器，function取消', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            let promise = new Promise(r=>{
+                myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                    try{
+                        if(action === 'init'){
+                            return
+                        }
+
+                        assert.equal(action, 'push')
+                        assert.equal(oldLocation.href, '/')
+                        assert.equal(location.href, '/test')
+                        assert.equal(discardLoctions.length, 0)
+                        assert.equal(newLocation.length, 1)
+                        assert.deepEqual(newLocation[0], location)
+                        assert.equal(myHistory.location.href, '/')
+        
+                        myHistory.onBeforeChange = null
+
+                        return Promise.resolve(r)
+                    } catch(e){
+                        console.error('测试onBeforeChange的push监听器，function取消', e, action, oldLocation, location, discardLoctions, newLocation)
+                    }
+                }
+            })
+
+            await new Promise(r=>{
+                myHistory.push('test')
+                    .catch(e=>{
+                        if(e.isCancelled){
+                            r(e)
+                        }
+                    })
+            })
+
+            await promise
+
+            assert.equal(myHistory.location.href, '/')
+            assert.equal(myHistory.stack.length, 1)
+
         });
 
         it('测试onBeforeChange的push监听器', async function() {
@@ -161,55 +261,9 @@ describe('测试history', function(){
 
                         myHistory.onBeforeChange = null
 
-                        return Promise.resolve(false)
-                    } catch(e){
-                        console.error('测试onBeforeChange的push监听器', e)
-                    }
-                }
-            })
-
-            await new Promise(r=>{
-                myHistory.push('test')
-                    .catch(e=>{
-                        r(e)
-                    })
-            })
-
-            await promise
-
-            assert.equal(myHistory.location.href, '/')
-            assert.equal(myHistory.stack.length, 1)
-
-        });
-        
-
-        it('测试onBeforeChange的push监听器2', async function() {
-            myHistory = new MyHistory({
-                root: '/'
-            })
-
-            let promise = new Promise(r=>{
-                myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
-                    try{
-                        if(action === 'init'){
-                            return
-                        }
-
-                        assert.equal(action, 'push')
-                        assert.equal(oldLocation.href, '/')
-                        assert.equal(location.href, '/test')
-                        assert.equal(discardLoctions.length, 0)
-                        assert.equal(newLocation.length, 1)
-                        assert.deepEqual(newLocation[0], location)
-                        assert.equal(myHistory.location.href, '/')
-        
-                        r()
-
-                        myHistory.onBeforeChange = null
-
                         return Promise.resolve()
                     } catch(e){
-                        console.error('测试onBeforeChange的push监听器2', e)
+                        console.error('测试onBeforeChange的push监听器', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -262,7 +316,7 @@ describe('测试history', function(){
 
                         myHistory.onChange = null
                     } catch(e){
-                        console.error(e)
+                        console.error('测试onChange的replace监听器', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -273,7 +327,7 @@ describe('测试history', function(){
             await promise
         });
 
-        it('测试onBeforeChange的replace监听器', async function() {
+        it('测试onBeforeChange的replace监听器，false取消', async function() {
             myHistory = new MyHistory({
                 root: '/'
             })
@@ -300,7 +354,7 @@ describe('测试history', function(){
 
                         return Promise.resolve(false)
                     } catch(e){
-                        console.error('测试onBeforeChange的replace监听器', e)
+                        console.error('测试onBeforeChange的replace监听器，false取消', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -308,7 +362,55 @@ describe('测试history', function(){
             await new Promise(r=>{
                 myHistory.replace('test')
                     .catch(e=>{
-                        r(e)
+                        if(e.isCancelled){
+                            r(e)
+                        }
+                    })
+            })
+
+            await promise
+
+            assert.equal(myHistory.location.href, '/')
+            assert.equal(myHistory.stack.length, 1)
+
+        });
+
+        it('测试onBeforeChange的replace监听器，function取消', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            let promise = new Promise(r=>{
+                myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                    try{
+                        if(action === 'init'){
+                            return
+                        }
+
+                        assert.equal(action, 'replace')
+                        assert.equal(oldLocation.href, '/')
+                        assert.equal(location.href, '/test')
+                        assert.equal(discardLoctions.length, 1)
+                        assert.equal(newLocation.length, 1)
+                        assert.deepEqual(discardLoctions[0], oldLocation)
+                        assert.deepEqual(newLocation[0], location)
+                        assert.equal(myHistory.location.href, '/')
+        
+                        myHistory.onBeforeChange = null
+
+                        return Promise.resolve(r)
+                    } catch(e){
+                        console.error('测试onBeforeChange的replace监听器，function取消', e, action, oldLocation, location, discardLoctions, newLocation)
+                    }
+                }
+            })
+            
+            await new Promise(r=>{
+                myHistory.replace('test')
+                    .catch(e=>{
+                        if(e.isCancelled){
+                            r(e)
+                        }
                     })
             })
 
@@ -320,7 +422,7 @@ describe('测试history', function(){
         });
         
 
-        it('测试onBeforeChange的replace监听器2', async function() {
+        it('测试onBeforeChange的replace监听器', async function() {
             myHistory = new MyHistory({
                 root: '/'
             })
@@ -347,7 +449,7 @@ describe('测试history', function(){
 
                         return Promise.resolve()
                     } catch(e){
-                        console.error('测试onBeforeChange的replace监听器2', e)
+                        console.error('测试onBeforeChange的replace监听器', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -496,7 +598,7 @@ describe('测试history', function(){
     
                         return Promise.resolve()
                     } catch(e){
-                        console.error('测试goback 浏览器back', e)
+                        console.error('测试goback 浏览器back', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -536,7 +638,7 @@ describe('测试history', function(){
 
                         myHistory.onChange = null
                     } catch(e){
-                        console.error('测试onChange的goback(n)监听器', e)
+                        console.error('测试onChange的goback(n)监听器', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -546,7 +648,7 @@ describe('测试history', function(){
             await promise
         });
 
-        it('测试onBeforeChange的goback(n)监听器1', async function() {
+        it('测试onBeforeChange的goback(n)监听器，false取消', async function() {
             myHistory = new MyHistory({
                 root: '/'
             })
@@ -577,7 +679,7 @@ describe('测试history', function(){
 
                         return false
                     } catch(e){
-                        console.error('测试onBeforeChange的goback(n)监听器1', e)
+                        console.error('测试onBeforeChange的goback(n)监听器1', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })
@@ -585,14 +687,16 @@ describe('测试history', function(){
             await new Promise(r=>{
                 myHistory.goback(2)
                     .catch(e=>{
-                        r(e)
+                        if(e.isCancelled){
+                            r(e)
+                        }
                     })
             })
 
             await promise
         });
-
-        it('测试onBeforeChange的goback(n)监听器2', async function() {
+        
+        it('测试onBeforeChange的goback(n)监听器，function取消', async function() {
             myHistory = new MyHistory({
                 root: '/'
             })
@@ -617,12 +721,58 @@ describe('测试history', function(){
                         assert.deepEqual(discardLoctions[0].href, '/test3')
                         assert.deepEqual(discardLoctions[1].href, '/test2')
                         assert.equal(myHistory.location.href, '/test3')
+
+                        myHistory.onBeforeChange = null
+
+                        return Promise.resolve(r)
+                    } catch(e){
+                        console.error('测试onBeforeChange的goback(n)监听器，function取消', e, action, oldLocation, location, discardLoctions, newLocation)
+                    }
+                }
+            })
+
+            await new Promise(r=>{
+                myHistory.goback(2)
+                    .catch(e=>{
+                        if(e.isCancelled){
+                            r(e)
+                        }
+                    })
+            })
+
+            await promise
+        });
+
+        it('测试onBeforeChange的goback(n)监听器', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.push('test1')
+            await myHistory.push('test2')
+            await myHistory.push('test3')
+
+            let promise = new Promise(r=>{
+                myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                    try{
+                        if(action === 'init'){
+                            return
+                        }
+
+                        assert.equal(action, 'goback')
+                        assert.equal(oldLocation.href, '/test3')
+                        assert.equal(location.href, '/test1')
+                        assert.equal(discardLoctions.length, 2)
+                        assert.equal(newLocation.length, 0)
+                        assert.deepEqual(discardLoctions[0].href, '/test3')
+                        assert.deepEqual(discardLoctions[1].href, '/test2')
+                        assert.equal(myHistory.location.href, '/test3')
         
                         r(false)
 
                         myHistory.onBeforeChange = null
                     } catch(e){
-                        console.error('测试onBeforeChange的goback(n)监听器2', e)
+                        console.error('测试onBeforeChange的goback(n)监听器2', e, action, oldLocation, location, discardLoctions, newLocation)
                     }
                 }
             })

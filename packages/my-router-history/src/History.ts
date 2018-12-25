@@ -3,7 +3,7 @@ import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
 import { createLocation } from './LocationUtils';
 import { addLeadingSlash, stripTrailingSlash } from './PathUtils';
-import { canUseDOM } from './DOMUtils';
+import { canUseDOM, nextTick } from './DOMUtils';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
 
@@ -222,7 +222,6 @@ export class MyHistory implements IHistory {
      * 切换状态
      * @private
      * @param {any} stateType 
-     * 
      * @memberOf MyHistory
      */
     private _switchState(stateType){
@@ -232,9 +231,9 @@ export class MyHistory implements IHistory {
 
             let isFalse = result === false, isFunction = typeof result === 'function'
             if(isFalse || isFunction){
-                // 使用一个微任务提示异常（考虑是否应该使用postmessage那种任务式的，而不是用微任务）
+                // 这里用任务队列而不用微任务队列，希望整个promise执行完再执行result
                 if(isFunction){
-                    Promise.resolve().then(()=>{
+                    nextTick(()=>{
                         (result as Function).call(this)
                     })
                 }
@@ -380,6 +379,8 @@ export class MyHistory implements IHistory {
                         } else {
                             // 如果不是从栈顶的url转跳转到该状态，就无法确定返回页面就在当前页面的前面，因此触发修正
                             this._correct()
+                            // 纠正后重新后退
+                            this._globalHistory.back()
                         }
                     }
                 }
@@ -409,6 +410,8 @@ export class MyHistory implements IHistory {
                             } else {
                                 // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
                                 this._correct()
+                                // 纠正后重新后退
+                                this._globalHistory.back()
                             }
                         }
                     }
@@ -420,7 +423,7 @@ export class MyHistory implements IHistory {
                         ...baseHistoryState,
                         hashChange: (event)=>{
                             if(!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
-                                // 如果用户在此期间手动修改url，直接就在
+                                // 如果用户在此期间手动修改url，直接纠正
                                 this._correct()
                             } else {
                                 // 用户手动退回，前进一个页面，让history的修正
@@ -555,9 +558,18 @@ export class MyHistory implements IHistory {
         this._globalHistory.pushState(state, null, '#' + this._encodePath(state.location.href))
     }
 
+    /**
+     * 当用处于未知页面（既不是goback页面，也不是normal页面时候），触发纠正
+     */
     _correct(){
         // 暂时先记录日志
         console.error('异常', this._stateStack, history.state, location.hash)
+
+        // 初始化goback
+        let isGobackNextLocation = this._initGoback(this._gobackState.timeStamp)
+
+        // 初始化当前页面
+        this._push(this._stackTop, !isGobackNextLocation)
     }
     
     async push(path: string){
@@ -577,15 +589,17 @@ export class MyHistory implements IHistory {
 
     async destroy(){
         this._destroyEventListener()
-        let state: State = this._globalHistory.state
         this.onBeforeChange = null
         this.onChange = null
+        let state: State = this._globalHistory.state
         if(state.type === 'NORMAL'){
             this._globalHistory.back()
+            // 延时，等back执行完
+            await new Promise(r=> setTimeout(r, 10))
         }
-        // 延时，等back执行完
-        await new Promise(r=> setTimeout(r, 10))
         this._globalHistory.pushState(null, null, this._stackTop.location.href)
+        // 延时，等pushState执行完
+        await new Promise(r=> setTimeout(r, 10))
         this._stateStack = null
         this._config = null
         this._stateData = null

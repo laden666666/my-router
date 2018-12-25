@@ -59,3 +59,30 @@ export function supportsGoWithoutReloadUsingHash() {
 export function isExtraneousPopstateEvent(event) {
   event.state === undefined && navigator.userAgent.indexOf('CriOS') === -1;
 }
+
+declare function setImmediate(fn: Function)
+/**
+ * 在下一个任务队列中执行
+ * @export
+ * @param {Function} cb         回调函数
+ * @param {Object} [ctx] 
+ */
+export function nextTick (cb: Function, ctx?: Object) {
+    let callback = ()=>{
+        if(typeof cb === 'function'){
+            cb.call(ctx)
+        }
+    }
+
+    if (typeof setImmediate !== 'undefined') {
+        setImmediate(callback)
+    } else if (typeof MessageChannel !== 'undefined' 
+        && (/native code/.test(MessageChannel.toString()) || MessageChannel.toString() === '[object MessageChannelConstructor]')) {
+        const channel = new MessageChannel()
+        const port = channel.port2
+        channel.port1.onmessage = callback
+        port.postMessage(1)
+    } else {
+        setTimeout(callback, 0)
+    }
+}

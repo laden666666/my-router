@@ -1,6 +1,6 @@
 <doc>
     <h1>my-router</h1>
-    <p>在服务器端，路由是根据不同的Url路由，拼接出对应的视图页面。前后分离后，路由概念慢慢渗透到客户端，现在连Reac Native、flutter、微信小程序等APP框架也引入了路由的概念。</p>
+    <p>在服务器端，路由是根据不同的Url路由，拼接出对应的视图页面技术。前后分离后，路由概念慢慢渗透到客户端，现在连Reac Native、flutter、微信小程序等App框架也引入了路由的概念。</p>
 
     <h2>更接近App的WebApp路由系统——my-router</h2>
     <p>目前主流的WebApp路由，都是基于浏览器的地址栏开发的。因为浏览器地址栏将URL暴露给用户，WebApp的路由无法限制（引导）用户的工作流，也无法监听移动设备的返回键，甚至无法阻止用户从缓存的历史记录中跳来跳去。</p>
@@ -20,38 +20,38 @@
             <th>my-router</th>
         </tr>
         <tr>
-            <td>URL可见</td>
-            <td>是</td>
-            <td>否</td>
-            <td>是</td>
-        </tr>
-        <tr>
-            <td>URL可改</td>
+            <td>用户能够看见URL</td>
             <td>能</td>
             <td>不能</td>
-            <td><strong>可选</strong></td>
+            <td>能</td>
         </tr>
         <tr>
-            <td>查看浏览记录</td>
-            <td>按住返回键可查看历史记录</td>
-            <td>无</td>
-            <td><strong>无</strong></td>
-        </tr>
-        <tr>
-            <td>可以前进</td>
-            <td>可以</td>
-            <td>不可以</td>
-            <td><strong>不可以</strong></td>
-        </tr>
-        <tr>
-            <td>可以后退</td>
-            <td>可以</td>
-            <td>安卓可以，IOS不提供全局返回键</td>
-            <td>可以</td>
-        </tr>
-        <tr>
-            <td>可以监听后退事件</td>
+            <td>用户可以修改URL</td>
+            <td>能</td>
             <td>不能</td>
+            <td><strong>可以禁止（不推荐）</strong></td>
+        </tr>
+        <tr>
+            <td>能够查看浏览记录</td>
+            <td>按住返回键可查看历史记录</td>
+            <td>不能</td>
+            <td><strong>不能</strong></td>
+        </tr>
+        <tr>
+            <td>前进按钮</td>
+            <td>有</td>
+            <td>没有</td>
+            <td><strong>屏蔽</strong></td>
+        </tr>
+        <tr>
+            <td>返回按钮</td>
+            <td>有</td>
+            <td>安卓可以，IOS没有</td>
+            <td>有</td>
+        </tr>
+        <tr>
+            <td>返回事件</td>
+            <td>不能监听</td>
             <td>能</td>
             <td><strong>能</strong></td>
         </tr>
@@ -66,4 +66,7 @@
     <h2><a href="./packages/my-router-history">my-router-history</a></h2>
     <p>一个屏蔽了浏览器地址栏的诸多特性的history库，用于实现在浏览器上高仿APP式的单页面路由。<strong>my-reoute-history</strong>屏蔽了浏览器记录用户历史记录的行为，劫持用户了用户的返回动作，用于开发仿APP交换的SAP</p>
     <p>该项目并不依赖<strong>my-router</strong>，因此如果你感兴趣开发一个APP式的路由，可以直接参考甚至使用<strong>my-reoute-history</strong>。</p>
+
+    <h2><a href="./packages/my-router-history">my-router</a></h2>
+    <p>一个基于异步的路由系统，my-router提供了路由会话概念，让用户路由跳转开发变得更容易。</p>
 </doc>
