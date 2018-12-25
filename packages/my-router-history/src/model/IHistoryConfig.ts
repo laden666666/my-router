@@ -5,4 +5,10 @@ export interface IHistoryConfig{
     root?: string
     // 当页面访问栈底不是根页面的时候，插入一条根页面到栈底
     insertRoot?: boolean
+
+    // TODO
+    // 刷新缓存
+    enableCache?: boolean
+    // url只读
+    readOnlyURL?: boolean
 }
