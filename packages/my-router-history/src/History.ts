@@ -18,6 +18,10 @@ interface State{
     timeStamp: number
     // 页面的类型
     type: 'GOBACK' | 'NORMAL'
+    // 当前状态保存的数据
+    data: string
+    // 标题
+    title: string
 }
 
 /**
@@ -144,7 +148,7 @@ export class MyHistory implements IHistory {
 
         // state里面用于记录当前是否处于goback的下一页。
         // 让goback比当前时间戳小，这样能够判断出是后退
-        this._gobackState = this._pathToState('/goback', 'GOBACK', now - 1)
+        this._gobackState = this._pathToState('/goback', 'GOBACK', undefined, now - 1)
 
         if(history.state && (history.state as State).type === 'GOBACK'){
             // 如果当前页面是goback，表示goback已经初始化完成
@@ -171,7 +175,7 @@ export class MyHistory implements IHistory {
 
         // 获取当前的路径，将其转换为合法路径后，
         let initialPath = this._decodePath(this._getHrefToPath());
-        let initialLocationState: State = this._pathToState(initialPath, 'NORMAL', timeStamp)
+        let initialLocationState: State = this._pathToState(initialPath, 'NORMAL', undefined, timeStamp)
         
         // 初始化goback
         let isGobackNextLocation = this._initGoback(timeStamp)
@@ -181,7 +185,7 @@ export class MyHistory implements IHistory {
 
         // 如果第一个节点不等于根的路径，插入根节点到栈底
         if(this._config.insertRoot && this._stackTop.location.href !== this._config.root){
-            this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', timeStamp))
+            this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', undefined, timeStamp))
         }
 
         // 初始化监听器
@@ -497,11 +501,12 @@ export class MyHistory implements IHistory {
      * @private
      * @memberOf MyHistory
      */
-    private _pathToState(path: string | ILocation, type: State['type'], timeStamp: number = Date.now()): State{
+    private _pathToState(path: string | ILocation, type: State['type'], data: string, timeStamp: number = Date.now()): State{
         return {
             location: typeof path === 'string' ? this._pathToLocation(path) : path,
             type,
             timeStamp,
+            data,
         }
     }
     
@@ -572,10 +577,11 @@ export class MyHistory implements IHistory {
         this._push(this._stackTop, !isGobackNextLocation)
     }
     
-    async push(path: string){
+    async push(path: string, data?: any){
         return await this._state.push(path)
     }
-    async replace(path: string){
+
+    async replace(path: string, data?: any){
         return await this._state.replace(path)
     }
 

@@ -20,18 +20,20 @@ export interface IHistory{
     /**
      * 前进去往一个页面，名字取自history.push
      * @param {string} path                 去往的地址
+     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    push(path: string): Promise<ILocation>
+    push(path: string, state?: any): Promise<ILocation>
 
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
      * @param {string} path                 去往的地址
+     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    replace(path: string): Promise<ILocation>
+    replace(path: string, state?: any): Promise<ILocation>
 
     /**
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
@@ -87,6 +89,13 @@ export interface IHistory{
      * @memberOf IHistory
      */
     readonly location: ILocation
+    
+    /**
+     * 类比history的state
+     * @type {ILocation}
+     * @memberOf IHistory
+     */
+    readonly state: any
 
     /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由
