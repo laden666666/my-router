@@ -7,7 +7,6 @@ import { ILocation } from './model/ILocation';
  * 
  * @export
  * @param {string | ILocation} path href字符串或者location对象
- * @param {any} state history的state
  * @param {any} key 猜测是一个标记location的key
  * @param {ILocation} currentLocation 当前的location对象，用于解析出相对路径
  * @returns 
@@ -16,7 +15,6 @@ export function createLocation(path: string | ILocation, key: string = '', curre
     let location: ILocation;
     // 如果path是字符串，将其封装成location
     if (typeof path === 'string') {
-        // Two-arg form: push(path, state)
         location = parsePath(path);
     } else {
         // 如果path不是字符串，认为他是location，
@@ -89,4 +87,21 @@ export function createLocation(path: string | ILocation, key: string = '', curre
  */
 export function locationsAreEqual(a: ILocation, b: ILocation) {
     return a.href === b.href
+}
+
+let timeStamp: number;
+let count: number = 0;
+/**
+ * 创建location的ID
+ * @export
+ * @param {number} _timeStamp 
+ * @returns 
+ */
+export function crateNo(_timeStamp: number) {
+    if(timeStamp !== _timeStamp){
+        timeStamp = _timeStamp
+        count = 0
+    }
+
+    return timeStamp * 100 + count++;
 }

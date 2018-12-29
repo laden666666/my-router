@@ -8,11 +8,15 @@ type Readonly<T> = {
     readonly [P in keyof T]: Readonly<T[P]>;
 }
 
-export type ChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
-    newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): void | Promise<void> };
+type ReadonlgLocation = Readonly<ILocation> & {
+    readonly state: any
+}
 
-export type BeforeChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, 
-    newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[])
+export type ChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
+    newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[]): void | Promise<void> };
+
+export type BeforeChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
+    newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[])
     : boolean | void | Error | Function | Promise<boolean | void | Error | Function> };
 
 
@@ -55,12 +59,12 @@ export interface IHistory{
 
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
-     * @param {(fn: Readonly<ILocation>)=>boolean} fn 
+     * @param {(fn: ReadonlgLocation)=>boolean} fn 
      *                                      条件函数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    goback(fn: (fn: Readonly<ILocation>)=>boolean): Promise<ILocation>
+    goback(fn: (fn: ReadonlgLocation)=>boolean): Promise<ILocation>
 
     /**
      * 刷新当前页面，其实和replace当前的url一致，名字取自location.replace
@@ -71,10 +75,10 @@ export interface IHistory{
     
     /**
      * 当前Location栈。这是一个只读数组
-     * @type {Readonly<ILocation>[]}
+     * @type {ReadonlgLocation[]}
      * @memberOf IHistory
      */
-    readonly stack: Readonly<ILocation>[]
+    readonly stack: ReadonlgLocation[]
     
     /**
      * 当前Location栈的长度，名字取自history.length
@@ -90,13 +94,6 @@ export interface IHistory{
      */
     readonly location: ILocation
     
-    /**
-     * 类比history的state
-     * @type {ILocation}
-     * @memberOf IHistory
-     */
-    readonly state: any
-
     /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由
      * @memberOf IHistory

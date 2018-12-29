@@ -34,6 +34,7 @@ export function stripTrailingSlash(path: string): string {
  * 将一个path转为location对象形式
  * @export
  * @param {string} path 
+ * @param {any} state 
  * @returns {ILocation} 
  */
 export function parsePath(path: string): ILocation {

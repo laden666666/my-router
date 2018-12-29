@@ -13,5 +13,5 @@ export interface ILocation{
     // 一个id，用于区分href相同的location
     key: string,
     // 获取一个完整的url
-    readonly href: string
+    readonly href: string,
 }

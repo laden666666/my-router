@@ -1,8 +1,8 @@
 import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
-import { createLocation } from './LocationUtils';
-import { addLeadingSlash, stripTrailingSlash } from './PathUtils';
+import { createLocation, crateNo } from './LocationUtils';
+import { addLeadingSlash } from './PathUtils';
 import { canUseDOM, nextTick } from './DOMUtils';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
@@ -18,10 +18,6 @@ interface State{
     timeStamp: number
     // 页面的类型
     type: 'GOBACK' | 'NORMAL'
-    // 当前状态保存的数据
-    data: string
-    // 标题
-    title: string
 }
 
 /**
@@ -100,6 +96,9 @@ export class MyHistory implements IHistory {
     // 保存location数据的栈
     private _stateStack: State[] = []
 
+    // 保存location的state
+    private _cacheData: {[key: string]: any} = Object.create(null)
+
     // goback页面的State
     private _gobackState: State
 
@@ -148,7 +147,7 @@ export class MyHistory implements IHistory {
 
         // state里面用于记录当前是否处于goback的下一页。
         // 让goback比当前时间戳小，这样能够判断出是后退
-        this._gobackState = this._pathToState('/goback', 'GOBACK', undefined, now - 1)
+        this._gobackState = this._pathToState('/goback', undefined, 'GOBACK', now - 1)
 
         if(history.state && (history.state as State).type === 'GOBACK'){
             // 如果当前页面是goback，表示goback已经初始化完成
@@ -175,7 +174,7 @@ export class MyHistory implements IHistory {
 
         // 获取当前的路径，将其转换为合法路径后，
         let initialPath = this._decodePath(this._getHrefToPath());
-        let initialLocationState: State = this._pathToState(initialPath, 'NORMAL', undefined, timeStamp)
+        let initialLocationState: State = this._pathToState(initialPath, undefined, 'NORMAL', timeStamp)
         
         // 初始化goback
         let isGobackNextLocation = this._initGoback(timeStamp)
@@ -185,7 +184,7 @@ export class MyHistory implements IHistory {
 
         // 如果第一个节点不等于根的路径，插入根节点到栈底
         if(this._config.insertRoot && this._stackTop.location.href !== this._config.root){
-            this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', undefined, timeStamp))
+            this._stateStack.unshift(this._pathToState(this._config.root, undefined, 'NORMAL', timeStamp))
         }
 
         // 初始化监听器
@@ -259,7 +258,7 @@ export class MyHistory implements IHistory {
                         // 先切换到状态6，保护在跳转过程中不受其他操作影响
                         this._switchState(6)
                         try{
-                            let state: State = this._pathToState(path, 'NORMAL')
+                            let state: State = this._pathToState(path, undefined, 'NORMAL')
                             let oldLocation = this._stackTop.location
                             let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state.location, [], [state.location])
                     
@@ -280,7 +279,7 @@ export class MyHistory implements IHistory {
                         this._switchState(6)
                         try{
                             let now = Date.now()
-                            let state: State = this._pathToState(path, 'NORMAL', now)
+                            let state: State = this._pathToState(path, undefined, 'NORMAL', now)
     
                             let oldLocation = this._stackTop.location
                             let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
@@ -324,7 +323,7 @@ export class MyHistory implements IHistory {
                                 }
                             } else if(typeof n === 'string'){
                                 // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
-                                fn = (location)=> location.href === this._pathToLocation(n).href
+                                fn = (location)=> location.href === this._pathToLocation(n, undefined).href
                             } else if(typeof n === 'function'){
                                 fn = n
                             }
@@ -334,7 +333,7 @@ export class MyHistory implements IHistory {
                             if(index === -1){
 
                                 // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
-                                newState = this._pathToState(this._pathToLocation(typeof n === 'string' ? n : this._config.root), 'NORMAL')
+                                newState = this._pathToState(this._pathToLocation(typeof n === 'string' ? n : this._config.root, undefined), 'NORMAL')
                                 discardLoctions = this._stateStack.map(item=> item.location)
                                 needInclude = true
                             } else {
@@ -484,16 +483,17 @@ export class MyHistory implements IHistory {
      * 将给定的path封装成一个location
      * @private
      * @param {string} path 
+     * @param {any} data 
      * @param {number} [timeStamp=Date.now()] 
      * @returns 
      * @memberOf MyHistory
      */
-    private _pathToLocation(path: string, timeStamp: number = Date.now()): ILocation {
+    private _pathToLocation(path: string, data: any, timeStamp: number = Date.now()): ILocation {
         
         path = this._decodePath(path);
     
         // 创建的location
-        return createLocation(path, timeStamp + '');
+        return createLocation(path, timeStamp + '', data);
     }
 
     /**
@@ -501,12 +501,26 @@ export class MyHistory implements IHistory {
      * @private
      * @memberOf MyHistory
      */
-    private _pathToState(path: string | ILocation, type: State['type'], data: string, timeStamp: number = Date.now()): State{
+    private _pathToState(location: ILocation, type: State['type'], timeStamp?: number): State;
+    private _pathToState(path: string, data: any, type: State['type'], timeStamp?: number): State;
+    private _pathToState(path: ILocation | string, dataOrType: any | State['type'], typeOrTimeStamp?: State['type'] | number, timeStamp?: number): State{
+        
+        let location: ILocation, data: any, type: State['type']
+
+        if(typeof path === 'object'){
+            location = path
+            type = dataOrType
+            timeStamp = (typeOrTimeStamp as number) | Date.now()
+        } else {
+            timeStamp = timeStamp | Date.now()
+            location = this._pathToLocation(path, dataOrType, timeStamp)
+            type = typeOrTimeStamp as State['type']
+        }
+        
         return {
-            location: typeof path === 'string' ? this._pathToLocation(path) : path,
+            location: location,
             type,
             timeStamp,
-            data,
         }
     }
     
@@ -629,11 +643,11 @@ export class MyHistory implements IHistory {
 
     onChange: ChangeEventCallback = null
 
-    _execCallback<T extends Function>(callback: T, ...args: any[]){
+    _execCallback<T extends Function>(callback: T): T{
         if(typeof callback === 'function'){
-            return callback.apply(this, args)
+            return ((...args)=>callback.apply(this, args)) as any
         } else {
-            return Promise.resolve()
+            return (()=>Promise.resolve()) as any
         }
     }
 }
