@@ -8,14 +8,14 @@ type Readonly<T> = {
     readonly [P in keyof T]: Readonly<T[P]>;
 }
 
-type ReadonlgLocation = Readonly<ILocation> & {
-    readonly state: any
+export type ReadonlgLocation = Readonly<ILocation> & {
+    state: any
 }
 
-export type ChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
+export type ChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
     newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[]): void | Promise<void> };
 
-export type BeforeChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
+export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, 
     newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[])
     : boolean | void | Error | Function | Promise<boolean | void | Error | Function> };
 
@@ -92,7 +92,14 @@ export interface IHistory{
      * @type {ILocation}
      * @memberOf IHistory
      */
-    readonly location: ILocation
+    readonly location: ReadonlgLocation
+
+    /**
+     * 是否空闲，当false时候，push、replace、goback等操作均无法使用
+     * @type {boolean}
+     * @memberOf IHistory
+     */
+    readonly isBusy: boolean
     
     /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由

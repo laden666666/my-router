@@ -78,16 +78,16 @@ export function createLocation(path: string | ILocation, key: string = '', curre
     return location;
 }
 
-/**
- * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
- * @export
- * @param {any} a 
- * @param {any} b 
- * @returns 
- */
-export function locationsAreEqual(a: ILocation, b: ILocation) {
-    return a.href === b.href
-}
+// /**
+//  * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
+//  * @export
+//  * @param {any} a 
+//  * @param {any} b 
+//  * @returns 
+//  */
+// export function locationsAreEqual(a: ILocation, b: ILocation) {
+//     return a.href === b.href
+// }
 
 let timeStamp: number;
 let count: number = 0;

@@ -3,24 +3,30 @@ import {assert} from 'chai'
 
 let myHistory
 
+
 describe('测试history', function(){
-    this.timeout(2000)
+    this.timeout(3000)
     beforeEach(async function() {
+        // console.log('beforeEach-before', location.href, history.state, sessionStorage)
         if(myHistory){
             await myHistory.destroy()
             myHistory = null
         }
-        history.replaceState(null, null, '/')
+        history.replaceState(null, null, '#/')
+        // console.log('beforeEach-after', location.href, history.state, sessionStorage)
+
     });
     afterEach(async function() {
+        // console.log('afterEach-before', location.href, history.state, sessionStorage)
         if(myHistory){
             await myHistory.destroy()
             myHistory = null
-
         }
-        history.replaceState(null, null, '/')
-    });
+        history.replaceState(null, null, '#/')
+        // console.log('afterEach-after', location.href, history.state, sessionStorage)
 
+        await new Promise(r=>setTimeout(r, 100))
+    });
     
     describe('创建和销毁测试', function() {
 
@@ -109,6 +115,19 @@ describe('测试history', function(){
             assert.equal(myHistory.stack.length, 2)
             assert.deepEqual(myHistory.stack[1], myHistory.location)
             assert.equal(myHistory.location.href, '/test')
+        });
+
+        it('测试push state', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.push('test', 'test')
+
+            assert.equal(myHistory.stack.length, 2)
+            assert.deepEqual(myHistory.stack[1], myHistory.location)
+            assert.equal(myHistory.location.href, '/test')
+            assert.equal(myHistory.location.state, 'test')
         });
 
         it('测试onChange的push监听器', async function() {
@@ -290,6 +309,19 @@ describe('测试history', function(){
             assert.equal(myHistory.stack.length, 1)
             assert.deepEqual(myHistory.stack[0], myHistory.location)
             assert.equal(myHistory.location.href, '/test')
+        });
+
+        it('测试replace state', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.replace('test', 'test')
+
+            assert.equal(myHistory.stack.length, 1)
+            assert.deepEqual(myHistory.stack[0], myHistory.location)
+            assert.equal(myHistory.location.href, '/test')
+            assert.equal(myHistory.location.state, 'test')
         });
 
         it('测试onChange的replace监听器', async function() {
@@ -758,7 +790,6 @@ describe('测试history', function(){
                         if(action === 'init'){
                             return
                         }
-
                         assert.equal(action, 'goback')
                         assert.equal(oldLocation.href, '/test3')
                         assert.equal(location.href, '/test1')
@@ -783,4 +814,29 @@ describe('测试history', function(){
         });
     });
 
+    describe('history的state', function() {
+        it('修改字符串', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.replace('test', 'test')
+
+            assert.equal(myHistory.location.state, 'test')
+            myHistory.location.state = 'test2'
+            assert.equal(myHistory.location.state, 'test2')
+        });
+
+        it('修改对象', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await myHistory.replace('test', {test: 'test'})
+
+            assert.deepEqual(myHistory.location.state, {test: 'test'})
+            myHistory.location.state.test = 'test2'
+            assert.equal(myHistory.location.state.test, 'test2')
+        });
+    })
 })

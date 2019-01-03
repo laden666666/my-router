@@ -1,4 +1,4 @@
-import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, ReadonlgLocation } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
 import { createLocation, crateNo } from './LocationUtils';
@@ -10,6 +10,7 @@ const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
 // 记录MyHistory实例数，确保constructor仅能够运行一个实例
 let historyCount = 0
 
+
 // 保存在history的state里面的路由信息，这个信息因为不会随着浏览器刷新而消失，因此时候保存location信息
 interface State{
     // 当前的Location
@@ -18,6 +19,8 @@ interface State{
     timeStamp: number
     // 页面的类型
     type: 'GOBACK' | 'NORMAL'
+    // 用户缓存的数据
+    data?: any
 }
 
 /**
@@ -96,9 +99,6 @@ export class MyHistory implements IHistory {
     // 保存location数据的栈
     private _stateStack: State[] = []
 
-    // 保存location的state
-    private _cacheData: {[key: string]: any} = Object.create(null)
-
     // goback页面的State
     private _gobackState: State
 
@@ -149,14 +149,15 @@ export class MyHistory implements IHistory {
         // 让goback比当前时间戳小，这样能够判断出是后退
         this._gobackState = this._pathToState('/goback', undefined, 'GOBACK', now - 1)
 
-        if(history.state && (history.state as State).type === 'GOBACK'){
+        if(history.state && (history.state as State).type === 'GOBACK' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
             // 如果当前页面是goback，表示goback已经初始化完成
             return false
-        } else {
-            // 否则初始化goback页面
-            this._replaceState(this._gobackState)
-            
+        } else if(history.state && (history.state as State).type === 'NORMAL' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
             // 因为目前还处于goback页面，所有返回false
+            return true
+        } else {
+            sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = true
+            this._replaceState(this._gobackState)
             return false
         }
     }
@@ -198,7 +199,8 @@ export class MyHistory implements IHistory {
         // 使用微队列，用于异步初始化
         Promise.resolve()
         .then(()=>{
-            this._execCallback(this.onChange, 'init', null, initialLocationState.location, [], [initialLocationState.location])
+            let newState: ReadonlgLocation = this._readonlyLocation(initialLocationState)
+            this._execCallback(this.onChange)('init', null, newState, [], [newState])
         })
     }
 
@@ -250,23 +252,34 @@ export class MyHistory implements IHistory {
             }
         }
 
+        // 简单原型函数名，增加压缩效率
+        let toReadonly: (state: State)=> ReadonlgLocation = this._readonlyLocation.bind(this)
+
         switch(stateType){
             case(1):
                 this._state = {
                     type: 1,
-                    push: async (path: string)=> {
+                    push: async (path: string, data?: any)=> {
+                        this._checkData(data)
+
                         // 先切换到状态6，保护在跳转过程中不受其他操作影响
                         this._switchState(6)
                         try{
-                            let state: State = this._pathToState(path, undefined, 'NORMAL')
-                            let oldLocation = this._stackTop.location
-                            let result = await this._execCallback(this.onBeforeChange, 'push', oldLocation, state.location, [], [state.location])
+                            let state: State = this._pathToState(path, data, 'NORMAL')
+                            let newLocation = toReadonly(state)
+                            let oldLocation = toReadonly(this._stackTop)
+
+                            let result = await this._execCallback(this.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation])
                     
                             // 处理取消情况
                             handleCancell(result)
 
                             this._push(state)
-                            await this._execCallback(this.onChange, 'push', oldLocation, state.location, [], [state.location])
+
+                            // 确保跳转完成
+                            await new Promise(r=> nextTick(r))
+
+                            await this._execCallback(this.onChange)('push', oldLocation, newLocation, [], [newLocation])
                             this._switchState(1)
                             return state.location
                         } catch(e){
@@ -275,20 +288,28 @@ export class MyHistory implements IHistory {
                             throw e
                         }
                     },
-                    replace: async (path: string)=> {
+                    replace: async (path: string, data?: any)=> {
+                        this._checkData(data)
+
                         this._switchState(6)
                         try{
                             let now = Date.now()
-                            let state: State = this._pathToState(path, undefined, 'NORMAL', now)
+                            let state: State = this._pathToState(path, data, 'NORMAL', now)
+                            let newLocation = toReadonly(state)
+                            let oldLocation = toReadonly(this._stackTop)
     
-                            let oldLocation = this._stackTop.location
-                            let result = await this._execCallback(this.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
+                            let result = await this._execCallback(this.onBeforeChange)('replace', oldLocation, 
+                            newLocation, [oldLocation], [newLocation])
                     
                             // 处理取消情况
                             handleCancell(result)
 
                             this._replace(state)
-                            await this._execCallback(this.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location])
+
+                            // 确保跳转完成
+                            await new Promise(r=> nextTick(r))
+                            
+                            await this._execCallback(this.onChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation])
                             this._switchState(1)
                             return state.location
                         } catch(e){
@@ -301,16 +322,18 @@ export class MyHistory implements IHistory {
                         this._switchState(3)
                         try{
                             // 当前页面
-                            let oldLocation: ILocation
+                            let oldLocation: ReadonlgLocation
                             // 丢弃的页面
-                            let discardLoctions: ILocation[]
+                            let discardLoctions: ReadonlgLocation[]
                             // 退回到的页面
                             let newState: State
+                            // 新建页面
+                            let newLocation: ReadonlgLocation
                             // 是否有符合退回条件的页面，如果没有插入一条
                             let needInclude = false
 
                             // 判断是否符合页面的条件
-                            let fn: {(fn: Readonly<ILocation>, index: number): boolean}
+                            let fn: {(fn: ReadonlgLocation, index: number): boolean}
 
                             if(typeof n === 'number'){
                                 // 如果退回的步数大于栈的长度，则给缓存插入一个根页面，让用户先退回到根页面
@@ -323,34 +346,40 @@ export class MyHistory implements IHistory {
                                 }
                             } else if(typeof n === 'string'){
                                 // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
-                                fn = (location)=> location.href === this._pathToLocation(n, undefined).href
+                                fn = (location)=> location.href === this._pathToLocation(n).href
                             } else if(typeof n === 'function'){
                                 fn = n
                             }
                             
-                            let index = this._stateStack.findIndex((item, index)=>fn(item.location, index))
-                            oldLocation = this._stackTop.location
+                            let index = this._stateStack.findIndex((item, index)=>fn(toReadonly(item), index))
+                            oldLocation = toReadonly(this._stackTop)
                             if(index === -1){
 
                                 // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
-                                newState = this._pathToState(this._pathToLocation(typeof n === 'string' ? n : this._config.root, undefined), 'NORMAL')
-                                discardLoctions = this._stateStack.map(item=> item.location)
+                                newState = this._pathToState(this._pathToLocation(typeof n === 'string' ? n : this._config.root), 'NORMAL', undefined)
+                                newLocation = toReadonly(newState)
+                                discardLoctions = this._stateStack.map(item=> toReadonly(item))
                                 needInclude = true
                             } else {
                                 // 取出退回位置的state
                                 newState = this._stateStack[index]
-                                discardLoctions = this._stateStack.slice(index + 1).map(item=>item.location).reverse()
+                                newLocation = toReadonly(newState)
+                                discardLoctions = this._stateStack.slice(index + 1).map(item=> toReadonly(item)).reverse()
                             }
 
-                            let result = await this._execCallback(this.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, 
-                                needInclude ? [newState.location] : [])
+                            let result = await this._execCallback(this.onBeforeChange)('goback', oldLocation, newLocation, 
+                                discardLoctions, needInclude ? [newLocation] : [])
                             
                             // 处理取消情况
                             handleCancell(result)
 
                             this._goback(discardLoctions.length, needInclude ? newState : null, false)
-                            await this._execCallback(this.onChange, 'goback', oldLocation, newState.location, discardLoctions, 
-                                needInclude ? [newState.location] : [])
+
+                            // 确保跳转完成
+                            await new Promise(r=> nextTick(r))
+
+                            await this._execCallback(this.onChange)('goback', oldLocation, newLocation, 
+                                discardLoctions, needInclude ? [newLocation] : [])
                             this._switchState(1)
                             return newState.location
                         } catch(e){
@@ -479,21 +508,27 @@ export class MyHistory implements IHistory {
         return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
     }
 
+    // 检查data，确保data可以序列化
+    private _checkData(data) {
+        if(data != null){
+            JSON.stringify(data)
+        }
+    }
+
     /**
      * 将给定的path封装成一个location
      * @private
      * @param {string} path 
-     * @param {any} data 
      * @param {number} [timeStamp=Date.now()] 
      * @returns 
      * @memberOf MyHistory
      */
-    private _pathToLocation(path: string, data: any, timeStamp: number = Date.now()): ILocation {
+    private _pathToLocation(path: string, timeStamp: number = Date.now()): ILocation {
         
         path = this._decodePath(path);
     
         // 创建的location
-        return createLocation(path, timeStamp + '', data);
+        return createLocation(path, timeStamp + '');
     }
 
     /**
@@ -501,27 +536,44 @@ export class MyHistory implements IHistory {
      * @private
      * @memberOf MyHistory
      */
-    private _pathToState(location: ILocation, type: State['type'], timeStamp?: number): State;
+    private _pathToState(location: ILocation, data: any, type: State['type'], timeStamp?: number): State;
     private _pathToState(path: string, data: any, type: State['type'], timeStamp?: number): State;
-    private _pathToState(path: ILocation | string, dataOrType: any | State['type'], typeOrTimeStamp?: State['type'] | number, timeStamp?: number): State{
+    private _pathToState(path: ILocation | string, data: any = null, type: State['type'], timeStamp?: number): State{
         
-        let location: ILocation, data: any, type: State['type']
+        let location: ILocation
 
         if(typeof path === 'object'){
             location = path
-            type = dataOrType
-            timeStamp = (typeOrTimeStamp as number) | Date.now()
         } else {
-            timeStamp = timeStamp | Date.now()
-            location = this._pathToLocation(path, dataOrType, timeStamp)
-            type = typeOrTimeStamp as State['type']
+            location = this._pathToLocation(path, timeStamp)
         }
         
         return {
             location: location,
             type,
             timeStamp,
+            data: data
         }
+    }
+
+    private _readonlyLocation(state: State): ReadonlgLocation {
+        let location = {
+            ...state.location,
+        }
+
+        // 设置getter和setter
+        Object.defineProperty(location, "state", {
+            get : function(){
+                return state.data;
+            },
+            set : function(newValue){
+                state.data = newValue;
+            },
+            enumerable : true,
+            configurable : true
+        });
+
+        return location as ReadonlgLocation
     }
     
     private async _push(state: State, push = false){
@@ -592,11 +644,11 @@ export class MyHistory implements IHistory {
     }
     
     async push(path: string, data?: any){
-        return await this._state.push(path)
+        return await this._state.push(path, data)
     }
 
     async replace(path: string, data?: any){
-        return await this._state.replace(path)
+        return await this._state.replace(path, data)
     }
 
     async goback(n: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>{
@@ -612,14 +664,15 @@ export class MyHistory implements IHistory {
         this.onBeforeChange = null
         this.onChange = null
         let state: State = this._globalHistory.state
+        sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false
         if(state.type === 'NORMAL'){
             this._globalHistory.back()
             // 延时，等back执行完
-            await new Promise(r=> setTimeout(r, 10))
+            await new Promise(r=> nextTick(r))
         }
-        this._globalHistory.pushState(null, null, this._stackTop.location.href)
+        this._globalHistory.replaceState(null, null, this._stackTop.location.href)
         // 延时，等pushState执行完
-        await new Promise(r=> setTimeout(r, 10))
+        await new Promise(r=> nextTick(r))
         this._stateStack = null
         this._config = null
         this._stateData = null
@@ -628,15 +681,21 @@ export class MyHistory implements IHistory {
     }
 
     get stack(){
-        return this._stateStack.map(state=> state.location)
+        return this._stateStack.map(state=> this._readonlyLocation(state))
     }
 
     get length(){
         return this._stateStack.length
     }
 
+    get isBusy(){
+        return this._state.type === 1
+    }
+
     get location(){
-        return this._stackTop.location
+        let a = this._readonlyLocation(this._stackTop)
+        a.state = a.state
+        return a
     }
 
     onBeforeChange: BeforeChangeEventCallback = null
