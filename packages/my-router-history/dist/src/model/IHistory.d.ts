@@ -5,27 +5,32 @@ import { ILocation } from './ILocation';
 declare type Readonly<T> = {
     readonly [P in keyof T]: Readonly<T[P]>;
 };
+export declare type ReadonlgLocation = Readonly<ILocation> & {
+    state: any;
+};
 export declare type ChangeEventCallback = {
-    (action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): void | Promise<void>;
+    (action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[]): void | Promise<void>;
 };
 export declare type BeforeChangeEventCallback = {
-    (action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Readonly<ILocation>, newLoction: Readonly<ILocation>, discardLoctions: Readonly<ILocation>[], includeLoctions: Readonly<ILocation>[]): boolean | Promise<void>;
+    (action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: ReadonlgLocation, newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[]): boolean | void | Error | Function | Promise<boolean | void | Error | Function>;
 };
 export interface IHistory {
     /**
      * 前进去往一个页面，名字取自history.push
      * @param {string} path                 去往的地址
+     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    push(path: string): Promise<ILocation>;
+    push(path: string, state?: any): Promise<ILocation>;
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
      * @param {string} path                 去往的地址
+     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    replace(path: string): Promise<ILocation>;
+    replace(path: string, state?: any): Promise<ILocation>;
     /**
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
      * @param {number} n                    退回的步数
@@ -44,12 +49,12 @@ export interface IHistory {
     goback(path: string): Promise<ILocation>;
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
-     * @param {(fn: Readonly<ILocation>)=>boolean} fn
+     * @param {(fn: ReadonlgLocation)=>boolean} fn
      *                                      条件函数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    goback(fn: (fn: Readonly<ILocation>) => boolean): Promise<ILocation>;
+    goback(fn: (fn: ReadonlgLocation) => boolean): Promise<ILocation>;
     /**
      * 刷新当前页面，其实和replace当前的url一致，名字取自location.replace
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
@@ -58,10 +63,10 @@ export interface IHistory {
     reload(): Promise<ILocation>;
     /**
      * 当前Location栈。这是一个只读数组
-     * @type {Readonly<ILocation>[]}
+     * @type {ReadonlgLocation[]}
      * @memberOf IHistory
      */
-    readonly stack: Readonly<ILocation>[];
+    readonly stack: ReadonlgLocation[];
     /**
      * 当前Location栈的长度，名字取自history.length
      * @type {number}
@@ -73,7 +78,13 @@ export interface IHistory {
      * @type {ILocation}
      * @memberOf IHistory
      */
-    readonly location: ILocation;
+    readonly location: ReadonlgLocation;
+    /**
+     * 是否空闲，当false时候，push、replace、goback等操作均无法使用
+     * @type {boolean}
+     * @memberOf IHistory
+     */
+    readonly isBusy: boolean;
     /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由
      * @memberOf IHistory

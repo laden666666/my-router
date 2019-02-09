@@ -1,10 +1,11 @@
-import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, ReadonlgLocation } from './model/IHistory';
 import { ILocation } from './model/ILocation';
 import { IHistoryConfig } from './model/IHistoryConfig';
 interface State {
     location: ILocation;
     timeStamp: number;
     type: 'GOBACK' | 'NORMAL';
+    data?: any;
 }
 /**
  * 路由错误
@@ -60,7 +61,6 @@ export declare class MyHistory implements IHistory {
      * 切换状态
      * @private
      * @param {any} stateType
-     *
      * @memberOf MyHistory
      */
     private _switchState;
@@ -81,6 +81,7 @@ export declare class MyHistory implements IHistory {
      */
     private _decodePath;
     private _getHrefToPath;
+    private _checkData;
     /**
      * 将给定的path封装成一个location
      * @private
@@ -96,24 +97,29 @@ export declare class MyHistory implements IHistory {
      * @memberOf MyHistory
      */
     private _pathToState;
+    private _readonlyLocation;
     private _push;
     private _replace;
     private _goback;
     _replaceState(state: State): void;
     _pushState(state: State): void;
+    /**
+     * 当用处于未知页面（既不是goback页面，也不是normal页面时候），触发纠正
+     */
     _correct(): void;
-    push(path: string): Promise<ILocation>;
-    replace(path: string): Promise<ILocation>;
+    push(path: string, data?: any): Promise<ILocation>;
+    replace(path: string, data?: any): Promise<ILocation>;
     goback(n: number | string | {
         (fn: Readonly<ILocation>): boolean;
     }): Promise<ILocation>;
     reload(): Promise<ILocation>;
     destroy(): Promise<void>;
-    readonly stack: ILocation[];
+    readonly stack: ReadonlgLocation[];
     readonly length: number;
-    readonly location: ILocation;
+    readonly isBusy: boolean;
+    readonly location: ReadonlgLocation;
     onBeforeChange: BeforeChangeEventCallback;
     onChange: ChangeEventCallback;
-    _execCallback<T extends Function>(callback: T, ...args: any[]): any;
+    _execCallback<T extends Function>(callback: T): T;
 }
 export {};
