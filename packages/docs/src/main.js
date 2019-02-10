@@ -21,6 +21,8 @@ Vue.component('ICol', Col)
 Vue.component('ITimeline', Timeline)
 Vue.component('ITimelineItem', TimelineItem)
 
+import Browser from './docComponesnts/Browser';
+Vue.component('Browser', Browser)
 
 Vue.config.productionTip = false
 

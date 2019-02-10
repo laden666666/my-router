@@ -34,8 +34,8 @@ export declare class MyHistory implements IHistory {
     private _stateStack;
     private _gobackState;
     readonly _stackTop: State;
-    constructor(_config: IHistoryConfig);
-    private _globalHistory;
+    constructor(_config: IHistoryConfig, _window?: Window);
+    private _win;
     /**
      * 初始化goback的location
      * goback的location有2个作用：

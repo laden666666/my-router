@@ -7,9 +7,8 @@ import { canUseDOM, nextTick } from './DOMUtils';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
 
-// 记录MyHistory实例数，确保constructor仅能够运行一个实例
+// 记录MyHistory在默认window上的实例数，确保constructor仅能够运行一个实例
 let historyCount = 0
-
 
 // 保存在history的state里面的路由信息，这个信息因为不会随着浏览器刷新而消失，因此时候保存location信息
 interface State{
@@ -110,10 +109,13 @@ export class MyHistory implements IHistory {
         }
     }
 
-    constructor(private _config: IHistoryConfig){
-        // 同一时刻，不允许有两个history实例运行
-        if(historyCount > 0){
-            throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.')
+    constructor(private _config: IHistoryConfig, _window: Window = window){
+        this._win = _window
+        if(this._win === window){
+            // 同一时刻，在默认的window上面，不允许有两个history实例运行
+            if(historyCount > 0){
+                throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.')
+            }
         }
 
         this._config = {
@@ -126,11 +128,10 @@ export class MyHistory implements IHistory {
         this._hashchangeHandler = this._hashchangeHandler.bind(this)
 
         this._initHistory()
-
     }
 
-    // 全局的history对象
-    private _globalHistory = window.history;
+    // 浏览器history对应的window对象
+    private _win: Window
 
     /**
      * 初始化goback的location
@@ -149,10 +150,11 @@ export class MyHistory implements IHistory {
         // 让goback比当前时间戳小，这样能够判断出是后退
         this._gobackState = this._pathToState('/goback', undefined, 'GOBACK', now - 1)
 
-        if(history.state && (history.state as State).type === 'GOBACK' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
+        let state = this._win.history.state
+        if(state && (state as State).type === 'GOBACK' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
             // 如果当前页面是goback，表示goback已经初始化完成
             return false
-        } else if(history.state && (history.state as State).type === 'NORMAL' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
+        } else if(state && (state as State).type === 'NORMAL' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]){
             // 因为目前还处于goback页面，所有返回false
             return true
         } else {
@@ -192,7 +194,9 @@ export class MyHistory implements IHistory {
         this._initEventListener()
 
         // 全部初始化完成，记录初始化成功
-        historyCount++
+        if(this._win === window){
+            historyCount++
+        }
 
         this._switchState(1)
 
@@ -216,11 +220,11 @@ export class MyHistory implements IHistory {
 
     private _initEventListener(){
         // 注册
-        window.addEventListener('hashchange', this._hashchangeHandler)
+        this._win.addEventListener('hashchange', this._hashchangeHandler)
     }
 
     private _destroyEventListener(){
-        window.removeEventListener('hashchange', this._hashchangeHandler)
+        this._win.removeEventListener('hashchange', this._hashchangeHandler)
     }
 
     /**
@@ -392,12 +396,13 @@ export class MyHistory implements IHistory {
                         return this._state.replace(this._stackTop.location.href)
                     },
                     hashChange: (event)=>{
-                        if(history.state && (history.state as State).type === 'GOBACK'){
+                        let state = this._win.history.state
+                        if(state && (state as State).type === 'GOBACK'){
                             // 用户手动退回，前进一个页面，让history的修正
                             this._pushState(this._stackTop)
                             this._state.goback(1)
 
-                        } else if(!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
+                        } else if(!state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
                             // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                             // 1.当前history没有state，或者state不等于State变量
                             // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
@@ -407,12 +412,12 @@ export class MyHistory implements IHistory {
                             this._stateData = this._getHrefToPath(event.newURL)
             
                             // 后退两次，退回到goback页面
-                            history.go(-2)
+                            this._win.history.go(-2)
                         } else {
                             // 如果不是从栈顶的url转跳转到该状态，就无法确定返回页面就在当前页面的前面，因此触发修正
                             this._correct()
                             // 纠正后重新后退
-                            this._globalHistory.back()
+                            this._win.history.back()
                         }
                     }
                 }
@@ -426,10 +431,10 @@ export class MyHistory implements IHistory {
                             // 1. 一直后退，直到后退到goback页面
                             // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
     
-                            let state = (history.state as State)
+                            let state = (this._win.history.state as State)
                             if(state && state.type === 'NORMAL'){
                                 // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
-                                this._globalHistory.back()
+                                this._win.history.back()
                             } else if(state && state.type === 'GOBACK'){
                                 // 如果已经在goback页面了，则跳转到用户手输入的地址
                                 let now = Date.now()
@@ -443,7 +448,7 @@ export class MyHistory implements IHistory {
                                 // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
                                 this._correct()
                                 // 纠正后重新后退
-                                this._globalHistory.back()
+                                this._win.history.back()
                             }
                         }
                     }
@@ -454,7 +459,7 @@ export class MyHistory implements IHistory {
                         type: stateType,
                         ...baseHistoryState,
                         hashChange: (event)=>{
-                            if(!history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
+                            if(!this._win.history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
                                 // 如果用户在此期间手动修改url，直接纠正
                                 this._correct()
                             } else {
@@ -470,7 +475,7 @@ export class MyHistory implements IHistory {
                         type: stateType,
                         ...baseHistoryState,
                         hashChange: (event)=>{
-                            this._globalHistory.back()
+                            this._win.history.back()
                         }
                     }
                     break;
@@ -501,7 +506,7 @@ export class MyHistory implements IHistory {
     }
 
     // 获取hash中保存的路径。
-    private _getHrefToPath(href = window.location.href): string {
+    private _getHrefToPath(href = this._win.location.href): string {
         // We can't use window.location.hash here because it's not
         // consistent across browsers - Firefox will pre-decode it!
         const hashIndex = href.indexOf('#');
@@ -579,10 +584,10 @@ export class MyHistory implements IHistory {
     private async _push(state: State, push = false){
         if(push){
             // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-            document.title = this._config.gobackName
-            let tempTitle = document.title
+            this._win.document.title = this._config.gobackName
+            let tempTitle = this._win.document.title
             this._pushState(state)
-            document.title = tempTitle
+            this._win.document.title = tempTitle
         } else {
             this._replaceState(state)
         }
@@ -594,10 +599,10 @@ export class MyHistory implements IHistory {
         this._stateStack.push(state)
         if(push){
             // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-            document.title = this._config.gobackName
-            let tempTitle = document.title
+            this._win.document.title = this._config.gobackName
+            let tempTitle = this._win.document.title
             this._pushState(state)
-            document.title = tempTitle
+            this._win.document.title = tempTitle
         } else {
             this._replaceState(state)
         }
@@ -622,11 +627,11 @@ export class MyHistory implements IHistory {
     }
 
     _replaceState(state: State){
-        this._globalHistory.replaceState(state, null, '#' + this._encodePath(state.location.href))
+        this._win.history.replaceState(state, null, '#' + this._encodePath(state.location.href))
     }
 
     _pushState(state: State){
-        this._globalHistory.pushState(state, null, '#' + this._encodePath(state.location.href))
+        this._win.history.pushState(state, null, '#' + this._encodePath(state.location.href))
     }
 
     /**
@@ -634,7 +639,7 @@ export class MyHistory implements IHistory {
      */
     _correct(){
         // 暂时先记录日志
-        console.error('异常', this._stateStack, history.state, location.hash)
+        console.error('异常', this._stateStack, this._win.history.state, location.hash)
 
         // 初始化goback
         let isGobackNextLocation = this._initGoback(this._gobackState.timeStamp)
@@ -663,21 +668,24 @@ export class MyHistory implements IHistory {
         this._destroyEventListener()
         this.onBeforeChange = null
         this.onChange = null
-        let state: State = this._globalHistory.state
+        let state: State = this._win.history.state
         sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false
         if(state.type === 'NORMAL'){
-            this._globalHistory.back()
+            this._win.history.back()
             // 延时，等back执行完
             await new Promise(r=> nextTick(r))
         }
-        this._globalHistory.replaceState(null, null, this._stackTop.location.href)
+        this._win.history.replaceState(null, null, this._stackTop.location.href)
         // 延时，等pushState执行完
         await new Promise(r=> nextTick(r))
         this._stateStack = null
         this._config = null
         this._stateData = null
         this._state = null
-        historyCount--
+        if(this._win === window){
+            historyCount--
+        }
+        this._win = null
     }
 
     get stack(){
