@@ -1751,10 +1751,10 @@ var MyHistory = function () {
                         switch (_context4.prev = _context4.next) {
                             case 0:
                                 if (push) {
-                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                                    this._win.document.title = this._config.gobackName;
                                     tempTitle = this._win.document.title;
+                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
 
+                                    this._win.document.title = this._config.gobackName;
                                     this._pushState(state);
                                     this._win.document.title = tempTitle;
                                 } else {
@@ -1789,10 +1789,10 @@ var MyHistory = function () {
                                 this._stateStack.pop();
                                 this._stateStack.push(state);
                                 if (push) {
-                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                                    this._win.document.title = this._config.gobackName;
                                     tempTitle = this._win.document.title;
+                                    // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
 
+                                    this._win.document.title = this._config.gobackName;
                                     this._pushState(state);
                                     this._win.document.title = tempTitle;
                                 } else {

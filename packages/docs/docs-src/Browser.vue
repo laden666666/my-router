@@ -16,7 +16,7 @@
                         </g>
                     </svg>
                 </button>
-                <button aria-label="Refresh" class="browser-btn">
+                <button aria-label="Refresh" disabled @click="reload" class="browser-btn">
                     <svg fill="currentColor" preserveAspectRatio="xMidYMid meet" height="1em" width="1em" viewBox="0 0 40 40">
                         <g>
                             <path d="m29.5 10.5l3.9-3.9v11.8h-11.8l5.4-5.4c-1.8-1.8-4.3-3-7-3-5.5 0-10 4.5-10 10s4.5 10 10 10c4.4 0 8.1-2.7 9.5-6.6h3.4c-1.5 5.7-6.6 10-12.9 10-7.3 0-13.3-6.1-13.3-13.4s6-13.4 13.3-13.4c3.7 0 7 1.5 9.5 3.9z"></path>
@@ -26,22 +26,33 @@
             </div>
             <div class="browser-address">
                 <div class="browser-address-box">
-                    <input spellcheck="false" readonly aria-label="Address Bar Input" :value="data.pages[data.current].url" class="browser-address_value">
+                    <div class="browser-address_value">{{data.pages[data.current].url}}</div>
                 </div>
             </div>
+            <Dropdown placement="bottom-end">
+                <a href="javascript:void(0)" class="browser-history-btn">
+                    查看浏览器历史栈
+                </a>
+                <DropdownMenu slot="list" class="browser-history-list">
+                    <div class="browser-history-item" :class="{active: pages.length - 1 - index == data.current}"
+                        v-for="(page, index) in pages" :key="index">
+                        第{{pages.length - index}}页 {{page.title ? `“${page.title}”` : ''}}:
+                        <p>
+                            {{page.url}}
+                        </p>
+                    </div>
+                </DropdownMenu>
+            </Dropdown>
         </div>
-        <div>
+        <div class="browser-border">
             <slot></slot>
         </div>
-        <pre :style="{color: index == data.current ? 'red' : '#000'}"
-            v-for="(page, index) in data.pages" :key="index">第{{index + 1}}页:
-{{JSON.stringify(page, null, 4)}}</pre>
     </div>
 </template>
 <script>
 import jsdom from 'jsdom'
 let createWindow = function(){
-    let dom = window.dom = new jsdom.JSDOM('<div></div>', {
+    let dom = window.dom = new jsdom.JSDOM('<head><title>example.org</title></head><div></div>', {
         url: "https://example.org/",
         contentType: "text/html",
     })
@@ -66,6 +77,7 @@ let createWindow = function(){
             },
             set title(value){
                 dom.window.document.title = value
+                _window.data.pages[_window.data.current].title = value
             },
         },
         history: {
@@ -81,6 +93,9 @@ let createWindow = function(){
             forward(){
                 return this.go(1)
             },
+            reload(){
+                dom.window.location.reload()
+            },
             go(n){
                 let index = n + _window.data.current
                 index = Math.max(0, index)
@@ -90,12 +105,11 @@ let createWindow = function(){
             }, 
             pushState(...arg){
                 dom.window.history.pushState(...arg)
-                let title = dom.window.document.title
                 _window.data.pages.splice(_window.data.current + 1, Infinity)
                 
                 _window.data.pages.push({
                     url: dom.window.location.href,
-                    title,
+                    title: dom.window.document.title,
                 })
                 _window.data.current++
             }, 
@@ -162,12 +176,13 @@ let createWindow = function(){
                 })
                 _dom.window.location.assign(url)
                 if(_dom.window.history.length == 2){
-                    let title = dom.window.document.title
+
                     dom.window.location.assign(url)
                     _window.data.pages.splice(_window.data.current + 1, Infinity)
+
                     _window.data.pages.push({
                         url: dom.window.location.href,
-                        title
+                        title: dom.window.document.title,
                     })
                     _window.data.current++
                 }
@@ -189,6 +204,12 @@ export default {
     computed: {
         window(){
             return this._window
+        },
+        pages(){
+            let pages = [...this.data.pages]
+            pages.pop()
+            pages.reverse()
+            return pages;
         }
     },
     methods: {
@@ -197,6 +218,9 @@ export default {
         },
         back(){
             this._window.history.back()
+        },
+        reload(){
+            this._window.history.reload()
         },
     }
 }
@@ -227,7 +251,6 @@ export default {
     min-height: 2.5rem;
     box-sizing: border-box;
     z-index: 2;
-    cursor: move;
     user-select: initial;
 }
 
@@ -253,6 +276,7 @@ export default {
     vertical-align: middle;
     padding: 0px;
     outline: none;
+    border-radius: 5px;
 }
 
 .browser-btn:hover {
@@ -277,6 +301,12 @@ export default {
     outline: none;
 }
 
+.browser-border{
+    border: 1px solid rgb(242, 242, 242);
+    box-shadow: rgb(221, 221, 221) 0px 1px 3px;
+    padding: 10px;
+    font-size: 12px;
+}
 
 .browser-address {
     flex: 1;
@@ -309,6 +339,25 @@ export default {
     padding: 0.2rem 0.5rem;
     color: rgba(0, 0, 0, 0.8);
     box-sizing: border-box;
+    background-color: #fff;
+}
+.browser-history-btn{
+    font-size: 12px;
+}
+.browser-history-list{
+    width: 200px;
+    font-size: 12px;
+    padding: 5px 10px;
+}
+.browser-history-item{
+    color: #666;
+}
+.browser-history-item:not(:last-child){
+    margin-bottom: 5px;
+}
+.browser-history-item.active{
+    font-weight: bold;
+    color: #000;
 }
 
 </style>

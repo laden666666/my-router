@@ -583,9 +583,9 @@ export class MyHistory implements IHistory {
     
     private async _push(state: State, push = false){
         if(push){
+            let tempTitle = this._win.document.title
             // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
             this._win.document.title = this._config.gobackName
-            let tempTitle = this._win.document.title
             this._pushState(state)
             this._win.document.title = tempTitle
         } else {
@@ -598,9 +598,9 @@ export class MyHistory implements IHistory {
         this._stateStack.pop()
         this._stateStack.push(state)
         if(push){
+            let tempTitle = this._win.document.title
             // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
             this._win.document.title = this._config.gobackName
-            let tempTitle = this._win.document.title
             this._pushState(state)
             this._win.document.title = tempTitle
         } else {
