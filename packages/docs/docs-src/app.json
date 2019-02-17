@@ -15,8 +15,16 @@
     ],
     "menu": [
         {
-            "title": "my-router",
+            "title": "概述",
             "path": "#/"
+        },{
+            "title": "my-router-history",
+            "children": [
+                {
+                    "title": "概述",
+                    "path": "#/my-router-history/Index"
+                }
+            ]
         }
     ]
 }
