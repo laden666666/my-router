@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "description": "",
   "scripts": {
-    "docinit": "mydoc init",
-    "docdev": "mydoc dev",
-    "docbuild": "mydoc build"
+    "init": "mydoc init",
+    "dev": "mydoc dev",
+    "build": "mydoc build"
   },
   "author": "laden666666",
   "license": "MIT",
