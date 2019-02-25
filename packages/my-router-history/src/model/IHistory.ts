@@ -19,7 +19,6 @@ export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' 
     newLoction: ReadonlgLocation, discardLoctions: ReadonlgLocation[], includeLoctions: ReadonlgLocation[])
     : boolean | void | Error | Function | Promise<boolean | void | Error | Function> };
 
-
 export interface IHistory{
     /**
      * 前进去往一个页面，名字取自history.push
@@ -43,7 +42,6 @@ export interface IHistory{
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
      * @param {number} n                    退回的步数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
-     * 
      * @memberOf IHistory
      */
     goback(n: number): Promise<ILocation>
@@ -52,15 +50,13 @@ export interface IHistory{
      * 退回到指定的path，如果为找到合适path，跳回到root
      * @param {string} path                 指定的path
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
-     * 
      * @memberOf IHistory
      */
     goback(path: string): Promise<ILocation>
 
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
-     * @param {(fn: ReadonlgLocation)=>boolean} fn 
-     *                                      条件函数
+     * @param {(fn: ReadonlgLocation)=>boolean} fn      条件函数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
