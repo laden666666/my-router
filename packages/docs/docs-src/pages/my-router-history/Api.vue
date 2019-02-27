@@ -145,7 +145,12 @@
      * @memberOf IHistory
      */
         `"></Function>
-        <H3>onBeforeChange</H3>
+        <P>action的可能是'init' | 'push' | 'goback' | 'replace' | 'reload'的一种，每个值的含义如下：</P>
+        <Li>init：初始化</Li>
+        <Li>push：push函数执行</Li>
+        <Li>goback：goback函数执行</Li>
+        <Li>replace：replace函数执行</Li>
+        <Li>reload：reload函数执行</Li>
         <Function :data="`
     /**
      * 注册BeforeURLURLchange监听器，history的特点是可以监听变化，然后确定是否要应用改变，
@@ -156,7 +161,7 @@
      *  @param {Location}    newLoction 当前页面的location对象
      *  @param {Location[]}    discardLoctions 跳转过程中出栈的location对象
      *  @param {Location[]}    includeLoctions 跳转过程中入栈的location对象
-     * @returns {void | Promise<void>}        是boolean或者Promise<boolean>。如果是Promise<boolean>，路由会处于终止状态，直到事件处理完成，所以尽量不要使用异步。如果boolean值是false（false以外的falsy不可），将阻止改变发生
+     * @returns {boolean | Promise<boolean>}        如果是Promise<boolean>，路由会处于终止状态，直到事件处理完成。如果boolean值是false（false以外的falsy不可），将阻止改变发生
      * @memberOf IHistory
      */
         `"></Function>

@@ -87,7 +87,7 @@ button2.onclick = async ()=>{
 }`" lang="javascript" title="创建my-router-history实例">
         </Demo>
 
-        <Alert><Strong>my-router-history</Strong>提供的goback方法与window.history.back最终表现一致，不同点在于window.history.back会先返回goback页面，然后再前进到原页面，再触发<Strong>my-router-history的goback方法</Strong>。</Alert>
+        <Alert><Strong>my-router-history</Strong>提供的goback方法与window.history.back最终表现一致，不同点在于window.history.back会先返回goback页面，然后再前进到原页面（部分浏览器的地址栏可能会闪一下goback地址），再触发<Strong>my-router-history的goback方法</Strong>。</Alert>
         <Alert>goback是异步函数，在执行过程中，my-router-history会处于busy状态，此时不允许goback再次运行。</Alert>
 
 
