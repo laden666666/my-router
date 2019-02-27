@@ -23,6 +23,18 @@
                 {
                     "title": "概述",
                     "path": "#/my-router-history/Index"
+                },
+                {
+                    "title": "使用",
+                    "path": "#/my-router-history/Usage"
+                },
+                {
+                    "title": "Api",
+                    "path": "#/my-router-history/Api"
+                },
+                {
+                    "title": "与浏览器history的区别",
+                    "path": "#/my-router-history/Different"
                 }
             ]
         }

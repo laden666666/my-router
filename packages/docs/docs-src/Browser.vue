@@ -50,14 +50,15 @@
     </div>
 </template>
 <script>
+// 用jsdom模拟浏览器window
 import jsdom from 'jsdom'
 let createWindow = function(){
-    let dom = window.dom = new jsdom.JSDOM('<head><title>example.org</title></head><div></div>', {
+    let dom = new jsdom.JSDOM('<head><title>example.org</title></head><div></div>', {
         url: "https://example.org/",
         contentType: "text/html",
     })
 
-    let _window = window.win = {
+    let _window = {
         data: {
             pages: [{
                 url: dom.window.location.href,
@@ -236,6 +237,7 @@ export default {
     position: relative;
     flex: 1 1 0%;
     user-select: initial;
+    margin: 15px 0;
 }
 
 .browser-location {
@@ -306,6 +308,7 @@ export default {
     box-shadow: rgb(221, 221, 221) 0px 1px 3px;
     padding: 10px;
     font-size: 12px;
+    min-height: 50px;
 }
 
 .browser-address {

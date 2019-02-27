@@ -35,28 +35,25 @@ export interface IHistory {
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
      * @param {number} n                    退回的步数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
-     *
      * @memberOf IHistory
      */
-    goback(n: number): Promise<ILocation>;
+    goback(n?: number): Promise<ILocation>;
     /**
      * 退回到指定的path，如果为找到合适path，跳回到root
      * @param {string} path                 指定的path
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
-     *
      * @memberOf IHistory
      */
     goback(path: string): Promise<ILocation>;
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
-     * @param {(fn: ReadonlgLocation)=>boolean} fn
-     *                                      条件函数
+     * @param {(fn: ReadonlgLocation)=>boolean} fn      条件函数
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
     goback(fn: (fn: ReadonlgLocation) => boolean): Promise<ILocation>;
     /**
-     * 刷新当前页面，其实和replace当前的url一致，名字取自location.replace
+     * 刷新当前页面，名字取自location.reload
      * @returns {Promise<ILocation>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
@@ -93,7 +90,7 @@ export interface IHistory {
     /**
      * 注册URLchange监听器，事件支持异步，不允许注册多个事件
      * @param {any} ChangeEventCallback          监听函数。
-     *           4个参数：
+     *           5个参数：
      *               action { 'init' | 'push' | 'goback' | 'replace' | 'reload'} URL改变的类型
      *               oldLoction: 上一个页面的loction对象
      *               newLoction: 当前页面的location对象
@@ -113,6 +110,7 @@ export interface IHistory {
      *               oldLoction: 当前页面页面的loction对象
      *               newLoction: 下一个页面的location对象
      *               discardLoctions: 跳转过程中出栈的location对象
+     *               includeLoctions: 跳转过程中入栈的location对象
      *           返回值：
      *               是boolean或者Promise<boolean>。如果是Promise<boolean>，路由会处于终止状态，直到事件处理完成，所以尽量不要使用异步
      *               如果boolean值是false（false以外的falsy不可），将阻止改变发生

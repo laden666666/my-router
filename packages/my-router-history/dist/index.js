@@ -1140,7 +1140,7 @@ var PathUtils_1 = __webpack_require__(53);
 var DOMUtils_1 = __webpack_require__(109);
 var MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback';
 // 记录MyHistory在默认window上的实例数，确保constructor仅能够运行一个实例
-var historyCount = 0;
+var MY_ROUTER_HISTORY_WINDOW_INIT = 'MyRouterHistory:window';
 /**
  * 用于mixin的基类
  */
@@ -1181,11 +1181,9 @@ var MyHistory = function () {
         this.onBeforeChange = null;
         this.onChange = null;
         this._win = _window;
-        if (this._win === window) {
+        if (this._win[MY_ROUTER_HISTORY_WINDOW_INIT]) {
             // 同一时刻，在默认的window上面，不允许有两个history实例运行
-            if (historyCount > 0) {
-                throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.');
-            }
+            throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.');
         }
         this._config = (0, _assign2.default)({ gobackName: 'go back', root: '/', insertRoot: true }, _config);
         this._hashchangeHandler = this._hashchangeHandler.bind(this);
@@ -1250,9 +1248,7 @@ var MyHistory = function () {
             // 初始化监听器
             this._initEventListener();
             // 全部初始化完成，记录初始化成功
-            if (this._win === window) {
-                historyCount++;
-            }
+            this._win[MY_ROUTER_HISTORY_WINDOW_INIT] = true;
             this._switchState(1);
             // 使用微队列，用于异步初始化
             _promise2.default.resolve().then(function () {
@@ -1437,7 +1433,8 @@ var MyHistory = function () {
                             };
                         }(),
                         goback: function () {
-                            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(n) {
+                            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3() {
+                                var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
                                 var oldLocation, discardLoctions, newState, newLocation, needInclude, fn, index, result;
                                 return _regenerator2.default.wrap(function _callee3$(_context3) {
                                     while (1) {
@@ -1562,7 +1559,7 @@ var MyHistory = function () {
                                 }, _callee3, _this3, [[1, 33]]);
                             }));
 
-                            return function goback(_x6) {
+                            return function goback() {
                                 return _ref3.apply(this, arguments);
                             };
                         }(),
@@ -1988,7 +1985,7 @@ var MyHistory = function () {
                                 this._stateData = null;
                                 this._state = null;
                                 if (this._win === window) {
-                                    historyCount--;
+                                    delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT];
                                 }
                                 this._win = null;
 

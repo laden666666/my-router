@@ -109,7 +109,7 @@ export declare class MyHistory implements IHistory {
     _correct(): void;
     push(path: string, data?: any): Promise<ILocation>;
     replace(path: string, data?: any): Promise<ILocation>;
-    goback(n: number | string | {
+    goback(n?: number | string | {
         (fn: Readonly<ILocation>): boolean;
     }): Promise<ILocation>;
     reload(): Promise<ILocation>;

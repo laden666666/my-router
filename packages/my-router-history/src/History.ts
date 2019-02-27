@@ -6,9 +6,8 @@ import { addLeadingSlash } from './PathUtils';
 import { canUseDOM, nextTick } from './DOMUtils';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
-
 // 记录MyHistory在默认window上的实例数，确保constructor仅能够运行一个实例
-let historyCount = 0
+const MY_ROUTER_HISTORY_WINDOW_INIT = 'MyRouterHistory:window'
 
 // 保存在history的state里面的路由信息，这个信息因为不会随着浏览器刷新而消失，因此时候保存location信息
 interface State{
@@ -111,11 +110,9 @@ export class MyHistory implements IHistory {
 
     constructor(private _config: IHistoryConfig, _window: Window = window){
         this._win = _window
-        if(this._win === window){
+        if(this._win[MY_ROUTER_HISTORY_WINDOW_INIT]){
             // 同一时刻，在默认的window上面，不允许有两个history实例运行
-            if(historyCount > 0){
-                throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.')
-            }
+            throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.')
         }
 
         this._config = {
@@ -194,9 +191,7 @@ export class MyHistory implements IHistory {
         this._initEventListener()
 
         // 全部初始化完成，记录初始化成功
-        if(this._win === window){
-            historyCount++
-        }
+        this._win[MY_ROUTER_HISTORY_WINDOW_INIT] = true
 
         this._switchState(1)
 
@@ -322,7 +317,7 @@ export class MyHistory implements IHistory {
                             throw e
                         }
                     },
-                    goback: async (n: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>=>{
+                    goback: async (n: number | string | {(fn: Readonly<ILocation>): boolean} = 1): Promise<ILocation>=>{
                         this._switchState(3)
                         try{
                             // 当前页面
@@ -656,7 +651,7 @@ export class MyHistory implements IHistory {
         return await this._state.replace(path, data)
     }
 
-    async goback(n: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>{
+    async goback(n?: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>{
         return await this._state.goback(n as any)
     }
 
@@ -683,7 +678,7 @@ export class MyHistory implements IHistory {
         this._stateData = null
         this._state = null
         if(this._win === window){
-            historyCount--
+            delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT]
         }
         this._win = null
     }
