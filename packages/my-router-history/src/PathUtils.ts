@@ -1,4 +1,4 @@
-import {ILocation} from './model/ILocation'
+import {Location} from './model/Location'
 
 /**
  * 增加'/'到path
@@ -37,7 +37,7 @@ export function addLeadingSlash(path: string): string {
  * @param {any} state 
  * @returns {ILocation} 
  */
-export function parsePath(path: string): ILocation {
+export function parsePath(path: string): Location {
     let pathname = path || '/';
     let search = '';
     let hash = '';

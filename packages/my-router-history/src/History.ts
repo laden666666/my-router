@@ -1,6 +1,6 @@
 import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, ReadonlgLocation } from './model/IHistory';
-import { ILocation } from './model/ILocation';
-import { IHistoryConfig } from './model/IHistoryConfig';
+import { Location } from './model/Location';
+import { HistoryConfig } from './model/HistoryConfig';
 import { createLocation, crateNo } from './LocationUtils';
 import { addLeadingSlash } from './PathUtils';
 import { canUseDOM, nextTick } from './DOMUtils';
@@ -12,7 +12,7 @@ const MY_ROUTER_HISTORY_WINDOW_INIT = 'MyRouterHistory:window'
 // 保存在history的state里面的路由信息，这个信息因为不会随着浏览器刷新而消失，因此时候保存location信息
 interface State{
     // 当前的Location
-    location: ILocation
+    location: Location
     // 当前的时间戳
     timeStamp: number
     // 页面的类型
@@ -61,16 +61,16 @@ interface IHistoryState{
  * 用于mixin的基类
  */
 let baseHistoryState: IHistoryState = {
-    push(): Promise<ILocation>{
+    push(): Promise<Location>{
         return Promise.reject()
     },
-    replace(): Promise<ILocation>{
+    replace(): Promise<Location>{
         return Promise.reject()
     },
-    goback(): Promise<ILocation>{
+    goback(): Promise<Location>{
         return Promise.reject()
     },
-    reload(path: string): Promise<ILocation>{
+    reload(path: string): Promise<Location>{
         return Promise.reject()
     },
 } as any
@@ -108,7 +108,7 @@ export class MyHistory implements IHistory {
         }
     }
 
-    constructor(private _config: IHistoryConfig, _window: Window = window){
+    constructor(private _config: HistoryConfig, _window: Window = window){
         this._win = _window
         if(this._win[MY_ROUTER_HISTORY_WINDOW_INIT]){
             // 同一时刻，在默认的window上面，不允许有两个history实例运行
@@ -317,7 +317,7 @@ export class MyHistory implements IHistory {
                             throw e
                         }
                     },
-                    goback: async (n: number | string | {(fn: Readonly<ILocation>): boolean} = 1): Promise<ILocation>=>{
+                    goback: async (n: number | string | {(fn: Readonly<Location>): boolean} = 1): Promise<Location>=>{
                         this._switchState(3)
                         try{
                             // 当前页面
@@ -433,7 +433,7 @@ export class MyHistory implements IHistory {
                             } else if(state && state.type === 'GOBACK'){
                                 // 如果已经在goback页面了，则跳转到用户手输入的地址
                                 let now = Date.now()
-                                let location: ILocation = this._pathToLocation(this._stateData, now)
+                                let location: Location = this._pathToLocation(this._stateData, now)
     
                                 // 切回正在状态，这样就完成了对页面的修正
                                 this._switchState(1)
@@ -523,7 +523,7 @@ export class MyHistory implements IHistory {
      * @returns 
      * @memberOf MyHistory
      */
-    private _pathToLocation(path: string, timeStamp: number = Date.now()): ILocation {
+    private _pathToLocation(path: string, timeStamp: number = Date.now()): Location {
         
         path = this._decodePath(path);
     
@@ -536,11 +536,11 @@ export class MyHistory implements IHistory {
      * @private
      * @memberOf MyHistory
      */
-    private _pathToState(location: ILocation, data: any, type: State['type'], timeStamp?: number): State;
+    private _pathToState(location: Location, data: any, type: State['type'], timeStamp?: number): State;
     private _pathToState(path: string, data: any, type: State['type'], timeStamp?: number): State;
-    private _pathToState(path: ILocation | string, data: any = null, type: State['type'], timeStamp?: number): State{
+    private _pathToState(path: Location | string, data: any = null, type: State['type'], timeStamp?: number): State{
         
-        let location: ILocation
+        let location: Location
 
         if(typeof path === 'object'){
             location = path
@@ -651,7 +651,7 @@ export class MyHistory implements IHistory {
         return await this._state.replace(path, data)
     }
 
-    async goback(n?: number | string | {(fn: Readonly<ILocation>): boolean}): Promise<ILocation>{
+    async goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
         return await this._state.goback(n as any)
     }
 

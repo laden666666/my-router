@@ -1,8 +1,8 @@
 import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, ReadonlgLocation } from './model/IHistory';
-import { ILocation } from './model/ILocation';
-import { IHistoryConfig } from './model/IHistoryConfig';
+import { Location } from './model/Location';
+import { HistoryConfig } from './model/HistoryConfig';
 interface State {
-    location: ILocation;
+    location: Location;
     timeStamp: number;
     type: 'GOBACK' | 'NORMAL';
     data?: any;
@@ -34,7 +34,7 @@ export declare class MyHistory implements IHistory {
     private _stateStack;
     private _gobackState;
     readonly _stackTop: State;
-    constructor(_config: IHistoryConfig, _window?: Window);
+    constructor(_config: HistoryConfig, _window?: Window);
     private _win;
     /**
      * 初始化goback的location
@@ -107,12 +107,12 @@ export declare class MyHistory implements IHistory {
      * 当用处于未知页面（既不是goback页面，也不是normal页面时候），触发纠正
      */
     _correct(): void;
-    push(path: string, data?: any): Promise<ILocation>;
-    replace(path: string, data?: any): Promise<ILocation>;
+    push(path: string, data?: any): Promise<Location>;
+    replace(path: string, data?: any): Promise<Location>;
     goback(n?: number | string | {
-        (fn: Readonly<ILocation>): boolean;
-    }): Promise<ILocation>;
-    reload(): Promise<ILocation>;
+        (fn: Readonly<Location>): boolean;
+    }): Promise<Location>;
+    reload(): Promise<Location>;
     destroy(): Promise<void>;
     readonly stack: ReadonlgLocation[];
     readonly length: number;

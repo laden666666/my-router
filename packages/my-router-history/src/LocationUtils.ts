@@ -1,18 +1,18 @@
 import resolvePathname from 'resolve-pathname';
 
 import { parsePath } from './PathUtils';
-import { ILocation } from './model/ILocation';
+import { Location } from './model/Location';
 
 /**
  * 
  * @export
- * @param {string | ILocation} path href字符串或者location对象
+ * @param {string | Location} path href字符串或者location对象
  * @param {any} key 猜测是一个标记location的key
- * @param {ILocation} currentLocation 当前的location对象，用于解析出相对路径
+ * @param {Location} currentLocation 当前的location对象，用于解析出相对路径
  * @returns 
  */
-export function createLocation(path: string | ILocation, key: string = '', currentLocation: ILocation = null) {
-    let location: ILocation;
+export function createLocation(path: string | Location, key: string = '', currentLocation: Location = null) {
+    let location: Location;
     // 如果path是字符串，将其封装成location
     if (typeof path === 'string') {
         location = parsePath(path);
@@ -85,7 +85,7 @@ export function createLocation(path: string | ILocation, key: string = '', curre
 //  * @param {any} b 
 //  * @returns 
 //  */
-// export function locationsAreEqual(a: ILocation, b: ILocation) {
+// export function locationsAreEqual(a: Location, b: Location) {
 //     return a.href === b.href
 // }
 

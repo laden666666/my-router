@@ -9,6 +9,9 @@
     "dev": "webpack --config ./build/webpack.base.conf.js --progress --hide-modules --watch",
     "build": "webpack --config ./build/webpack.prod.conf.js --progress --hide-modules"
   },
+  "dependencies": {
+    "my-router-history": "^0.0.0"
+  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",

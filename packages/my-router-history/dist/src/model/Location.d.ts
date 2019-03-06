@@ -1,9 +1,9 @@
 /**
  * 一个浏览记录的对象的封装，参考了window.location对象
  * @export
- * @interface ILocation
+ * @interface Location
  */
-export interface ILocation {
+export interface Location {
     hash: string;
     pathname: string;
     search: string;
