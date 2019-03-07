@@ -2,7 +2,7 @@
  * MyRouter类
  * @interface MyRouter
  */
-interface IMyRouter{
+export interface IMyRouter{
 
     /**
      * 构造方法
@@ -12,7 +12,7 @@ interface IMyRouter{
     constructor (options?: MyRouterOptions);
 
     /**
-     * 路由模块当前的模式
+     * 路由模块当前的模式，目前仅提供浏览器模式，未来会提供
      * @type {string}
      * @memberOf MyRouter
      */
@@ -102,6 +102,21 @@ interface IMyRouter{
      * @memberOf MyRouter
      */
     getMatchedComponents (url: String): any[];
+
+    /**
+     * 
+     * @param {*} adapter 
+     * @memberOf IMyRouter
+     */
+    getAdapterInstance<T>(adapter: Adapter): T
+}
+
+/**
+ * 一个适配器，将my-router转换为其他类库的API，如vue-router、react-router。这样方便用my-router兼容其他项目
+ * @interface Adapter
+ */
+export interface Adapter{
+
 }
 
 /**
@@ -124,34 +139,116 @@ export interface MyRouterOptions {
  * 
  * @interface MyRouter
  */
-interface MyRouteConfig{
-    // 映射的路径
+export interface MyRouteConfig{
+    /**
+     * 映射的路径
+     * @type {string}
+     * @memberOf MyRouteConfig
+     */
     path: string;
-    // 映射的名字
+    
+    /**
+     * 映射的名字
+     * @type {string}
+     * @memberOf MyRouteConfig
+     */
     name?: string;
-    // 对应的控件
+
+    /**
+     * 对应的控件
+     * @type {*}
+     * @memberOf MyRouteConfig
+     */
     component?: any;
-    // 如果多个并列的视图，可以使用components配置
+
+    /**
+     * 如果多个并列的视图，可以使用components配置
+     * @type {{[name: string]: any}}
+     * @memberOf MyRouteConfig
+     */
     components?: {[name: string]: any};
-    // 重定向到某个路由
+
+    /**
+     * 重定向到某个路由
+     * @type {(string | {(): string})}
+     * @memberOf MyRouteConfig
+     */
     redirect?: string | {(): string};
-    // ？？？？
+
+    /**
+     * ？？？？
+     * @type {(string | string[])}
+     * @memberOf MyRouteConfig
+     */
     alias?: string | string[];
-    // 路由嵌套时候，可以注册子路由
+
+    /**
+     * 路由嵌套时候，可以注册子路由
+     * @type {MyRouteConfig[]}
+     * @memberOf MyRouteConfig
+     */
     children?: MyRouteConfig[];
-    // 用户自定义配置
+
+    /**
+     * 用户自定义配置
+     * @type {*}
+     * @memberOf MyRouteConfig
+     */
     meta?: any;
-    // 匹配规则是否大小写敏感
+
+    /**
+     * 匹配规则是否大小写敏感
+     * @type {boolean}
+     * @memberOf MyRouteConfig
+     */
     caseSensitive?: boolean;
-    // 它的作用几乎和standard一样。唯一不同的是，如果已经存在在栈顶在对方的任务一个同类型的活动实例，不会有任何新的activity创造，而是被发送到一个存在的activity实例通过onNewIntent() 方法的意图
-    lunchMode: 'standard' | 'singleTop' | 'singleTask' | 'singleInstance'
+    
+    /**
+     * 页面的缓存模式:
+     * standard： 标准模式，多实例，每一个href对应一个Component实例
+     * single：单实例，仅创建一次，如果压入栈中，下次再打开这个Component时候，会取出来，复用之前的实例
+     * singleCache：与single相同，也是单实例。不同是即使Component出栈也不释放，再次入栈时会把缓存的实例放入
+     * @type {('standard' | 'single' | 'singleCache')}
+     * @memberOf MyRouteConfig
+     */
+    lunchMode: 'standard' | 'single' | 'singleCache'
 }
 
+/**
+ * 当前地址的抽象
+ * @export
+ * @interface Location
+ */
 export interface Location {
+    /**
+     * 
+     * @type {string}
+     * @memberOf Location
+     */
     name?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberOf Location
+     */
     path?: string;
+    /**
+     * 
+     * @type {string}
+     * @memberOf Location
+    * */
     hash?: string;
+    /**
+     * 
+     * @type {({[name: string]: string[] | string})}
+     * @memberOf Location
+     */
     query?: {[name: string]: string[] | string}
+    /**
+     * 
+     * @type {{[name: string]: string}}
+     * @memberOf Location
+     */
     params?: {[name: string]: string}
 }
   
@@ -159,6 +256,6 @@ export interface Location {
  * 一个URL匹配工具，系统默认会使用path-to-regexp实现，但是用户可以根据自己需要，定制化path-to-regexp
  * @interface PathRegexp
  */
-interface PathRegexp{
+export interface PathRegexp{
 
 }
