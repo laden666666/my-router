@@ -1,76 +1,76 @@
-import { RouteRecognizer } from '../../src/router/RouteRecognizer'
+import { PathRegexp } from '../../src/core/PathRegexp'
 
-describe('路由的routeRecognizer模块测试', function() {
+describe('路由的PathRegexp模块测试', function() {
 
     it('初始化测试', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
     });
 
     it('增加路由配置测试', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
         
-        routeRecognizer.addRoute({
+        PathRegexp.addRoute({
             path: '/xxx',
             meta: 1
         })
 
-        let routeRsult = routeRecognizer.recognize('/xxx')
+        let routeRsult = PathRegexp.recognize('/xxx')
         assert.deepEqual(routeRsult.route.meta, 1)
         
     });
     
     it('查询参数测试', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
         
-        routeRecognizer.addRoute({
+        PathRegexp.addRoute({
             path: '/xxx',
             meta: 1
         })
 
-        let routeRsult = routeRecognizer.recognize('/xxx?a=1')
+        let routeRsult = PathRegexp.recognize('/xxx?a=1')
         assert.deepEqual(routeRsult.queryData, {a: '1'})
         assert.deepEqual(routeRsult.route.meta, 1)
         
     });
     
     it('路径参数测试', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
         
-        routeRecognizer.addRoute({
+        PathRegexp.addRoute({
             path: '/xxx/:a',
             meta: 1
         })
 
-        let routeRsult = routeRecognizer.recognize('/xxx/1')
+        let routeRsult = PathRegexp.recognize('/xxx/1')
         assert.deepEqual(routeRsult.pathData, {a: '1'})
         assert.deepEqual(routeRsult.route.meta, 1)
 
-        routeRsult = routeRecognizer.recognize('/xxx/1/1')
+        routeRsult = PathRegexp.recognize('/xxx/1/1')
         assert.deepEqual(routeRsult, null)
     });
 
     it('*表示无限级路径测试', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
         
-        routeRecognizer.addRoute({
+        PathRegexp.addRoute({
             path: '/xxx/*',
             meta: 1
         })
 
-        let routeRsult = routeRecognizer.recognize('/xxx/1')
+        let routeRsult = PathRegexp.recognize('/xxx/1')
         assert.isNotNull(routeRsult)
 
-        routeRsult = routeRecognizer.recognize('/xxx/1/1')
+        routeRsult = PathRegexp.recognize('/xxx/1/1')
         assert.isNotNull(routeRsult)
         
-        routeRsult = routeRecognizer.recognize('/xxx/')
+        routeRsult = PathRegexp.recognize('/xxx/')
         assert.isNull(routeRsult)
     });
     
     it('配置优先级测试，后配置的先匹配了', function() {
-        const routeRecognizer = new RouteRecognizer();
+        const PathRegexp = new PathRegexp();
         
-        routeRecognizer.addRoutes([{
+        PathRegexp.addRoutes([{
             path: '/xxx/:a',
             meta: 1
         }, {
@@ -88,24 +88,25 @@ describe('路由的routeRecognizer模块测试', function() {
         }, ])
 
 
-        let routeRsult = routeRecognizer.recognize('/xxx/a')
+        let routeRsult = PathRegexp.recognize('/xxx/a')
         assert.deepEqual(routeRsult.pathData, {a:'a'})
         assert.deepEqual(routeRsult.route.meta, 1)
 
-        routeRsult = routeRecognizer.recognize('/xxx/1')
+        routeRsult = PathRegexp.recognize('/xxx/1')
         assert.deepEqual(routeRsult.pathData, {})
         assert.deepEqual(routeRsult.route.meta, 5)
 
-        routeRsult = routeRecognizer.recognize('/xxx')
+        routeRsult = PathRegexp.recognize('/xxx')
         assert.deepEqual(routeRsult.pathData, {})
         assert.deepEqual(routeRsult.route.meta, 3)
         
-        routeRsult = routeRecognizer.recognize('/xxx/aaa/sfsd')
+        routeRsult = PathRegexp.recognize('/xxx/aaa/sfsd')
         assert.deepEqual(routeRsult.pathData, {})
         assert.deepEqual(routeRsult.route.meta, 4)
         
-        routeRsult = routeRecognizer.recognize('/aaa/sfsd')
+        routeRsult = PathRegexp.recognize('/aaa/sfsd')
         assert.deepEqual(routeRsult.pathData, {})
         assert.deepEqual(routeRsult.route.meta, 3)
     });
+
 });

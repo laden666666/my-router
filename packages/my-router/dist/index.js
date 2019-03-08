@@ -2489,7 +2489,7 @@ var StateCache_2 = __webpack_require__(71);
 var IRouterConfig_1 = __webpack_require__(131);
 var histort_1 = __webpack_require__(132);
 var IdUtil_1 = __webpack_require__(30);
-var RouteRecognizer_1 = __webpack_require__(162);
+var PathRegexp_1 = __webpack_require__(162);
 var Deferred_1 = __webpack_require__(168);
 /**
  * 负责监听页面跳转事件和触发页面跳转的类。要求必须是单例的,提供跳转的功能
@@ -2585,9 +2585,9 @@ var RouterManager = function () {
         } else {
             this.history = histort_1.HashHistory.instance();
         }
-        //创建RouteRecognizer实例
-        this._routeRecognizer = new RouteRecognizer_1.RouteRecognizer();
-        this._routeRecognizer.addRoutes(this.config.routes);
+        //创建PathRegexp实例
+        this._PathRegexp = new PathRegexp_1.PathRegexp();
+        this._PathRegexp.addRoutes(this.config.routes);
         //获取StateCache实例
         this.stateCache = StateCache_1.StateCache.instance();
         //浏览器事件的回调
@@ -2628,15 +2628,15 @@ var RouterManager = function () {
                                     newHistory.data = _this._cacheURLState.data;
                                     newHistory.otherData = _this._cacheURLState.otherData;
                                     newHistory.sessionDeferred = _this._cacheURLState.sessionDeferred;
-                                    newHistory.recognizeResult = _this._cacheURLState.recognizeResult;
+                                    newHistory.PathRegexpResult = _this._cacheURLState.PathRegexpResult;
                                 } else {
                                     newHistory.data = newHistory.data || {};
                                     newHistory.otherData = newHistory.otherData || {};
                                     newHistory.sessionDeferred = newHistory.sessionDeferred || null;
                                     //如同url获取对应的路由信息
-                                    _result = _this._routeRecognizer.recognize(url);
+                                    _result = _this._PathRegexp.recognize(url);
 
-                                    newHistory.recognizeResult = _result;
+                                    newHistory.PathRegexpResult = _result;
                                 }
                                 //限制执行beforeRouteEnter
                                 _context2.next = 8;
@@ -2746,9 +2746,9 @@ var RouterManager = function () {
                                 // //生成一个id给url
                                 // const url = this.history.getURL()
                                 // //如同url获取对应的路由信息
-                                // const result = this._routeRecognizer.recognize(url)
+                                // const result = this._PathRegexp.recognize(url)
                                 // const toState = new RouterURLState(url)
-                                // toState.recognizeResult = result
+                                // toState.PathRegexpResult = result
                                 // //执行beforeUpdateListener钩子，全部执行后再跳转页面
                                 // await Promise.all(this._beforeUpdateArray.map(fn=>
                                 //     fn(RouteData.state2RouteData(this.stateCache.get()), RouteData.state2RouteData(toState))))
@@ -2782,7 +2782,7 @@ var RouterManager = function () {
         key: "addRoute",
         value: function addRoute(route) {
             route.meta = route.meta || {};
-            this._routeRecognizer.addRoute(route);
+            this._PathRegexp.addRoute(route);
         }
         /**
          * 注册多个Route
@@ -2939,10 +2939,10 @@ var RouterManager = function () {
                                 url = this.history.createURL(urlPath, urlQuery, urlId);
                                 //如同url获取对应的路由信息
 
-                                result = this._routeRecognizer.recognize(url);
+                                result = this._PathRegexp.recognize(url);
                                 toState = new StateCache_2.RouterURLState(url, sessionData, backDeferred);
 
-                                toState.recognizeResult = result;
+                                toState.PathRegexpResult = result;
                                 //执行beforeUpdateListener钩子，全部执行后再跳转页面
                                 _context4.next = 10;
                                 return _promise2.default.all(this._beforeUpdateArray.map(function (fn) {
@@ -3003,10 +3003,10 @@ var RouterManager = function () {
                                 url = this.history.createURL(urlPath, urlQuery, urlId);
                                 //如同url获取对应的路由信息
 
-                                result = this._routeRecognizer.recognize(url);
+                                result = this._PathRegexp.recognize(url);
                                 toState = new StateCache_2.RouterURLState(url, sessionData, backDeferred);
 
-                                toState.recognizeResult = result;
+                                toState.PathRegexpResult = result;
                                 //执行beforeUpdateListener钩子，全部执行后再跳转页面
                                 _context5.next = 10;
                                 return _promise2.default.all(this._beforeUpdateArray.map(function (fn) {
@@ -4725,7 +4725,7 @@ var RouteData = function () {
             if (!state) {
                 return null;
             }
-            var recognizeResult = state.recognizeResult || {
+            var PathRegexpResult = state.PathRegexpResult || {
                 queryData: {},
                 pathData: {},
                 route: null,
@@ -4734,11 +4734,11 @@ var RouteData = function () {
             return {
                 id: state.routerURL.id,
                 fullPath: state.routerURL.stringifyWithoutSystemData(),
-                routeData: (0, _assign2.default)({}, recognizeResult.pathData, recognizeResult.queryData),
+                routeData: (0, _assign2.default)({}, PathRegexpResult.pathData, PathRegexpResult.queryData),
                 sessionData: state.data,
-                queryData: recognizeResult.queryData,
-                pathData: recognizeResult.pathData,
-                routeConfig: recognizeResult.route,
+                queryData: PathRegexpResult.queryData,
+                pathData: PathRegexpResult.pathData,
+                routeConfig: PathRegexpResult.route,
                 otherData: state.otherData
             };
         }
@@ -7099,26 +7099,26 @@ var _createClass3 = _interopRequireDefault(_createClass2);
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var $RouteRecognizer = __webpack_require__(167).default;
+var $PathRegexp = __webpack_require__(167).default;
 var path = __webpack_require__(55);
 
-var RouteRecognizer = function () {
-    function RouteRecognizer() {
-        (0, _classCallCheck3.default)(this, RouteRecognizer);
+var PathRegexp = function () {
+    function PathRegexp() {
+        (0, _classCallCheck3.default)(this, PathRegexp);
 
         //保存的路由
         this.routes = [];
-        this._initRouteRecognizer();
+        this._initPathRegexp();
     }
     /**
-     * 初始化RouteRecognizer
+     * 初始化PathRegexp
      * @private
      */
 
 
-    (0, _createClass3.default)(RouteRecognizer, [{
-        key: "_initRouteRecognizer",
-        value: function _initRouteRecognizer() {
+    (0, _createClass3.default)(PathRegexp, [{
+        key: "_initPathRegexp",
+        value: function _initPathRegexp() {
             var _this = this;
 
             var routes = [].concat((0, _toConsumableArray3.default)(this.routes)).sort(function (route1, route2) {
@@ -7158,9 +7158,9 @@ var RouteRecognizer = function () {
                 }
                 return 0;
             });
-            this._routeRecognizer = new $RouteRecognizer();
+            this._PathRegexp = new $PathRegexp();
             routes.forEach(function (item) {
-                _this._routeRecognizer.add([{
+                _this._PathRegexp.add([{
                     path: item.path,
                     handler: item
                 }]);
@@ -7169,31 +7169,31 @@ var RouteRecognizer = function () {
         /**
          * 增加单个路由配置
          * @param {Route} route
-         * @memberof RouteRecognizer
+         * @memberof PathRegexp
          */
 
     }, {
         key: "addRoute",
         value: function addRoute(route) {
             this.routes.push(route);
-            this._initRouteRecognizer();
+            this._initPathRegexp();
         }
         /**
          * 增加一组路由配置
          * @param {Route[]} routes
-         * @memberof RouteRecognizer
+         * @memberof PathRegexp
          */
 
     }, {
         key: "addRoutes",
         value: function addRoutes(routes) {
             this.routes = this.routes.concat(routes);
-            this._initRouteRecognizer();
+            this._initPathRegexp();
         }
         /**
          * 根据url匹配出缓存的路由信息
          * @param {string|IRouterURL} url
-         * @returns {IRecognizeResult}
+         * @returns {IPathRegexpResult}
          */
 
     }, {
@@ -7202,28 +7202,28 @@ var RouteRecognizer = function () {
             if (typeof url != 'string') {
                 url = url.stringify();
             }
-            //使用recognizeResult实现url匹配，并将匹配结果封装成RecognizeResult返回
-            var routeList = this._routeRecognizer.recognize(url);
+            //使用PathRegexpResult实现url匹配，并将匹配结果封装成PathRegexpResult返回
+            var routeList = this._PathRegexp.recognize(url);
             if (routeList) {
                 var route = routeList ? (0, _from2.default)(routeList)[0] : null;
-                var recognizeResult = {};
-                recognizeResult.route = route['handler'];
-                recognizeResult.pathData = route ? route['params'] : {};
+                var PathRegexpResult = {};
+                PathRegexpResult.route = route['handler'];
+                PathRegexpResult.pathData = route ? route['params'] : {};
                 //删除掉*相关的参数，仅保留:xx的参数
-                delete recognizeResult.pathData['*'];
-                delete recognizeResult.pathData[''];
-                recognizeResult.queryData = routeList.queryParams;
-                recognizeResult.url = url;
-                return recognizeResult;
+                delete PathRegexpResult.pathData['*'];
+                delete PathRegexpResult.pathData[''];
+                PathRegexpResult.queryData = routeList.queryParams;
+                PathRegexpResult.url = url;
+                return PathRegexpResult;
             } else {
                 return null;
             }
         }
     }]);
-    return RouteRecognizer;
+    return PathRegexp;
 }();
 
-exports.RouteRecognizer = RouteRecognizer;
+exports.PathRegexp = PathRegexp;
 
 /***/ }),
 /* 163 */
@@ -7509,7 +7509,7 @@ generate[0 /* Static */] = function (segment) {
 };
 generate[1 /* Dynamic */] = function (segment, params) {
     var value = getParam(params, segment.value);
-    if (RouteRecognizer.ENCODE_AND_DECODE_PATH_SEGMENTS) {
+    if (PathRegexp.ENCODE_AND_DECODE_PATH_SEGMENTS) {
         return encodePathSegment(value);
     }
     else {
@@ -7729,14 +7729,14 @@ function recognizeChar(states, ch) {
     }
     return nextStates;
 }
-var RecognizeResults = function RecognizeResults(queryParams) {
+var PathRegexpResults = function PathRegexpResults(queryParams) {
     this.length = 0;
     this.queryParams = queryParams || {};
 };
 
-RecognizeResults.prototype.splice = Array.prototype.splice;
-RecognizeResults.prototype.slice = Array.prototype.slice;
-RecognizeResults.prototype.push = Array.prototype.push;
+PathRegexpResults.prototype.splice = Array.prototype.splice;
+PathRegexpResults.prototype.slice = Array.prototype.slice;
+PathRegexpResults.prototype.push = Array.prototype.push;
 function findHandler(state, originalPath, queryParams) {
     var handlers = state.handlers;
     var regex = state.regex();
@@ -7744,7 +7744,7 @@ function findHandler(state, originalPath, queryParams) {
         { throw new Error("state not initialized"); }
     var captures = originalPath.match(regex);
     var currentCapture = 1;
-    var result = new RecognizeResults(queryParams);
+    var result = new PathRegexpResults(queryParams);
     result.length = handlers.length;
     for (var i = 0; i < handlers.length; i++) {
         var handler = handlers[i];
@@ -7760,7 +7760,7 @@ function findHandler(state, originalPath, queryParams) {
                 if (params === EmptyObject) {
                     params = {};
                 }
-                if (RouteRecognizer.ENCODE_AND_DECODE_PATH_SEGMENTS && shouldDecodes[j]) {
+                if (PathRegexp.ENCODE_AND_DECODE_PATH_SEGMENTS && shouldDecodes[j]) {
                     params[name] = capture && decodeURIComponent(capture);
                 }
                 else {
@@ -7788,7 +7788,7 @@ function decodeQueryParamPart(part) {
     }
     return result;
 }
-var RouteRecognizer = function RouteRecognizer() {
+var PathRegexp = function PathRegexp() {
     this.names = createMap();
     var states = [];
     var state = new State(states, 0, -1 /* ANY */, true, false);
@@ -7796,7 +7796,7 @@ var RouteRecognizer = function RouteRecognizer() {
     this.states = states;
     this.rootState = state;
 };
-RouteRecognizer.prototype.add = function add (routes, options) {
+PathRegexp.prototype.add = function add (routes, options) {
     var currentState = this.rootState;
     var pattern = "^";
     var types = [0, 0, 0];
@@ -7850,7 +7850,7 @@ RouteRecognizer.prototype.add = function add (routes, options) {
         };
     }
 };
-RouteRecognizer.prototype.handlersFor = function handlersFor (name) {
+PathRegexp.prototype.handlersFor = function handlersFor (name) {
     var route = this.names[name];
     if (!route) {
         throw new Error("There is no route named " + name);
@@ -7862,10 +7862,10 @@ RouteRecognizer.prototype.handlersFor = function handlersFor (name) {
     }
     return result;
 };
-RouteRecognizer.prototype.hasRoute = function hasRoute (name) {
+PathRegexp.prototype.hasRoute = function hasRoute (name) {
     return !!this.names[name];
 };
-RouteRecognizer.prototype.generate = function generate$1 (name, params) {
+PathRegexp.prototype.generate = function generate$1 (name, params) {
     var route = this.names[name];
     var output = "";
     if (!route) {
@@ -7888,7 +7888,7 @@ RouteRecognizer.prototype.generate = function generate$1 (name, params) {
     }
     return output;
 };
-RouteRecognizer.prototype.generateQueryString = function generateQueryString (params) {
+PathRegexp.prototype.generateQueryString = function generateQueryString (params) {
     var pairs = [];
     var keys = Object.keys(params);
     keys.sort();
@@ -7915,7 +7915,7 @@ RouteRecognizer.prototype.generateQueryString = function generateQueryString (pa
     }
     return "?" + pairs.join("&");
 };
-RouteRecognizer.prototype.parseQueryString = function parseQueryString (queryString) {
+PathRegexp.prototype.parseQueryString = function parseQueryString (queryString) {
     var pairs = queryString.split("&");
     var queryParams = {};
     for (var i = 0; i < pairs.length; i++) {
@@ -7943,7 +7943,7 @@ RouteRecognizer.prototype.parseQueryString = function parseQueryString (queryStr
     }
     return queryParams;
 };
-RouteRecognizer.prototype.recognize = function recognize (path) {
+PathRegexp.prototype.recognize = function recognize (path) {
     var results;
     var states = [this.rootState];
     var queryParams = {};
@@ -7962,7 +7962,7 @@ RouteRecognizer.prototype.recognize = function recognize (path) {
         path = "/" + path;
     }
     var originalPath = path;
-    if (RouteRecognizer.ENCODE_AND_DECODE_PATH_SEGMENTS) {
+    if (PathRegexp.ENCODE_AND_DECODE_PATH_SEGMENTS) {
         path = normalizePath(path);
     }
     else {
@@ -7999,16 +7999,16 @@ RouteRecognizer.prototype.recognize = function recognize (path) {
     }
     return results;
 };
-RouteRecognizer.VERSION = "0.3.4";
+PathRegexp.VERSION = "0.3.4";
 // Set to false to opt-out of encoding and decoding path segments.
 // See https://github.com/tildeio/route-recognizer/pull/55
-RouteRecognizer.ENCODE_AND_DECODE_PATH_SEGMENTS = true;
-RouteRecognizer.Normalizer = {
+PathRegexp.ENCODE_AND_DECODE_PATH_SEGMENTS = true;
+PathRegexp.Normalizer = {
     normalizeSegment: normalizeSegment, normalizePath: normalizePath, encodePathSegment: encodePathSegment
 };
-RouteRecognizer.prototype.map = map;
+PathRegexp.prototype.map = map;
 
-/* harmony default export */ __webpack_exports__["default"] = (RouteRecognizer);
+/* harmony default export */ __webpack_exports__["default"] = (PathRegexp);
 
 //# sourceMappingURL=route-recognizer.es.js.map
 

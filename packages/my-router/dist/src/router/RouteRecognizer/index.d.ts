@@ -1,28 +1,28 @@
 import { IRouterURL } from '../histort/';
 import { Route } from '../RouterManager/IRouterConfig';
-import { IRecognizeResult } from './IRecognizeResult';
-export { IRecognizeResult };
-export declare class RouteRecognizer {
-    private _routeRecognizer;
+import { IPathRegexpResult } from './IPathRegexpResult';
+export { IPathRegexpResult };
+export declare class PathRegexp {
+    private _PathRegexp;
     private routes;
     constructor();
     /**
-     * 初始化RouteRecognizer
+     * 初始化PathRegexp
      * @private
      */
-    private _initRouteRecognizer;
+    private _initPathRegexp;
     /**
      * 增加单个路由配置
      * @param {Route} route
-     * @memberof RouteRecognizer
+     * @memberof PathRegexp
      */
     addRoute(route: Route): void;
     /**
      * 增加一组路由配置
      * @param {Route[]} routes
-     * @memberof RouteRecognizer
+     * @memberof PathRegexp
      */
     addRoutes(routes: Route[]): void;
-    recognize(url: string): IRecognizeResult;
-    recognize(url: IRouterURL): IRecognizeResult;
+    recognize(url: string): IPathRegexpResult;
+    recognize(url: IRouterURL): IPathRegexpResult;
 }

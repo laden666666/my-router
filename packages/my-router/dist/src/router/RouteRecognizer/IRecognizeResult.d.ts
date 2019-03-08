@@ -1,9 +1,9 @@
 import { Route } from '../RouterManager/IRouterConfig';
 /**
- * 使用routeRecognizer匹配的url后的结构
- * @interface IRecognizeResult
+ * 使用PathRegexp匹配的url后的结构
+ * @interface IPathRegexpResult
  */
-export interface IRecognizeResult {
+export interface IPathRegexpResult {
     /**
      * url分解出的query数据
      */

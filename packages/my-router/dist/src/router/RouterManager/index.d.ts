@@ -50,7 +50,7 @@ export declare class RouterManager implements IRouterManager {
      * @private
      * @type {*}
      */
-    private _routeRecognizer;
+    private _PathRegexp;
     /**
      * HistoryCache对象
      * @type {StateCache}

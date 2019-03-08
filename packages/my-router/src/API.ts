@@ -257,5 +257,52 @@ export interface Location {
  * @interface PathRegexp
  */
 export interface PathRegexp{
+    /**
+     * 增加MyRouteConfig配置
+     * @param {MyRouteConfig} route 
+     * @memberOf PathRegexp
+     */
+    addRoute(route: MyRouteConfig): void;
 
+    /**
+     * 增加一组MyRouteConfig配置
+     * @param {MyRouteConfig[]} route 
+     * @memberOf PathRegexp
+     */
+    addRoutes(route: MyRouteConfig[]): void;
+
+    /**
+     * 根据URL获取匹配的route，并从URL中解析出URL参数
+     * @param {string} url 
+     * @returns {PathRegexpResult} 
+     * @memberOf PathRegexp
+     */
+    recognize(url: string): PathRegexpResult
+}
+
+/**
+ * 使用PathRegexp匹配的url后的结构
+ * @interface PathRegexpResult
+ */
+export interface PathRegexpResult{
+    /**
+     * url解析出的query数据，例如a?b=c，解析结果是 {b: 'c'}。
+     */
+    queryData: {[name: string]: string | string[]},
+    /**
+     * url解析出的path数据，如path是/:id1/:id2，url是/a/b，解析结果是{id1: 'a', id2: 'b'}
+     */
+    pathData: {[name: string]: string},
+    /**
+     * 匹配给定的url的RrouteConfig信息
+     */
+    RrouteConfig: MyRouteConfig,
+    /**
+     * 如果某个子RrouteConfig匹配，将由子到父排序，依次保存在这个数组中
+     */
+    routeConfigPath: MyRouteConfig[],
+    /**
+     * 用于匹配的url
+     */
+    url: string,
 }
