@@ -9,9 +9,6 @@
     "dev": "webpack --config ./build/webpack.base.conf.js --progress --hide-modules --watch",
     "build": "webpack --config ./build/webpack.prod.conf.js --progress --hide-modules"
   },
-  "dependencies": {
-    "my-router-history": "^0.0.0"
-  },
   "devDependencies": {
     "babel-core": "^6.26.0",
     "babel-loader": "^7.1.2",
@@ -40,6 +37,7 @@
     "karma-webpack": "^2.0.4",
     "mocha": "^3.5.0",
     "multer": "^1.3.0",
+    "my-router-history": "^0.0.0",
     "route-recognizer": "^0.3.3",
     "shelljs": "^0.7.8",
     "ts-loader": "^2.3.4",

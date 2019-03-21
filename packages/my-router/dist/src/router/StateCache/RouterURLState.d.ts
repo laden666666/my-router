@@ -4,7 +4,7 @@
  */
 import { IRouterURL } from '../histort/';
 import { Deferred } from '../util/Deferred';
-import { IPathRegexpResult } from '../PathRegexp';
+import { IPathRegexpResult } from '../IPathRegexp';
 /**
  * 对url进一步封装，扩展的url相关的所有状态参数，包括url、路由匹配的结果、session信息、其他信息（如果dom）
  * @export

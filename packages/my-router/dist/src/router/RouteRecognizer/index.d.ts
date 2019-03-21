@@ -2,7 +2,7 @@ import { IRouterURL } from '../histort/';
 import { Route } from '../RouterManager/IRouterConfig';
 import { IPathRegexpResult } from './IPathRegexpResult';
 export { IPathRegexpResult };
-export declare class PathRegexp {
+export declare class IPathRegexp {
     private _PathRegexp;
     private routes;
     constructor();
@@ -14,13 +14,13 @@ export declare class PathRegexp {
     /**
      * 增加单个路由配置
      * @param {Route} route
-     * @memberof PathRegexp
+     * @memberof IPathRegexp
      */
     addRoute(route: Route): void;
     /**
      * 增加一组路由配置
      * @param {Route[]} routes
-     * @memberof PathRegexp
+     * @memberof IPathRegexp
      */
     addRoutes(routes: Route[]): void;
     recognize(url: string): IPathRegexpResult;
