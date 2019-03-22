@@ -1,8 +1,9 @@
-import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, ReadonlgLocation } from './model/IHistory';
-import { Location } from './model/Location';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, Location } from './model/IHistory';
+import { Location as _Location } from './model/Location';
 import { HistoryConfig } from './model/HistoryConfig';
+export { Location, ChangeEventCallback };
 interface State {
-    location: Location;
+    location: _Location;
     timeStamp: number;
     type: 'GOBACK' | 'NORMAL';
     data?: any;
@@ -114,12 +115,11 @@ export declare class MyHistory implements IHistory {
     }): Promise<Location>;
     reload(): Promise<Location>;
     destroy(): Promise<void>;
-    readonly stack: ReadonlgLocation[];
+    readonly stack: Location[];
     readonly length: number;
     readonly isBusy: boolean;
-    readonly location: ReadonlgLocation;
+    readonly location: Location;
     onBeforeChange: BeforeChangeEventCallback;
     onChange: ChangeEventCallback;
     _execCallback<T extends Function>(callback: T): T;
 }
-export {};

@@ -1,34 +1,33 @@
-// import { RouterManager, RouterAction } from '../../src/router/'
+import { MyRouter } from '../../src/core/MyRouterManager'
 
-// describe('路由的模块测试', function() {
-//     this.timeout(8000);
+describe('路由的模块测试', function() {
+    this.timeout(8000);
 
-//     it('初始化测试', function() {
-//         return new Promise((resolve, reject)=>{
-//             const routerManager = new RouterManager({
-//                 //用内存history模拟浏览器路由
-//                 mode: 'm',
-//                 routes: [{
-//                     path: '/',
-//                     meta: {
-//                         id: 1
-//                     }
-//                 }],
-//                 onURLChange: (result, from, to, clears)=>{
-//                     try{
-//                         assert.deepEqual(result, RouterAction.PUSH)
-//                         assert.isArray(clears)
-//                         assert.isEmpty(clears)
-//                         assert.isNull(from)
-//                         assert.deepEqual(to.routeConfig.path, '/')
-//                         resolve()
-//                     } catch(e){
-//                         reject(e)
-//                     }
-//                 }
-//             })
-//         })
-//     });
+    it('初始化测试', function() {
+        return new Promise((resolve, reject)=>{
+            const routerManager = new MyRouter({
+                //用内存history模拟浏览器路由
+                routes: [{
+                    path: '/',
+                    meta: {
+                        id: 1
+                    }
+                }],
+                onURLChange: (result, from, to, clears)=>{
+                    try{
+                        assert.deepEqual(result, RouterAction.PUSH)
+                        assert.isArray(clears)
+                        assert.isEmpty(clears)
+                        assert.isNull(from)
+                        assert.deepEqual(to.routeConfig.path, '/')
+                        resolve()
+                    } catch(e){
+                        reject(e)
+                    }
+                }
+            })
+        })
+    });
 
 //     it('设置路由，匹配路由', function() {
 //         return new Promise((resolve, reject)=>{
@@ -381,4 +380,4 @@
 //             })
 //         })
 //     });
-// });
+});

@@ -824,7 +824,7 @@ describe('测试history', function(){
 
             assert.equal(myHistory.location.state, 'test')
             myHistory.location.state = 'test2'
-            assert.equal(myHistory.location.state, 'test2')
+            assert.equal(myHistory.location.state, 'test')
         });
 
         it('修改对象', async function() {

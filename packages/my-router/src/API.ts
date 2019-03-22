@@ -1,22 +1,17 @@
+import {Location} from 'my-router-history'
+
 /**
  * MyRouter类
  * @interface MyRouter
  */
-export interface IMyRouter{
-
-    /**
-     * 构造方法
-     * @param {MyRouterOptions} [options] 
-     * @memberOf MyRouter
-     */
-    constructor (options?: MyRouterOptions);
+export interface MyRouter{
 
     /**
      * 路由模块当前的模式，目前仅提供浏览器模式，未来会提供
      * @type {string}
      * @memberOf MyRouter
      */
-    mode: string;
+    readonly mode: string;
 
     /**
      * 当前的路由实例
@@ -33,53 +28,56 @@ export interface IMyRouter{
     readonly routeStack: Location[];
   
     /**
-     * 前进去往一个页面，名字取自history.push
+     * 前进去往一个页面，名字取自history.push，他可返回的是一个promise，当页面返回到当前页面，他能把backValue的返回值返回
      * @param {string} path                 去往的地址
-     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
-     * @memberOf IHistory
+     * @param {*} [sessionData]             session数据
+     * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
+     * @returns {Promise<any>} 
+     * 
+     * @memberOf MyRouter
      */
-    push(path: string, state?: any): Promise<Location>
+    push(path: string, sessionData?: any,state?: any): Promise<any>
 
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
      * @param {string} path                 去往的地址
-     * @param {any} state                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
-     * @memberOf IHistory
+     * @param {*} [sessionData]             session数据
+     * @param {*} state                   跳转的数据，要求可以被JSON.stringify
+     * @returns {Promise<void>}         回调的promise
+     * @memberOf MyRouter
      */
-    replace(path: string, state?: any): Promise<Location>
+    replace(path: string, sessionData?: any, state?: any): Promise<void>
 
     /**
      * 向后回退。如果退回步数，超过了栈的长度，按照栈的长度算，名字取自history.goback
      * @param {number} n                    退回的步数
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
-     * @memberOf IHistory
+     * @returns {Promise<void>}        跳转完成的promise，并返回新创建的ILocation
+     * @memberOf MyRouter
      */
-    goback(n?: number): Promise<Location>
+    goback(n?: number): Promise<void>
 
     /**
      * 退回到指定的path，如果为找到合适path，跳回到root
      * @param {string} path                 指定的path
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
+     * @returns {Promise<void>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    goback(path: string): Promise<Location>
+    goback(path: string): Promise<void>
 
     /**
      * 退回到符合条件的location，如果为找到合适path，跳回到root
      * @param {(fn: ReadonlgLocation)=>boolean} fn      条件函数
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
+     * @returns {Promise<void>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    goback(fn: (fn: Location)=>boolean): Promise<Location>
+    goback(fn: (fn: Location)=>boolean): Promise<void>
 
     /**
      * 刷新当前页面，名字取自location.reload
-     * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
+     * @returns {Promise<void>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    reload(): Promise<Location>
+    reload(): Promise<void>
     
     /**
      * 增加一组MyRouteConfig
@@ -217,42 +215,9 @@ export interface MyRouteConfig{
     lunchMode: 'standard' | 'single' | 'singleCache'
 }
 
-/**
- * 当前地址的抽象
- * @export
- * @interface Location
- */
-export interface Location {
-    /**
-     * 
-     * @type {string}
-     * @memberOf Location
-     */
-    name?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberOf Location
-     */
-    path?: string;
-    /**
-     * 
-     * @type {string}
-     * @memberOf Location
-    * */
-    hash?: string;
-    /**
-     * 
-     * @type {({[name: string]: string[] | string})}
-     * @memberOf Location
-     */
-    query?: {[name: string]: string[] | string}
-    /**
-     * 
-     * @type {{[name: string]: string}}
-     * @memberOf Location
-     */
-    params?: {[name: string]: string}
+export {
+    // 当前地址的抽象
+    Location
 }
   
 /**

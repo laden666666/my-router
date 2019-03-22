@@ -10,7 +10,7 @@ export class PathRegexp implements IPathRegexp{
     //保存的路由
     private routes: MyRouteConfig[] = []
 
-    constructor(){
+    constructor(private needSort: boolean = true){
         this.precisionMatch()
     }
 
@@ -19,6 +19,9 @@ export class PathRegexp implements IPathRegexp{
      * @private
      */
     precisionMatch(): void{
+        if(!this.needSort){
+            return
+        }
         const routes = [...this.routes].sort((route1, route2)=>{
 
             const paths1 = path.join('/', route1.path).split('/')
