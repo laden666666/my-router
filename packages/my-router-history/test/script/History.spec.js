@@ -195,20 +195,17 @@ describe('测试history', function(){
                 }
             })
 
-            await new Promise(r=>{
+            await Promise.all([promise, new Promise(r=>{
                 myHistory.push('test')
                     .catch(e=>{
                         if(e.isCancelled){
                             r(e)
                         }
                     })
-            })
-
-            await promise
+            })])
 
             assert.equal(myHistory.location.href, '/')
             assert.equal(myHistory.stack.length, 1)
-
         });
 
         it('测试onBeforeChange的push监听器，function取消', async function() {
@@ -287,9 +284,7 @@ describe('测试history', function(){
                 }
             })
             
-            myHistory.push('test')
-
-            await promise
+            await Promise.all([promise, myHistory.push('test')])
 
             assert.equal(myHistory.location.href, '/test')
             assert.equal(myHistory.stack.length, 2)
@@ -486,9 +481,7 @@ describe('测试history', function(){
                 }
             })
             
-            myHistory.replace('test')
-
-            await promise
+            await Promise.all([promise, myHistory.replace('test')])
 
             assert.equal(myHistory.location.href, '/test')
             assert.equal(myHistory.stack.length, 1)
@@ -837,6 +830,40 @@ describe('测试history', function(){
             assert.deepEqual(myHistory.location.state, {test: 'test'})
             myHistory.location.state.test = 'test2'
             assert.equal(myHistory.location.state.test, 'test2')
+        });
+    })
+
+    describe('history的生命周期', function() {
+        it('busy测试', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            myHistory.push('test')
+            assert.equal(myHistory.isBusy, true)
+            assert.throw(()=> {
+                console.log(myHistory.push('test1'))
+            })
+        });
+    })
+
+    describe('history的生命周期', function() {
+        it('生命周期跳转', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            await new Promise(r=>{
+                myHistory.onChange = ()=>{
+                    if(myHistory.location.pathname == '/test'){
+                        // 在生命周期中执行跳转
+                        myHistory.push('test1')
+                    } else if(myHistory.location.pathname == '/test1'){
+                        r()
+                    }
+                }
+                myHistory.push('test')
+            })
         });
     })
 })

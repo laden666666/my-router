@@ -80,15 +80,6 @@ return /******/ (function(modules) { // webpackBootstrap
 "use strict";
 
 
-Object.defineProperty(exports, "__esModule", { value: true });
-var router_1 = __webpack_require__(!(function webpackMissingModule() { var e = new Error("Cannot find module \"./router/\""); e.code = 'MODULE_NOT_FOUND'; throw e; }()));
-exports.RouterManager = router_1.RouterManager;
-exports.RouterAction = router_1.RouterAction;
-exports.Route = router_1.Route;
-exports.RouteData = router_1.RouteData;
-var version = "v0.0.0";
-exports.version = version;
-
 /***/ })
 /******/ ]);
 });

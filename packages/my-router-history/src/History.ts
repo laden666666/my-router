@@ -4,6 +4,7 @@ import { HistoryConfig } from './model/HistoryConfig';
 import { createLocation, crateNo } from './LocationUtils';
 import { addLeadingSlash } from './PathUtils';
 import { canUseDOM, nextTick } from './DOMUtils';
+import { Deferred } from './Deferred';
 
 const MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback'
 // 记录MyHistory在默认window上的实例数，确保constructor仅能够运行一个实例
@@ -67,18 +68,21 @@ interface IHistoryState{
 /**
  * 用于mixin的基类
  */
+
+let error: HistoryError = new Error('MyHistory busy')
+error.isBusy = true
 let baseHistoryState: IHistoryState = {
     push(): Promise<_Location>{
-        return Promise.reject()
+        throw error
     },
     replace(): Promise<_Location>{
-        return Promise.reject()
+        throw error
     },
     goback(): Promise<_Location>{
-        return Promise.reject()
+        throw error
     },
     reload(path: string): Promise<_Location>{
-        return Promise.reject()
+        throw error
     },
 } as any
 
@@ -92,6 +96,7 @@ export class MyHistory implements IHistory {
     // 4销毁中      在history销毁过程中的状态。
     // 5退出中      当用户要求退出到系统以外，系统会一直触发goback，直到页面刷新为止
     // 6跳转中      当用户要求跳转（包括push、replace、reload）
+    // 7跳转中      执行生命周期中
     private _state: IHistoryState = {
         ...baseHistoryState,
         type: 0,
@@ -230,12 +235,25 @@ export class MyHistory implements IHistory {
     }
 
     /**
+     * 下一次进入notBusy状态的Promise
+     * @private
+     * @type {Deferred}
+     * @memberOf MyHistory
+     */
+    private _notBusyDef: Deferred<void> = new Deferred
+
+    /**
      * 切换状态
      * @private
      * @param {any} stateType 
      * @memberOf MyHistory
      */
     private _switchState(stateType){
+
+        // 当state从1转为其他值，需要一个_notBusyDef，记录再回到1的时刻在resolve
+        if(stateType !== 1 && this._state.type === 1){
+            this._notBusyDef = new Deferred
+        }
 
         // 处理beforeChange中的取消逻辑。如果用户返回false、Error、Function都视为取消跳转。其中Function会在跳转结束后自执行
         let handleCancell = function(result: boolean | void | Error | Function){
@@ -267,16 +285,16 @@ export class MyHistory implements IHistory {
                     type: 1,
                     push: async (path: string, data?: any)=> {
                         this._checkData(data)
-
+                        
                         // 先切换到状态6，保护在跳转过程中不受其他操作影响
                         this._switchState(6)
                         try{
                             let state: State = this._pathToState(path, data, 'NORMAL')
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
+                            
+                            let result = await (this._execCallback(this.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation]))
 
-                            let result = await this._execCallback(this.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation])
-                    
                             // 处理取消情况
                             handleCancell(result)
 
@@ -285,7 +303,8 @@ export class MyHistory implements IHistory {
                             // 确保跳转完成
                             await new Promise(r=> nextTick(r))
 
-                            await this._execCallback(this.onChange)('push', oldLocation, newLocation, [], [newLocation])
+                            await (this._execCallback(this.onChange)('push', oldLocation, newLocation, [], [newLocation]))
+                            
                             this._switchState(1)
                             return this._readonlyLocation(state)
                         } catch(e){
@@ -304,9 +323,9 @@ export class MyHistory implements IHistory {
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
     
-                            let result = await this._execCallback(this.onBeforeChange)('replace', oldLocation, 
-                            newLocation, [oldLocation], [newLocation])
-                    
+                            let result = await (this._execCallback(this.onBeforeChange)('replace', oldLocation, 
+                            newLocation, [oldLocation], [newLocation]))
+
                             // 处理取消情况
                             handleCancell(result)
 
@@ -325,6 +344,8 @@ export class MyHistory implements IHistory {
                         }
                     },
                     goback: async (n: number | string | {(fn: Readonly<Location>): boolean} = 1): Promise<Location>=>{
+
+                        // 先执行生命周期
                         this._switchState(3)
                         try{
                             // 当前页面
@@ -373,9 +394,9 @@ export class MyHistory implements IHistory {
                                 discardLoctions = this._stateStack.slice(index + 1).map(item=> toReadonly(item)).reverse()
                             }
 
-                            let result = await this._execCallback(this.onBeforeChange)('goback', oldLocation, newLocation, 
-                                discardLoctions, needInclude ? [newLocation] : [])
-                            
+                            let result = await (this._execCallback(this.onBeforeChange)('goback', oldLocation, newLocation, 
+                                discardLoctions, needInclude ? [newLocation] : []))
+
                             // 处理取消情况
                             handleCancell(result)
 
@@ -384,8 +405,8 @@ export class MyHistory implements IHistory {
                             // 确保跳转完成
                             await new Promise(r=> nextTick(r))
 
-                            await this._execCallback(this.onChange)('goback', oldLocation, newLocation, 
-                                discardLoctions, needInclude ? [newLocation] : [])
+                            await (this._execCallback(this.onChange)('goback', oldLocation, newLocation, 
+                                discardLoctions, needInclude ? [newLocation] : []))
                             this._switchState(1)
                             return this._readonlyLocation(newState)
                         } catch(e){
@@ -423,65 +444,90 @@ export class MyHistory implements IHistory {
                         }
                     }
                 }
+                // 重新置回1，设置_notBusyDef为resolve
+                this._notBusyDef.resolve(undefined)
                 break;
-                case(2):
-                    this._state = {
-                        type: 2,
-                        ...baseHistoryState,
-                        hashChange: (event)=>{
-                            // 对纠正的处理步骤
-                            // 1. 一直后退，直到后退到goback页面
-                            // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
-    
-                            let state = (this._win.history.state as State)
-                            if(state && state.type === 'NORMAL'){
-                                // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
-                                this._win.history.back()
-                            } else if(state && state.type === 'GOBACK'){
-                                // 如果已经在goback页面了，则跳转到用户手输入的地址
-                                let now = Date.now()
-                                let location: _Location = this._pathToLocation(this._stateData, now)
-    
-                                // 切回正在状态，这样就完成了对页面的修正
-                                this._switchState(1)
-                                this._pushState(this._stackTop)
-                                this._state.push(location.href)
-                            } else {
-                                // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
-                                this._correct()
-                                // 纠正后重新后退
-                                this._win.history.back()
-                            }
-                        }
-                    }
-                    break;
-                case(3):
-                case(6):
-                    this._state = {
-                        type: stateType,
-                        ...baseHistoryState,
-                        hashChange: (event)=>{
-                            if(!this._win.history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
-                                // 如果用户在此期间手动修改url，直接纠正
-                                this._correct()
-                            } else {
-                                // 用户手动退回，前进一个页面，让history的修正
-                                this._pushState(this._stackTop)
-                            }
-                        }
-                    }
-                    break;
-                case(4):
-                case(5):
-                    this._state = {
-                        type: stateType,
-                        ...baseHistoryState,
-                        hashChange: (event)=>{
+            case(2):
+                this._state = {
+                    type: 2,
+                    ...baseHistoryState,
+                    hashChange: (event)=>{
+                        // 对纠正的处理步骤
+                        // 1. 一直后退，直到后退到goback页面
+                        // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
+
+                        let state = (this._win.history.state as State)
+                        if(state && state.type === 'NORMAL'){
+                            // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
+                            this._win.history.back()
+                        } else if(state && state.type === 'GOBACK'){
+                            // 如果已经在goback页面了，则跳转到用户手输入的地址
+                            let now = Date.now()
+                            let location: _Location = this._pathToLocation(this._stateData, now)
+
+                            // 切回正在状态，这样就完成了对页面的修正
+                            this._switchState(1)
+                            this._pushState(this._stackTop)
+                            this._state.push(location.href)
+                        } else {
+                            // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
+                            this._correct()
+                            // 纠正后重新后退
                             this._win.history.back()
                         }
                     }
-                    break;
-
+                }
+                break;
+            case(3):
+            case(6):
+                this._state = {
+                    type: stateType,
+                    ...baseHistoryState,
+                    hashChange: (event)=>{
+                        if(!this._win.history.state && this._getHrefToPath(event.oldURL) === this._stateStack[this._stateStack.length - 1].location.href){
+                            // 如果用户在此期间手动修改url，直接纠正
+                            this._correct()
+                        } else {
+                            // 用户手动退回，前进一个页面，让history的修正
+                            this._pushState(this._stackTop)
+                        }
+                    }
+                }
+                break;
+            case(4):
+            case(5):
+                this._state = {
+                    type: stateType,
+                    ...baseHistoryState,
+                    hashChange: (event)=>{
+                        this._win.history.back()
+                    }
+                }
+                break;
+            case(7):
+                this._state = {
+                    type: stateType,
+                    hashChange: (event)=>{
+                        this._win.history.back()
+                    },
+                    push: async (path: string, state?: any)=> {
+                        await this._notBusyDef.promise
+                        return this.push(path, state)
+                    },
+                    replace: async (path: string, state?: any)=> {
+                        await this._notBusyDef.promise
+                        return this.replace(path, state)
+                    },
+                    goback: async (arg: any)=> {
+                        await this._notBusyDef.promise
+                        return this.goback(arg)
+                    },
+                    reload: async ()=> {
+                        await this._notBusyDef.promise
+                        return this.reload()
+                    },
+                }
+                break;
         }
     }
 
@@ -656,19 +702,19 @@ export class MyHistory implements IHistory {
         this._push(this._stackTop, !isGobackNextLocation)
     }
     
-    async push(path: string, data?: any){
-        return await this._state.push(path, data)
+    push(path: string, data?: any): Promise<Location>{
+        return this._state.push(path, data)
     }
 
-    async replace(path: string, data?: any){
-        return await this._state.replace(path, data)
+    replace(path: string, data?: any): Promise<Location>{
+        return this._state.replace(path, data)
     }
 
-    async goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
-        return await this._state.goback(n as any)
+    goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
+        return this._state.goback(n as any)
     }
 
-    reload(){
+    reload(): Promise<Location>{
         return this._state.reload()
     }
 
@@ -705,7 +751,7 @@ export class MyHistory implements IHistory {
     }
 
     get isBusy(){
-        return this._state.type === 1
+        return this._state.type !== 1
     }
 
     get location(){
@@ -718,7 +764,18 @@ export class MyHistory implements IHistory {
 
     _execCallback<T extends Function>(callback: T): T{
         if(typeof callback === 'function'){
-            return ((...args)=>callback.apply(this, args)) as any
+            return (async (...args)=>{
+                let state = this._state.type
+                try{
+                    this._switchState(7)
+                    let result = await callback.apply(this, args)
+                    this._switchState(state)
+                    return result
+                } catch(e){
+                    this._switchState(state)
+                    throw e
+                }
+            }) as any
         } else {
             return (()=>Promise.resolve()) as any
         }
