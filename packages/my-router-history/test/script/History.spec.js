@@ -848,7 +848,7 @@ describe('测试history', function(){
     })
 
     describe('history的生命周期', function() {
-        it('生命周期跳转', async function() {
+        it('onChange生命周期跳转', async function() {
             myHistory = new MyHistory({
                 root: '/'
             })
@@ -864,6 +864,36 @@ describe('测试history', function(){
                 }
                 myHistory.push('test')
             })
+        });
+        
+        it('onChange生命周期跳转，不可跳转第二次', async function() {
+            myHistory = new MyHistory({
+                root: '/'
+            })
+
+            let resolve, errorPromise = new Promise(r=>{resolve = r})
+
+            await new Promise(r=>{
+                myHistory.onChange = ()=>{
+                    if(myHistory.location.pathname == '/test'){
+                        // 在生命周期中执行跳转
+                        myHistory.push('test1')
+
+                        // 这二次跳转要抛出异常
+                        try{
+                            myHistory.push('test1')
+                        } catch(e){
+                            if(e.isBusy){
+                                resolve()
+                            }
+                        }
+                    } else if(myHistory.location.pathname == '/test1'){
+                        r()
+                    }
+                }
+                myHistory.push('test')
+            })
+            await errorPromise
         });
     })
 })

@@ -59,6 +59,14 @@ export declare class MyHistory implements IHistory {
     private _initEventListener;
     private _destroyEventListener;
     /**
+     * 如果在beforeChange生命周期，出现了跳转，会在路由重新回归1的时候执行。
+     * 如果_notBusyDef已经存在，即使是在beforeChange生命周期（state为7）的时候，也不可以跳转
+     * @private
+     * @type {Deferred}
+     * @memberOf MyHistory
+     */
+    private _notBusyDef;
+    /**
      * 切换状态
      * @private
      * @param {any} stateType
@@ -83,6 +91,7 @@ export declare class MyHistory implements IHistory {
     private _decodePath;
     private _getHrefToPath;
     private _checkData;
+    private _checkState;
     /**
      * 将给定的path封装成一个location
      * @private

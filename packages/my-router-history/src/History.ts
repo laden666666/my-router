@@ -68,22 +68,11 @@ interface IHistoryState{
 /**
  * 用于mixin的基类
  */
-
-let error: HistoryError = new Error('MyHistory busy')
-error.isBusy = true
 let baseHistoryState: IHistoryState = {
-    push(): Promise<_Location>{
-        throw error
-    },
-    replace(): Promise<_Location>{
-        throw error
-    },
-    goback(): Promise<_Location>{
-        throw error
-    },
-    reload(path: string): Promise<_Location>{
-        throw error
-    },
+    push: null,
+    replace: null,
+    goback: null,
+    reload: null,
 } as any
 
 export class MyHistory implements IHistory {
@@ -235,12 +224,13 @@ export class MyHistory implements IHistory {
     }
 
     /**
-     * 下一次进入notBusy状态的Promise
+     * 如果在beforeChange生命周期，出现了跳转，会在路由重新回归1的时候执行。
+     * 如果_notBusyDef已经存在，即使是在beforeChange生命周期（state为7）的时候，也不可以跳转
      * @private
      * @type {Deferred}
      * @memberOf MyHistory
      */
-    private _notBusyDef: Deferred<void> = new Deferred
+    private _notBusyDef: Deferred<void> = null
 
     /**
      * 切换状态
@@ -249,11 +239,6 @@ export class MyHistory implements IHistory {
      * @memberOf MyHistory
      */
     private _switchState(stateType){
-
-        // 当state从1转为其他值，需要一个_notBusyDef，记录再回到1的时刻在resolve
-        if(stateType !== 1 && this._state.type === 1){
-            this._notBusyDef = new Deferred
-        }
 
         // 处理beforeChange中的取消逻辑。如果用户返回false、Error、Function都视为取消跳转。其中Function会在跳转结束后自执行
         let handleCancell = function(result: boolean | void | Error | Function){
@@ -304,8 +289,8 @@ export class MyHistory implements IHistory {
                             await new Promise(r=> nextTick(r))
 
                             await (this._execCallback(this.onChange)('push', oldLocation, newLocation, [], [newLocation]))
-                            
                             this._switchState(1)
+                            
                             return this._readonlyLocation(state)
                         } catch(e){
                             // 完成后切换状态1
@@ -334,8 +319,9 @@ export class MyHistory implements IHistory {
                             // 确保跳转完成
                             await new Promise(r=> nextTick(r))
                             
-                            await this._execCallback(this.onChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation])
                             this._switchState(1)
+                            await this._execCallback(this.onChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation])
+                            
                             return this._readonlyLocation(state)
                         } catch(e){
                             // 完成后切换状态1
@@ -405,9 +391,10 @@ export class MyHistory implements IHistory {
                             // 确保跳转完成
                             await new Promise(r=> nextTick(r))
 
+                            this._switchState(1)
                             await (this._execCallback(this.onChange)('goback', oldLocation, newLocation, 
                                 discardLoctions, needInclude ? [newLocation] : []))
-                            this._switchState(1)
+                                
                             return this._readonlyLocation(newState)
                         } catch(e){
                             // 完成后切换状态1
@@ -445,7 +432,10 @@ export class MyHistory implements IHistory {
                     }
                 }
                 // 重新置回1，设置_notBusyDef为resolve
-                this._notBusyDef.resolve(undefined)
+                if(this._notBusyDef){
+                    this._notBusyDef.resolve(undefined)
+                    this._notBusyDef = null
+                }
                 break;
             case(2):
                 this._state = {
@@ -511,20 +501,28 @@ export class MyHistory implements IHistory {
                         this._win.history.back()
                     },
                     push: async (path: string, state?: any)=> {
-                        await this._notBusyDef.promise
-                        return this.push(path, state)
+                        this._notBusyDef = new Deferred
+                        return this._notBusyDef.promise.then(()=>{
+                            return this.push(path, state)
+                        })
                     },
                     replace: async (path: string, state?: any)=> {
-                        await this._notBusyDef.promise
-                        return this.replace(path, state)
+                        this._notBusyDef = new Deferred
+                        return this._notBusyDef.promise.then(()=>{
+                            return this.replace(path, state)
+                        })
                     },
                     goback: async (arg: any)=> {
-                        await this._notBusyDef.promise
-                        return this.goback(arg)
+                        this._notBusyDef = new Deferred
+                        return this._notBusyDef.promise.then(()=>{
+                            return this.goback(arg)
+                        })
                     },
                     reload: async ()=> {
-                        await this._notBusyDef.promise
-                        return this.reload()
+                        this._notBusyDef = new Deferred
+                        return this._notBusyDef.promise.then(()=>{
+                            return this.reload()
+                        })
                     },
                 }
                 break;
@@ -565,6 +563,15 @@ export class MyHistory implements IHistory {
     private _checkData(data) {
         if(data != null){
             JSON.stringify(data)
+        }
+    }
+
+    // 检查路由是否处于可以跳转状态（state为1或7，如果处于7仅能跳转1次）
+    private _checkState(){
+        if(this.isBusy){
+            let error: HistoryError = new Error('MyHistory busy')
+            error.isBusy = true
+            throw error
         }
     }
 
@@ -703,18 +710,22 @@ export class MyHistory implements IHistory {
     }
     
     push(path: string, data?: any): Promise<Location>{
+        this._checkState()
         return this._state.push(path, data)
     }
 
     replace(path: string, data?: any): Promise<Location>{
+        this._checkState()
         return this._state.replace(path, data)
     }
 
     goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
+        this._checkState()
         return this._state.goback(n as any)
     }
 
     reload(): Promise<Location>{
+        this._checkState()
         return this._state.reload()
     }
 
@@ -751,7 +762,7 @@ export class MyHistory implements IHistory {
     }
 
     get isBusy(){
-        return this._state.type !== 1
+        return (this._state.type !== 1 && this._state.type !== 7) || (this._notBusyDef && this._state.type === 7)
     }
 
     get location(){
