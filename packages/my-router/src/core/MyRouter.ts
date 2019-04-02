@@ -1,7 +1,17 @@
 import MyHistory, {ChangeEventCallback} from 'my-router-history'
-import {MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location} from '../API'
+import {MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location, PopEventCallback} from '../API'
 import { LocationState } from './LocationState';
 import { Deferred } from './util/Deferred';
+
+let defaultOptions: MyRouterOptions = {
+    routes: [],
+    // precisionMatch?: boolean;
+    mode: '',
+    base: '/',
+    onBeforeURLChange: [],
+    onURLChange: [],
+    onPopLocation: [],
+}
 
 /**
  * 路由管理类的实现
@@ -17,8 +27,15 @@ export class MyRouter implements IMyRouter {
      * @memberOf MyRouter
      */
     constructor(options: MyRouterOptions){
-        this._options = options
-        this._history = new MyHistory({})
+        this._options = {
+            ...defaultOptions,
+            ...options,
+        }
+        this._history = new MyHistory(this._options)
+
+        this.addBeforeURLChange(this._options.onBeforeURLChange)
+        this.addURLChange(this._options.onURLChange)
+        this.addPopLocation(this._options.onPopLocation)
 
         this._history.onChange = ((action: 'init' | 'push' | 'goback' | 'replace' | 'reload', 
             oldLoction: Location, newLoction: Location, 
@@ -140,6 +157,44 @@ export class MyRouter implements IMyRouter {
      * @memberOf MyRouter
      */
     readonly routeStack: Location[];
+    
+    /**
+     * 注册BeforeChange生命周期
+     * @param callback 
+     */
+    private _beforeChanges: ChangeEventCallback[]
+    addBeforeURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
+        if(callback){
+            ;(Array.isArray(callback) ? callback : [callback])
+                .map(callback=>this._beforeChanges.push(callback))
+        }
+    }
+    
+    /**
+     * 注册URLChange生命周期
+     * @param {ChangeEventCallback} callback 
+     * @memberOf MyRouter
+     */
+    private _changes: ChangeEventCallback[]
+    addURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
+        if(callback){
+            ;(Array.isArray(callback) ? callback : [callback])
+                .map(callback=>this._changes.push(callback))
+        }
+    }
+
+    /**
+     * 注册
+     * @type {{(locations: Location[]): void}}
+     * @memberOf MyRouter
+     */
+    private _popEvent: PopEventCallback[]
+    addPopLocation(callback: PopEventCallback | PopEventCallback[]){
+        if(callback){
+            ;(Array.isArray(callback) ? callback : [callback])
+                .map(callback=>this._popEvent.push(callback))
+        }
+    }
 
      /**
      * 前进去往一个页面，名字取自history.push，他可返回的是一个promise，当页面返回到当前页面，他能把backValue的返回值返回
@@ -147,17 +202,16 @@ export class MyRouter implements IMyRouter {
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
      * @returns {Promise<any>} 
-     * 
      * @memberOf MyRouter
      */
     async push(path: string, sessionData?: any,state?: any): Promise<any>{
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
-        //跳转到新页面,并且从页面再跳转回来的Deferred
+        // 跳转到新页面,并且从页面再跳转回来的Deferred
         const backDeferred = new Deferred<any>()
 
-        //如同url获取对应的路由信息
+        // 如同url获取对应的路由信息
         const result = this._pathRegexp.recognize(path)
         
         // 真正的跳转
@@ -182,7 +236,7 @@ export class MyRouter implements IMyRouter {
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
-        //如同url获取对应的路由信息
+        // 如同url获取对应的路由信息
         const result = this._pathRegexp.recognize(path)
         const backDeferred = new Deferred<any>()
 
@@ -236,6 +290,17 @@ export class MyRouter implements IMyRouter {
      */
     addRoute (route: MyRouteConfig): void{
         this._pathRegexp.addRoute(route)
+    }
+
+    /**
+     * 销毁路由实例
+     * @memberOf IMyRouter
+     */
+    destroy(): void{
+        this._history.destroy()
+        this._history = null
+        this._options = null
+        this._pathRegexp = null
     }
 
     /**

@@ -1,4 +1,13 @@
-import {Location} from 'my-router-history'
+import {Location, ChangeEventCallback} from 'my-router-history'
+
+/**
+ * PopLocation事件回调
+ * @export
+ * @interface PopEventCallback
+ */
+export interface PopEventCallback {
+    (locations: Location[]): void
+}
 
 /**
  * MyRouter类
@@ -93,6 +102,33 @@ export interface MyRouter{
      */
     addRoute (routes: MyRouteConfig): void;
 
+    // 注册生命周期
+    /**
+     * 注册BeforeChange生命周期
+     * @param callback 
+     */
+    addBeforeURLChange(callback: ChangeEventCallback)
+    
+    /**
+     * 注册URLChange生命周期
+     * @param {ChangeEventCallback} callback 
+     * @memberOf MyRouter
+     */
+    addURLChange(callback: ChangeEventCallback)
+
+    /**
+     * 注册
+     * @type {{(locations: Location[]): void}}
+     * @memberOf MyRouter
+     */
+    addPopLocation(callback: PopEventCallback)
+
+    /**
+     * 销毁路由实例
+     * @memberOf IMyRouter
+     */
+    destroy(): void
+
     /**
      * 
      * @param {String} url 
@@ -134,6 +170,12 @@ export interface MyRouterOptions {
     base?: string;
     // 一部分浏览器按住返回按钮，会显示全部历史记录信息。该字段用于配置历史信息中返回页面的名字
     gobackName?: string;
+    // 注册
+    onBeforeURLChange?: ChangeEventCallback | ChangeEventCallback[]
+    // 
+    onURLChange?: ChangeEventCallback | ChangeEventCallback[]
+    // 
+    onPopLocation?: PopEventCallback | PopEventCallback[]
 }
 
 /**
