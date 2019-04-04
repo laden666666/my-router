@@ -66,13 +66,13 @@ export class MyRouter implements IMyRouter {
             }
 
             // 释放掉移除的地址数据。
-            discardLoctions.forEach((location)=>{
-                let state = this._stateCache[location.key]
-                if(state){
-                    state.destroy()
-                    delete this._stateCache[location.key]
-                }
-            })
+            // discardLoctions.forEach((location)=>{
+            //     let state = this._stateCache[location.key]
+            //     if(state){
+            //         state.destroy()
+            //         delete this._stateCache[location.key]
+            //     }
+            // })
             
         }) as ChangeEventCallback
     }

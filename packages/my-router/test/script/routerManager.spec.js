@@ -29,7 +29,7 @@ describe('路由的模块测试', function() {
                         id: 1
                     }
                 }],
-                onChange: (result, from, to, news, clears)=>{
+                onURLChange: (result, from, to, news, clears)=>{
                     try{
                         assert.deepEqual(result, RouterAction.PUSH)
                         assert.isArray(clears)
@@ -56,7 +56,7 @@ describe('路由的模块测试', function() {
                         id: 1
                     }
                 }],
-                onChange: (result, from, to)=>{
+                onURLChange: (result, from, to)=>{
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
                             assert.deepEqual(result, RouterAction.PUSH)
@@ -84,7 +84,7 @@ describe('路由的模块测试', function() {
                         id: 1
                     }
                 }],
-                onChange: ()=>{
+                onURLChange: ()=>{
                     var routeData = routerManager.getCurrentRouteData()
 
 
@@ -122,7 +122,7 @@ describe('路由的模块测试', function() {
             routes: [{
                 path: '/xxx',
             }],
-            onChange: (result, from, to)=>{
+            onURLChange: (result, from, to)=>{
                 try{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
@@ -146,7 +146,7 @@ describe('路由的模块测试', function() {
             routes: [{
                 path: '/xxx',
             }],
-            onChange: (result, from, to)=>{
+            onURLChange: (result, from, to)=>{
                 try{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
@@ -172,7 +172,7 @@ describe('路由的模块测试', function() {
             }, {
                 path: '/yyy',
             }],
-            onChange: (result, from, to, clearList)=>{
+            onURLChange: (result, from, to, clearList)=>{
                 try{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
@@ -201,7 +201,7 @@ describe('路由的模块测试', function() {
             routes: [{
                 path: '/xxx',
             }],
-            onChange: (result, from, to, clearList)=>{
+            onURLChange: (result, from, to, clearList)=>{
                 try{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 0){
@@ -233,7 +233,7 @@ describe('路由的模块测试', function() {
                 }, {
                     path: '/xxx',
                 }],
-                onChange: (result, from, to, clearState)=>{
+                onURLChange: (result, from, to, clearState)=>{
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
                             routerManager.navigateBack()
@@ -266,7 +266,7 @@ describe('路由的模块测试', function() {
                     meta: {
                     }
                 }],
-                onChange: (result, from, to, clearState)=>{
+                onURLChange: (result, from, to, clearState)=>{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/token'){
@@ -310,7 +310,7 @@ describe('路由的模块测试', function() {
                     meta: {
                     }
                 }],
-                onChange: (result, from, to, clearState)=>{
+                onURLChange: (result, from, to, clearState)=>{
                     console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/token'){
@@ -374,7 +374,7 @@ describe('路由的模块测试', function() {
                         }
                     }
                 },
-                onChange: (result, from, to, clearState)=>{
+                onURLChange: (result, from, to, clearState)=>{
                     try{
                         if(to.routeConfig.path == '/'){
                             setTimeout(()=>{
