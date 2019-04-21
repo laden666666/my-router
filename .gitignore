@@ -16,6 +16,7 @@ selenium-debug.log
 .history/
 .cache/
 .vscode/
+package-lock.json
 dist.zip
 build/config/.config.js
 src/biz/config/.config.ts

@@ -12,7 +12,7 @@
 
     <h3>用户跳转页面后，不产生浏览记录</h3>
     <p>浏览器的地址栏会收集用户的浏览记录，<strong>my-reoute-history</strong>屏蔽了这一行为。因为App会试图用自己的导航去引导用户，而历史记录会让用户跳出App精心设计的导航，使得工作流变动混乱，用户体验变得更差。</p>
-    
+
     <p>如下图，用户在地址栏输入地址“/demo”后，页面跳转，但是浏览器中仅存在“返回”一条记录，看不到“首页”记录。</p>
     <img src="./doc-jsx/GIF2.gif" alt=""/>
 
@@ -25,7 +25,7 @@
     <h2>其他功能</h2>
     <h3>虚拟历史记录</h3>
     <p>浏览器地址栏的历史记录是开发者不可访问的，<strong>my-reoute-history</strong>提供了一个虚拟历史记录的功能，用于代替history的历史记录。开发者可以访问虚拟历史记录，并动态的删除、增加用户的访问记录。</p>
-    
+
     <h3>禁止用户修改URL</h3>
     <p>在浏览器中，用户可以修改URL，<strong>my-reoute-history</strong>可以屏蔽这一行为，当用户修改URL后，会用当前页面的URL覆盖掉用户修改的URL。</p>
     <p>虽然<strong>my-reoute-history</strong>可以屏蔽用户修改URL，但是<strong>my-reoute-history却不建议开发者开启这项功能</strong>，因为我们毕竟是在浏览器中，禁止修改URL，会降低用户的使用体验，这也违背了<strong>my-reoute-history</strong>设计的初衷。</p>
@@ -36,5 +36,5 @@
     <h3>目标是提升用户体验</h3>
     <p>目前返回键劫持主要用于在页面中嵌入广告等不法行为，而<strong>my-reoute-history</strong>致力于提升用户体验，引导用户遵循App式的导航，希望大家能够正确的使用<strong>my-reoute-history</strong>，目标是<strong>提升用户体验</strong>，而不是其他。</p>
 
-    <p>基于<strong>返回键劫持</strong>的现状，Chrome浏览器已经着手准备未来禁止这一行为，<strong>my-reoute-history</strong>会持续跟进改进。</p>
+    <p>基于<strong>返回键劫持</strong>的现状，Chrome浏览器已经着手准备未来<a href="https://9to5google.com/2018/12/17/chrome-sites-wont-go-back/">禁止这一行为<a>，<strong>my-reoute-history</strong>会持续跟进改进。</p>
 </doc>

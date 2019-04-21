@@ -15,7 +15,7 @@
     "npm": ">= 3.0.0"
   },
   "devDependencies": {
-    "lerna": "^3.4.3",
+    "lerna": "^2.9.0",
     "my-doc-jsx": "^0.4.2",
     "my-doc-jsx-plugin-api": "^0.1.1"
   },
