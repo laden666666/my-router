@@ -70,886 +70,50 @@ return /******/ (function(modules) { // webpackBootstrap
 /******/ 	__webpack_require__.p = "";
 /******/
 /******/ 	// Load entry module and return exports
-/******/ 	return __webpack_require__(__webpack_require__.s = 41);
+/******/ 	return __webpack_require__(__webpack_require__.s = 3);
 /******/ })
 /************************************************************************/
 /******/ ([
 /* 0 */
-/***/ (function(module, exports) {
-
-// https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
-var global = module.exports = typeof window != 'undefined' && window.Math == Math
-  ? window : typeof self != 'undefined' && self.Math == Math ? self
-  // eslint-disable-next-line no-new-func
-  : Function('return this')();
-if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
-
-
-/***/ }),
-/* 1 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var store = __webpack_require__(29)('wks');
-var uid = __webpack_require__(30);
-var Symbol = __webpack_require__(0).Symbol;
-var USE_SYMBOL = typeof Symbol == 'function';
-
-var $exports = module.exports = function (name) {
-  return store[name] || (store[name] =
-    USE_SYMBOL && Symbol[name] || (USE_SYMBOL ? Symbol : uid)('Symbol.' + name));
-};
-
-$exports.store = store;
-
-
-/***/ }),
-/* 2 */
-/***/ (function(module, exports) {
-
-var core = module.exports = { version: '2.5.7' };
-if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
-
-
-/***/ }),
-/* 3 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(8);
-module.exports = function (it) {
-  if (!isObject(it)) throw TypeError(it + ' is not an object!');
-  return it;
-};
-
-
-/***/ }),
-/* 4 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0);
-var core = __webpack_require__(2);
-var ctx = __webpack_require__(10);
-var hide = __webpack_require__(5);
-var has = __webpack_require__(12);
-var PROTOTYPE = 'prototype';
-
-var $export = function (type, name, source) {
-  var IS_FORCED = type & $export.F;
-  var IS_GLOBAL = type & $export.G;
-  var IS_STATIC = type & $export.S;
-  var IS_PROTO = type & $export.P;
-  var IS_BIND = type & $export.B;
-  var IS_WRAP = type & $export.W;
-  var exports = IS_GLOBAL ? core : core[name] || (core[name] = {});
-  var expProto = exports[PROTOTYPE];
-  var target = IS_GLOBAL ? global : IS_STATIC ? global[name] : (global[name] || {})[PROTOTYPE];
-  var key, own, out;
-  if (IS_GLOBAL) source = name;
-  for (key in source) {
-    // contains in native
-    own = !IS_FORCED && target && target[key] !== undefined;
-    if (own && has(exports, key)) continue;
-    // export native or passed
-    out = own ? target[key] : source[key];
-    // prevent global pollution for namespaces
-    exports[key] = IS_GLOBAL && typeof target[key] != 'function' ? source[key]
-    // bind timers to global for call from export context
-    : IS_BIND && own ? ctx(out, global)
-    // wrap global constructors for prevent change them in library
-    : IS_WRAP && target[key] == out ? (function (C) {
-      var F = function (a, b, c) {
-        if (this instanceof C) {
-          switch (arguments.length) {
-            case 0: return new C();
-            case 1: return new C(a);
-            case 2: return new C(a, b);
-          } return new C(a, b, c);
-        } return C.apply(this, arguments);
-      };
-      F[PROTOTYPE] = C[PROTOTYPE];
-      return F;
-    // make static versions for prototype methods
-    })(out) : IS_PROTO && typeof out == 'function' ? ctx(Function.call, out) : out;
-    // export proto methods to core.%CONSTRUCTOR%.methods.%NAME%
-    if (IS_PROTO) {
-      (exports.virtual || (exports.virtual = {}))[key] = out;
-      // export proto methods to core.%CONSTRUCTOR%.prototype.%NAME%
-      if (type & $export.R && expProto && !expProto[key]) hide(expProto, key, out);
-    }
-  }
-};
-// type bitmap
-$export.F = 1;   // forced
-$export.G = 2;   // global
-$export.S = 4;   // static
-$export.P = 8;   // proto
-$export.B = 16;  // bind
-$export.W = 32;  // wrap
-$export.U = 64;  // safe
-$export.R = 128; // real proto method for `library`
-module.exports = $export;
-
-
-/***/ }),
-/* 5 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var dP = __webpack_require__(7);
-var createDesc = __webpack_require__(25);
-module.exports = __webpack_require__(6) ? function (object, key, value) {
-  return dP.f(object, key, createDesc(1, value));
-} : function (object, key, value) {
-  object[key] = value;
-  return object;
-};
-
-
-/***/ }),
-/* 6 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// Thank's IE8 for his funny defineProperty
-module.exports = !__webpack_require__(17)(function () {
-  return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
-});
-
-
-/***/ }),
-/* 7 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var anObject = __webpack_require__(3);
-var IE8_DOM_DEFINE = __webpack_require__(51);
-var toPrimitive = __webpack_require__(52);
-var dP = Object.defineProperty;
-
-exports.f = __webpack_require__(6) ? Object.defineProperty : function defineProperty(O, P, Attributes) {
-  anObject(O);
-  P = toPrimitive(P, true);
-  anObject(Attributes);
-  if (IE8_DOM_DEFINE) try {
-    return dP(O, P, Attributes);
-  } catch (e) { /* empty */ }
-  if ('get' in Attributes || 'set' in Attributes) throw TypeError('Accessors not supported!');
-  if ('value' in Attributes) O[P] = Attributes.value;
-  return O;
-};
-
-
-/***/ }),
-/* 8 */
-/***/ (function(module, exports) {
-
-module.exports = function (it) {
-  return typeof it === 'object' ? it !== null : typeof it === 'function';
-};
-
-
-/***/ }),
-/* 9 */
-/***/ (function(module, exports) {
-
-module.exports = {};
-
-
-/***/ }),
-/* 10 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// optional / simple context binding
-var aFunction = __webpack_require__(11);
-module.exports = function (fn, that, length) {
-  aFunction(fn);
-  if (that === undefined) return fn;
-  switch (length) {
-    case 1: return function (a) {
-      return fn.call(that, a);
-    };
-    case 2: return function (a, b) {
-      return fn.call(that, a, b);
-    };
-    case 3: return function (a, b, c) {
-      return fn.call(that, a, b, c);
-    };
-  }
-  return function (/* ...args */) {
-    return fn.apply(that, arguments);
-  };
-};
-
-
-/***/ }),
-/* 11 */
-/***/ (function(module, exports) {
-
-module.exports = function (it) {
-  if (typeof it != 'function') throw TypeError(it + ' is not a function!');
-  return it;
-};
-
-
-/***/ }),
-/* 12 */
-/***/ (function(module, exports) {
-
-var hasOwnProperty = {}.hasOwnProperty;
-module.exports = function (it, key) {
-  return hasOwnProperty.call(it, key);
-};
-
-
-/***/ }),
-/* 13 */
-/***/ (function(module, exports) {
-
-var toString = {}.toString;
-
-module.exports = function (it) {
-  return toString.call(it).slice(8, -1);
-};
-
-
-/***/ }),
-/* 14 */
-/***/ (function(module, exports) {
-
-// 7.1.4 ToInteger
-var ceil = Math.ceil;
-var floor = Math.floor;
-module.exports = function (it) {
-  return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
-};
-
-
-/***/ }),
-/* 15 */
-/***/ (function(module, exports) {
-
-// 7.2.1 RequireObjectCoercible(argument)
-module.exports = function (it) {
-  if (it == undefined) throw TypeError("Can't call method on  " + it);
-  return it;
-};
-
-
-/***/ }),
-/* 16 */
-/***/ (function(module, exports) {
-
-module.exports = true;
-
-
-/***/ }),
-/* 17 */
-/***/ (function(module, exports) {
-
-module.exports = function (exec) {
-  try {
-    return !!exec();
-  } catch (e) {
-    return true;
-  }
-};
-
-
-/***/ }),
-/* 18 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var isObject = __webpack_require__(8);
-var document = __webpack_require__(0).document;
-// typeof document.createElement is 'object' in old IE
-var is = isObject(document) && isObject(document.createElement);
-module.exports = function (it) {
-  return is ? document.createElement(it) : {};
-};
-
-
-/***/ }),
-/* 19 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// to indexed object, toObject with fallback for non-array-like ES3 strings
-var IObject = __webpack_require__(27);
-var defined = __webpack_require__(15);
-module.exports = function (it) {
-  return IObject(defined(it));
-};
-
-
-/***/ }),
-/* 20 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var shared = __webpack_require__(29)('keys');
-var uid = __webpack_require__(30);
-module.exports = function (key) {
-  return shared[key] || (shared[key] = uid(key));
-};
-
-
-/***/ }),
-/* 21 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var def = __webpack_require__(7).f;
-var has = __webpack_require__(12);
-var TAG = __webpack_require__(1)('toStringTag');
-
-module.exports = function (it, tag, stat) {
-  if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
-};
-
-
-/***/ }),
-/* 22 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-// 25.4.1.5 NewPromiseCapability(C)
-var aFunction = __webpack_require__(11);
 
-function PromiseCapability(C) {
-  var resolve, reject;
-  this.promise = new C(function ($$resolve, $$reject) {
-    if (resolve !== undefined || reject !== undefined) throw TypeError('Bad Promise constructor');
-    resolve = $$resolve;
-    reject = $$reject;
-  });
-  this.resolve = aFunction(resolve);
-  this.reject = aFunction(reject);
-}
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-module.exports.f = function (C) {
-  return new PromiseCapability(C);
-};
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
+function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
 
-/***/ }),
-/* 23 */
-/***/ (function(module, exports, __webpack_require__) {
+function _asyncToGenerator(fn) { return function () { var gen = fn.apply(this, arguments); return new Promise(function (resolve, reject) { function step(key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { return Promise.resolve(value).then(function (value) { step("next", value); }, function (err) { step("throw", err); }); } } return step("next"); }); }; }
 
-module.exports = { "default": __webpack_require__(47), __esModule: true };
-
-/***/ }),
-/* 24 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var LIBRARY = __webpack_require__(16);
-var $export = __webpack_require__(4);
-var redefine = __webpack_require__(53);
-var hide = __webpack_require__(5);
-var Iterators = __webpack_require__(9);
-var $iterCreate = __webpack_require__(54);
-var setToStringTag = __webpack_require__(21);
-var getPrototypeOf = __webpack_require__(60);
-var ITERATOR = __webpack_require__(1)('iterator');
-var BUGGY = !([].keys && 'next' in [].keys()); // Safari has buggy iterators w/o `next`
-var FF_ITERATOR = '@@iterator';
-var KEYS = 'keys';
-var VALUES = 'values';
-
-var returnThis = function () { return this; };
-
-module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCED) {
-  $iterCreate(Constructor, NAME, next);
-  var getMethod = function (kind) {
-    if (!BUGGY && kind in proto) return proto[kind];
-    switch (kind) {
-      case KEYS: return function keys() { return new Constructor(this, kind); };
-      case VALUES: return function values() { return new Constructor(this, kind); };
-    } return function entries() { return new Constructor(this, kind); };
-  };
-  var TAG = NAME + ' Iterator';
-  var DEF_VALUES = DEFAULT == VALUES;
-  var VALUES_BUG = false;
-  var proto = Base.prototype;
-  var $native = proto[ITERATOR] || proto[FF_ITERATOR] || DEFAULT && proto[DEFAULT];
-  var $default = $native || getMethod(DEFAULT);
-  var $entries = DEFAULT ? !DEF_VALUES ? $default : getMethod('entries') : undefined;
-  var $anyNative = NAME == 'Array' ? proto.entries || $native : $native;
-  var methods, key, IteratorPrototype;
-  // Fix native
-  if ($anyNative) {
-    IteratorPrototype = getPrototypeOf($anyNative.call(new Base()));
-    if (IteratorPrototype !== Object.prototype && IteratorPrototype.next) {
-      // Set @@toStringTag to native iterators
-      setToStringTag(IteratorPrototype, TAG, true);
-      // fix for some old engines
-      if (!LIBRARY && typeof IteratorPrototype[ITERATOR] != 'function') hide(IteratorPrototype, ITERATOR, returnThis);
-    }
-  }
-  // fix Array#{values, @@iterator}.name in V8 / FF
-  if (DEF_VALUES && $native && $native.name !== VALUES) {
-    VALUES_BUG = true;
-    $default = function values() { return $native.call(this); };
-  }
-  // Define iterator
-  if ((!LIBRARY || FORCED) && (BUGGY || VALUES_BUG || !proto[ITERATOR])) {
-    hide(proto, ITERATOR, $default);
-  }
-  // Plug for library
-  Iterators[NAME] = $default;
-  Iterators[TAG] = returnThis;
-  if (DEFAULT) {
-    methods = {
-      values: DEF_VALUES ? $default : getMethod(VALUES),
-      keys: IS_SET ? $default : getMethod(KEYS),
-      entries: $entries
-    };
-    if (FORCED) for (key in methods) {
-      if (!(key in proto)) redefine(proto, key, methods[key]);
-    } else $export($export.P + $export.F * (BUGGY || VALUES_BUG), NAME, methods);
-  }
-  return methods;
-};
-
-
-/***/ }),
-/* 25 */
-/***/ (function(module, exports) {
-
-module.exports = function (bitmap, value) {
-  return {
-    enumerable: !(bitmap & 1),
-    configurable: !(bitmap & 2),
-    writable: !(bitmap & 4),
-    value: value
-  };
-};
-
-
-/***/ }),
-/* 26 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.14 / 15.2.3.14 Object.keys(O)
-var $keys = __webpack_require__(57);
-var enumBugKeys = __webpack_require__(31);
-
-module.exports = Object.keys || function keys(O) {
-  return $keys(O, enumBugKeys);
-};
-
-
-/***/ }),
-/* 27 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// fallback for non-array-like ES3 and non-enumerable old V8 strings
-var cof = __webpack_require__(13);
-// eslint-disable-next-line no-prototype-builtins
-module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
-  return cof(it) == 'String' ? it.split('') : Object(it);
-};
-
-
-/***/ }),
-/* 28 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.15 ToLength
-var toInteger = __webpack_require__(14);
-var min = Math.min;
-module.exports = function (it) {
-  return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
-};
-
-
-/***/ }),
-/* 29 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var core = __webpack_require__(2);
-var global = __webpack_require__(0);
-var SHARED = '__core-js_shared__';
-var store = global[SHARED] || (global[SHARED] = {});
-
-(module.exports = function (key, value) {
-  return store[key] || (store[key] = value !== undefined ? value : {});
-})('versions', []).push({
-  version: core.version,
-  mode: __webpack_require__(16) ? 'pure' : 'global',
-  copyright: '© 2018 Denis Pushkarev (zloirock.ru)'
-});
-
-
-/***/ }),
-/* 30 */
-/***/ (function(module, exports) {
-
-var id = 0;
-var px = Math.random();
-module.exports = function (key) {
-  return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
-};
-
-
-/***/ }),
-/* 31 */
-/***/ (function(module, exports) {
-
-// IE 8- don't enum bug keys
-module.exports = (
-  'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
-).split(',');
-
-
-/***/ }),
-/* 32 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var document = __webpack_require__(0).document;
-module.exports = document && document.documentElement;
-
-
-/***/ }),
-/* 33 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.13 ToObject(argument)
-var defined = __webpack_require__(15);
-module.exports = function (it) {
-  return Object(defined(it));
-};
-
-
-/***/ }),
-/* 34 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// getting tag from 19.1.3.6 Object.prototype.toString()
-var cof = __webpack_require__(13);
-var TAG = __webpack_require__(1)('toStringTag');
-// ES3 wrong here
-var ARG = cof(function () { return arguments; }()) == 'Arguments';
-
-// fallback for IE11 Script Access Denied error
-var tryGet = function (it, key) {
-  try {
-    return it[key];
-  } catch (e) { /* empty */ }
-};
-
-module.exports = function (it) {
-  var O, T, B;
-  return it === undefined ? 'Undefined' : it === null ? 'Null'
-    // @@toStringTag case
-    : typeof (T = tryGet(O = Object(it), TAG)) == 'string' ? T
-    // builtinTag case
-    : ARG ? cof(O)
-    // ES3 arguments fallback
-    : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
-};
-
-
-/***/ }),
-/* 35 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.3.20 SpeciesConstructor(O, defaultConstructor)
-var anObject = __webpack_require__(3);
-var aFunction = __webpack_require__(11);
-var SPECIES = __webpack_require__(1)('species');
-module.exports = function (O, D) {
-  var C = anObject(O).constructor;
-  var S;
-  return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
-};
-
-
-/***/ }),
-/* 36 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var ctx = __webpack_require__(10);
-var invoke = __webpack_require__(71);
-var html = __webpack_require__(32);
-var cel = __webpack_require__(18);
-var global = __webpack_require__(0);
-var process = global.process;
-var setTask = global.setImmediate;
-var clearTask = global.clearImmediate;
-var MessageChannel = global.MessageChannel;
-var Dispatch = global.Dispatch;
-var counter = 0;
-var queue = {};
-var ONREADYSTATECHANGE = 'onreadystatechange';
-var defer, channel, port;
-var run = function () {
-  var id = +this;
-  // eslint-disable-next-line no-prototype-builtins
-  if (queue.hasOwnProperty(id)) {
-    var fn = queue[id];
-    delete queue[id];
-    fn();
-  }
-};
-var listener = function (event) {
-  run.call(event.data);
-};
-// Node.js 0.9+ & IE10+ has setImmediate, otherwise:
-if (!setTask || !clearTask) {
-  setTask = function setImmediate(fn) {
-    var args = [];
-    var i = 1;
-    while (arguments.length > i) args.push(arguments[i++]);
-    queue[++counter] = function () {
-      // eslint-disable-next-line no-new-func
-      invoke(typeof fn == 'function' ? fn : Function(fn), args);
-    };
-    defer(counter);
-    return counter;
-  };
-  clearTask = function clearImmediate(id) {
-    delete queue[id];
-  };
-  // Node.js 0.8-
-  if (__webpack_require__(13)(process) == 'process') {
-    defer = function (id) {
-      process.nextTick(ctx(run, id, 1));
-    };
-  // Sphere (JS game engine) Dispatch API
-  } else if (Dispatch && Dispatch.now) {
-    defer = function (id) {
-      Dispatch.now(ctx(run, id, 1));
-    };
-  // Browsers with MessageChannel, includes WebWorkers
-  } else if (MessageChannel) {
-    channel = new MessageChannel();
-    port = channel.port2;
-    channel.port1.onmessage = listener;
-    defer = ctx(port.postMessage, port, 1);
-  // Browsers with postMessage, skip WebWorkers
-  // IE8 has postMessage, but it's sync & typeof its postMessage is 'object'
-  } else if (global.addEventListener && typeof postMessage == 'function' && !global.importScripts) {
-    defer = function (id) {
-      global.postMessage(id + '', '*');
-    };
-    global.addEventListener('message', listener, false);
-  // IE8-
-  } else if (ONREADYSTATECHANGE in cel('script')) {
-    defer = function (id) {
-      html.appendChild(cel('script'))[ONREADYSTATECHANGE] = function () {
-        html.removeChild(this);
-        run.call(id);
-      };
-    };
-  // Rest old browsers
-  } else {
-    defer = function (id) {
-      setTimeout(ctx(run, id, 1), 0);
-    };
-  }
-}
-module.exports = {
-  set: setTask,
-  clear: clearTask
-};
-
-
-/***/ }),
-/* 37 */
-/***/ (function(module, exports) {
-
-module.exports = function (exec) {
-  try {
-    return { e: false, v: exec() };
-  } catch (e) {
-    return { e: true, v: e };
-  }
-};
-
-
-/***/ }),
-/* 38 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var anObject = __webpack_require__(3);
-var isObject = __webpack_require__(8);
-var newPromiseCapability = __webpack_require__(22);
-
-module.exports = function (C, x) {
-  anObject(C);
-  if (isObject(x) && x.constructor === C) return x;
-  var promiseCapability = newPromiseCapability.f(C);
-  var resolve = promiseCapability.resolve;
-  resolve(x);
-  return promiseCapability.promise;
-};
-
-
-/***/ }),
-/* 39 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(79), __esModule: true };
-
-/***/ }),
-/* 40 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-/**
- * 增加'/'到path
- * @export
- * @param {string} path
- * @returns {string}
- */
-function addLeadingSlash(path) {
-    return path.charAt(0) === '/' ? path : '/' + path;
-}
-exports.addLeadingSlash = addLeadingSlash;
-/**
- * 移除path的根'/'
- * @export
- * @param {string} path
- * @returns {string}
- */
-function stripLeadingSlash(path) {
-    return path.charAt(0) === '/' ? path.substr(1) : path;
-}
-exports.stripLeadingSlash = stripLeadingSlash;
-/**
- * 移除path最后的'/'
- * @export
- * @param {string} path
- * @returns {string}
- */
-function stripTrailingSlash(path) {
-    return path.charAt(path.length - 1) === '/' ? path.slice(0, -1) : path;
-}
-exports.stripTrailingSlash = stripTrailingSlash;
-/**
- * 将一个path转为location对象形式
- * @export
- * @param {string} path
- * @returns {ILocation}
- */
-function parsePath(path) {
-    var pathname = path || '/';
-    var search = '';
-    var hash = '';
-    var hashIndex = pathname.indexOf('#');
-    if (hashIndex !== -1) {
-        hash = pathname.substr(hashIndex);
-        pathname = pathname.substr(0, hashIndex);
-    }
-    var searchIndex = pathname.indexOf('?');
-    if (searchIndex !== -1) {
-        search = pathname.substr(searchIndex);
-        pathname = pathname.substr(0, searchIndex);
-    }
-    return {
-        pathname: pathname,
-        search: search === '?' ? '' : search,
-        hash: hash === '#' ? '' : hash,
-        key: '',
-        get href() {
-            return this.pathname + this.search + this.hash;
-        }
-    };
-}
-exports.parsePath = parsePath;
-/**
- * 将一个location对象转为path对象
- * @export
- * @param {ILocation} location
- * @returns {string}
- */
-function createPath(location) {
-    var pathname = location.pathname,
-        search = location.search,
-        hash = location.hash;
-
-    var path = pathname || '/';
-    if (search && search !== '?') path += search.charAt(0) === '?' ? search : "?" + search;
-    if (hash && hash !== '#') path += hash.charAt(0) === '#' ? hash : "#" + hash;
-    return path;
-}
-exports.createPath = createPath;
-
-/***/ }),
-/* 41 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-function __export(m) {
-    for (var p in m) {
-        if (!exports.hasOwnProperty(p)) exports[p] = m[p];
-    }
-}
-Object.defineProperty(exports, "__esModule", { value: true });
-__export(__webpack_require__(42));
-
-/***/ }),
-/* 42 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _regenerator = __webpack_require__(43);
-
-var _regenerator2 = _interopRequireDefault(_regenerator);
-
-var _asyncToGenerator2 = __webpack_require__(46);
-
-var _asyncToGenerator3 = _interopRequireDefault(_asyncToGenerator2);
-
-var _assign = __webpack_require__(39);
-
-var _assign2 = _interopRequireDefault(_assign);
-
-var _classCallCheck2 = __webpack_require__(84);
-
-var _classCallCheck3 = _interopRequireDefault(_classCallCheck2);
-
-var _createClass2 = __webpack_require__(85);
-
-var _createClass3 = _interopRequireDefault(_createClass2);
-
-var _promise = __webpack_require__(23);
-
-var _promise2 = _interopRequireDefault(_promise);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-Object.defineProperty(exports, "__esModule", { value: true });
-var LocationUtils_1 = __webpack_require__(89);
-var PathUtils_1 = __webpack_require__(40);
-var DOMUtils_1 = __webpack_require__(91);
+var LocationUtils_1 = __webpack_require__(4);
+var PathUtils_1 = __webpack_require__(1);
+var DOMUtils_1 = __webpack_require__(6);
+var Deferred_1 = __webpack_require__(10);
 var MY_ROUTER_HISTORY_GOBACK_INIT = 'MyRouterHistory:initGoback';
-// 记录MyHistory实例数，确保constructor仅能够运行一个实例
-var historyCount = 0;
+// 记录MyHistory在默认window上的实例数，确保constructor仅能够运行一个实例
+var MY_ROUTER_HISTORY_WINDOW_INIT = 'MyRouterHistory:window';
+var locationKey = Symbol('location');
 /**
  * 用于mixin的基类
  */
 var baseHistoryState = {
-    push: function push() {
-        return _promise2.default.reject();
-    },
-    replace: function replace() {
-        return _promise2.default.reject();
-    },
-    goback: function goback() {
-        return _promise2.default.reject();
-    },
-    reload: function reload(path) {
-        return _promise2.default.reject();
-    }
+    push: null,
+    replace: null,
+    goback: null,
+    reload: null
 };
 
 var MyHistory = function () {
     function MyHistory(_config) {
-        (0, _classCallCheck3.default)(this, MyHistory);
+        var _window = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : window;
+
+        _classCallCheck(this, MyHistory);
 
         this._config = _config;
         // 当前history的状态：
@@ -960,24 +124,32 @@ var MyHistory = function () {
         // 4销毁中      在history销毁过程中的状态。
         // 5退出中      当用户要求退出到系统以外，系统会一直触发goback，直到页面刷新为止
         // 6跳转中      当用户要求跳转（包括push、replace、reload）
-        this._state = (0, _assign2.default)({}, baseHistoryState, { type: 0, hashChange: function hashChange() {}
+        // 7跳转中      执行生命周期中
+        this._state = Object.assign({}, baseHistoryState, { type: 0, hashChange: function hashChange() {}
         });
         // 保存location数据的栈
         this._stateStack = [];
-        // 全局的history对象
-        this._globalHistory = window.history;
+        /**
+         * 如果在beforeChange生命周期，出现了跳转，会在路由重新回归1的时候执行。
+         * 如果_notBusyDef已经存在，即使是在beforeChange生命周期（state为7）的时候，也不可以跳转
+         * @private
+         * @type {Deferred}
+         * @memberOf MyHistory
+         */
+        this._notBusyDef = null;
         this.onBeforeChange = null;
         this.onChange = null;
-        // 同一时刻，不允许有两个history实例运行
-        if (historyCount > 0) {
+        this._win = _window;
+        if (this._win[MY_ROUTER_HISTORY_WINDOW_INIT]) {
+            // 同一时刻，在默认的window上面，不允许有两个history实例运行
             throw new Error('There are already other undestroyed history instances. Please destroy them before you can create a new history instance.');
         }
-        this._config = (0, _assign2.default)({ gobackName: 'go back', root: '/', insertRoot: true }, _config);
+        this._config = Object.assign({ gobackName: 'go back', root: '/', insertRoot: true }, _config);
         this._hashchangeHandler = this._hashchangeHandler.bind(this);
         this._initHistory();
     }
 
-    (0, _createClass3.default)(MyHistory, [{
+    _createClass(MyHistory, [{
         key: "_initGoback",
 
         /**
@@ -994,14 +166,17 @@ var MyHistory = function () {
             // 先查看是否已经创建好了一个goback的location，因为浏览器中无法查看history对象里面保存的历史记录，所以使用history.state保存这个状态。
             // state里面用于记录当前是否处于goback的下一页。
             // 让goback比当前时间戳小，这样能够判断出是后退
-            this._gobackState = this._pathToState('/goback', 'GOBACK', now - 1);
-            if (history.state && history.state.type === 'GOBACK') {
+            this._gobackState = this._pathToState('/goback', undefined, 'GOBACK', now - 1);
+            var state = this._win.history.state;
+            if (state && state.type === 'GOBACK' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]) {
                 // 如果当前页面是goback，表示goback已经初始化完成
                 return false;
-            } else {
-                // 否则初始化goback页面
-                this._replaceState(this._gobackState);
+            } else if (state && state.type === 'NORMAL' && sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT]) {
                 // 因为目前还处于goback页面，所有返回false
+                return true;
+            } else {
+                sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = true;
+                this._replaceState(this._gobackState);
                 return false;
             }
         }
@@ -1020,23 +195,24 @@ var MyHistory = function () {
             var timeStamp = Date.now();
             // 获取当前的路径，将其转换为合法路径后，
             var initialPath = this._decodePath(this._getHrefToPath());
-            var initialLocationState = this._pathToState(initialPath, 'NORMAL', timeStamp);
+            var initialLocationState = this._pathToState(initialPath, undefined, 'NORMAL', timeStamp);
             // 初始化goback
             var isGobackNextLocation = this._initGoback(timeStamp);
             // 将当前路径压入栈中
             this._push(initialLocationState, !isGobackNextLocation);
             // 如果第一个节点不等于根的路径，插入根节点到栈底
             if (this._config.insertRoot && this._stackTop.location.href !== this._config.root) {
-                this._stateStack.unshift(this._pathToState(this._config.root, 'NORMAL', timeStamp));
+                this._stateStack.unshift(this._pathToState(this._config.root, undefined, 'NORMAL', timeStamp));
             }
             // 初始化监听器
             this._initEventListener();
             // 全部初始化完成，记录初始化成功
-            historyCount++;
+            this._win[MY_ROUTER_HISTORY_WINDOW_INIT] = true;
             this._switchState(1);
             // 使用微队列，用于异步初始化
-            _promise2.default.resolve().then(function () {
-                _this._execCallback(_this.onChange, 'init', null, initialLocationState.location, [], [initialLocationState.location]);
+            Promise.resolve().then(function () {
+                var newState = _this._readonlyLocation(initialLocationState);
+                _this._execCallback(_this.onChange)('init', null, newState, [], [newState]);
             });
         }
         /**
@@ -1055,148 +231,176 @@ var MyHistory = function () {
         key: "_initEventListener",
         value: function _initEventListener() {
             // 注册
-            window.addEventListener('hashchange', this._hashchangeHandler);
+            this._win.addEventListener('hashchange', this._hashchangeHandler);
         }
     }, {
         key: "_destroyEventListener",
         value: function _destroyEventListener() {
-            window.removeEventListener('hashchange', this._hashchangeHandler);
+            this._win.removeEventListener('hashchange', this._hashchangeHandler);
         }
         /**
          * 切换状态
          * @private
          * @param {any} stateType
-         *
          * @memberOf MyHistory
          */
 
     }, {
         key: "_switchState",
         value: function _switchState(stateType) {
-            var _this2 = this;
+            var _this3 = this;
 
+            // 处理beforeChange中的取消逻辑。如果用户返回false、Error、Function都视为取消跳转。其中Function会在跳转结束后自执行
+            var handleCancell = function handleCancell(result) {
+                var _this2 = this;
+
+                var isFalse = result === false,
+                    isFunction = typeof result === 'function';
+                if (isFalse || isFunction) {
+                    // 这里用任务队列而不用微任务队列，希望整个promise执行完再执行result
+                    if (isFunction) {
+                        DOMUtils_1.nextTick(function () {
+                            result.call(_this2);
+                        });
+                    }
+                    // 抛出用户取消异常
+                    var error = new Error('User cancelled');
+                    error.isCancelled = true;
+                    throw error;
+                } else if (result instanceof Error) {
+                    throw result;
+                }
+            };
+            // 简单原型函数名，增加压缩效率
+            var toReadonly = this._readonlyLocation.bind(this);
             switch (stateType) {
                 case 1:
                     this._state = {
                         type: 1,
                         push: function () {
-                            var _ref = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee(path) {
-                                var state, oldLocation, result, error;
-                                return _regenerator2.default.wrap(function _callee$(_context) {
+                            var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(path, data) {
+                                var state, newLocation, oldLocation, result;
+                                return regeneratorRuntime.wrap(function _callee$(_context) {
                                     while (1) {
                                         switch (_context.prev = _context.next) {
                                             case 0:
+                                                _this3._checkData(data);
                                                 // 先切换到状态6，保护在跳转过程中不受其他操作影响
-                                                _this2._switchState(6);
-                                                _context.prev = 1;
-                                                state = _this2._pathToState(path, 'NORMAL');
-                                                oldLocation = _this2._stackTop.location;
-                                                _context.next = 6;
-                                                return _this2._execCallback(_this2.onBeforeChange, 'push', oldLocation, state.location, [], [state.location]);
+                                                _this3._switchState(6);
+                                                _context.prev = 2;
+                                                state = _this3._pathToState(path, data, 'NORMAL');
+                                                newLocation = toReadonly(state);
+                                                oldLocation = toReadonly(_this3._stackTop);
+                                                _context.next = 8;
+                                                return _this3._execCallback(_this3.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation]);
 
-                                            case 6:
+                                            case 8:
                                                 result = _context.sent;
 
-                                                if (!(result !== false)) {
-                                                    _context.next = 14;
-                                                    break;
-                                                }
+                                                // 处理取消情况
+                                                handleCancell(result);
+                                                _this3._push(state);
+                                                // 确保跳转完成
+                                                _context.next = 13;
+                                                return new Promise(function (r) {
+                                                    return DOMUtils_1.nextTick(r);
+                                                });
 
-                                                _this2._push(state);
-                                                _context.next = 11;
-                                                return _this2._execCallback(_this2.onChange, 'push', oldLocation, state.location, [], [state.location]);
+                                            case 13:
+                                                _context.next = 15;
+                                                return _this3._execCallback(_this3.onChange)('push', oldLocation, newLocation, [], [newLocation]);
 
-                                            case 11:
-                                                return _context.abrupt("return", state.location);
+                                            case 15:
+                                                _this3._switchState(1);
+                                                return _context.abrupt("return", _this3._readonlyLocation(state));
 
-                                            case 14:
-                                                error = new Error('User cancelled');
-
-                                                error.isCancelled = true;
-                                                throw error;
-
-                                            case 17:
-                                                _context.prev = 17;
+                                            case 19:
+                                                _context.prev = 19;
+                                                _context.t0 = _context["catch"](2);
 
                                                 // 完成后切换状态1
-                                                _this2._switchState(1);
-                                                return _context.finish(17);
+                                                _this3._switchState(1);
+                                                throw _context.t0;
 
-                                            case 20:
+                                            case 23:
                                             case "end":
                                                 return _context.stop();
                                         }
                                     }
-                                }, _callee, _this2, [[1,, 17, 20]]);
+                                }, _callee, _this3, [[2, 19]]);
                             }));
 
-                            return function push(_x) {
+                            return function push(_x2, _x3) {
                                 return _ref.apply(this, arguments);
                             };
                         }(),
                         replace: function () {
-                            var _ref2 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee2(path) {
-                                var now, state, oldLocation, result, error;
-                                return _regenerator2.default.wrap(function _callee2$(_context2) {
+                            var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(path, data) {
+                                var now, state, newLocation, oldLocation, result;
+                                return regeneratorRuntime.wrap(function _callee2$(_context2) {
                                     while (1) {
                                         switch (_context2.prev = _context2.next) {
                                             case 0:
-                                                _this2._switchState(6);
-                                                _context2.prev = 1;
+                                                _this3._checkData(data);
+                                                _this3._switchState(6);
+                                                _context2.prev = 2;
                                                 now = Date.now();
-                                                state = _this2._pathToState(path, 'NORMAL', now);
-                                                oldLocation = _this2._stackTop.location;
-                                                _context2.next = 7;
-                                                return _this2._execCallback(_this2.onBeforeChange, 'replace', oldLocation, state.location, [oldLocation], [state.location]);
+                                                state = _this3._pathToState(path, data, 'NORMAL', now);
+                                                newLocation = toReadonly(state);
+                                                oldLocation = toReadonly(_this3._stackTop);
+                                                _context2.next = 9;
+                                                return _this3._execCallback(_this3.onBeforeChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation]);
 
-                                            case 7:
+                                            case 9:
                                                 result = _context2.sent;
 
-                                                if (!(result !== false)) {
-                                                    _context2.next = 15;
-                                                    break;
-                                                }
+                                                // 处理取消情况
+                                                handleCancell(result);
+                                                _this3._replace(state);
+                                                // 确保跳转完成
+                                                _context2.next = 14;
+                                                return new Promise(function (r) {
+                                                    return DOMUtils_1.nextTick(r);
+                                                });
 
-                                                _this2._replace(state);
-                                                _context2.next = 12;
-                                                return _this2._execCallback(_this2.onChange, 'replace', oldLocation, state.location, [oldLocation], [state.location]);
+                                            case 14:
+                                                _this3._switchState(1);
+                                                _context2.next = 17;
+                                                return _this3._execCallback(_this3.onChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation]);
 
-                                            case 12:
-                                                return _context2.abrupt("return", state.location);
+                                            case 17:
+                                                return _context2.abrupt("return", _this3._readonlyLocation(state));
 
-                                            case 15:
-                                                error = new Error('User cancelled');
-
-                                                error.isCancelled = true;
-                                                throw error;
-
-                                            case 18:
-                                                _context2.prev = 18;
+                                            case 20:
+                                                _context2.prev = 20;
+                                                _context2.t0 = _context2["catch"](2);
 
                                                 // 完成后切换状态1
-                                                _this2._switchState(1);
-                                                return _context2.finish(18);
+                                                _this3._switchState(1);
+                                                throw _context2.t0;
 
-                                            case 21:
+                                            case 24:
                                             case "end":
                                                 return _context2.stop();
                                         }
                                     }
-                                }, _callee2, _this2, [[1,, 18, 21]]);
+                                }, _callee2, _this3, [[2, 20]]);
                             }));
 
-                            return function replace(_x2) {
+                            return function replace(_x4, _x5) {
                                 return _ref2.apply(this, arguments);
                             };
                         }(),
                         goback: function () {
-                            var _ref3 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee3(n) {
-                                var oldLocation, discardLoctions, newState, needInclude, fn, index, result, error;
-                                return _regenerator2.default.wrap(function _callee3$(_context3) {
+                            var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3() {
+                                var n = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 1;
+                                var oldLocation, discardLoctions, newState, newLocation, needInclude, fn, index, result;
+                                return regeneratorRuntime.wrap(function _callee3$(_context3) {
                                     while (1) {
                                         switch (_context3.prev = _context3.next) {
                                             case 0:
-                                                _this2._switchState(3);
+                                                // 先执行生命周期
+                                                _this3._switchState(3);
                                                 _context3.prev = 1;
 
                                                 // 当前页面
@@ -1207,6 +411,9 @@ var MyHistory = function () {
                                                 // 退回到的页面
 
                                                 newState = void 0;
+                                                // 新建页面
+
+                                                newLocation = void 0;
                                                 // 是否有符合退回条件的页面，如果没有插入一条
 
                                                 needInclude = false;
@@ -1215,168 +422,281 @@ var MyHistory = function () {
                                                 fn = void 0;
 
                                                 if (!(typeof n === 'number')) {
-                                                    _context3.next = 15;
+                                                    _context3.next = 16;
                                                     break;
                                                 }
 
                                                 if (!(n <= 0)) {
-                                                    _context3.next = 12;
+                                                    _context3.next = 13;
                                                     break;
                                                 }
 
                                                 return _context3.abrupt("return", null);
 
-                                            case 12:
-                                                if (n >= _this2._stateStack.length) {
+                                            case 13:
+                                                if (n >= _this3._stateStack.length) {
                                                     fn = function fn() {
                                                         return false;
                                                     };
                                                 } else {
                                                     fn = function fn(location, index) {
-                                                        return _this2._stateStack.length - index - 1 === n;
+                                                        return _this3._stateStack.length - index - 1 === n;
                                                     };
                                                 }
 
-                                            case 13:
-                                                _context3.next = 16;
+                                            case 14:
+                                                _context3.next = 17;
                                                 break;
 
-                                            case 15:
+                                            case 16:
                                                 if (typeof n === 'string') {
                                                     // 查询有没有href等于n的页面，如果没有就退回到起点，然后插入一条记录
                                                     fn = function fn(location) {
-                                                        return location.href === _this2._pathToLocation(n).href;
+                                                        return location.href === _this3._pathToLocation(n).href;
                                                     };
                                                 } else if (typeof n === 'function') {
                                                     fn = n;
                                                 }
 
-                                            case 16:
-                                                index = _this2._stateStack.findIndex(function (item, index) {
-                                                    return fn(item.location, index);
+                                            case 17:
+                                                index = _this3._stateStack.findIndex(function (item, index) {
+                                                    return fn(toReadonly(item), index);
                                                 });
 
-                                                oldLocation = _this2._stackTop.location;
+                                                oldLocation = toReadonly(_this3._stackTop);
                                                 if (index === -1) {
                                                     // 如果没有找到，就插入一条根节点进去。但是如果查询的是指定页面，就将指定页面放进去
-                                                    newState = _this2._pathToState(_this2._pathToLocation(typeof n === 'string' ? n : _this2._config.root), 'NORMAL');
-                                                    discardLoctions = _this2._stateStack.map(function (item) {
-                                                        return item.location;
+                                                    newState = _this3._pathToState(_this3._pathToLocation(typeof n === 'string' ? n : _this3._config.root), 'NORMAL', undefined);
+                                                    newLocation = toReadonly(newState);
+                                                    discardLoctions = _this3._stateStack.map(function (item) {
+                                                        return toReadonly(item);
                                                     });
                                                     needInclude = true;
                                                 } else {
                                                     // 取出退回位置的state
-                                                    newState = _this2._stateStack[index];
-                                                    discardLoctions = _this2._stateStack.slice(index + 1).map(function (item) {
-                                                        return item.location;
+                                                    newState = _this3._stateStack[index];
+                                                    newLocation = toReadonly(newState);
+                                                    discardLoctions = _this3._stateStack.slice(index + 1).map(function (item) {
+                                                        return toReadonly(item);
                                                     }).reverse();
                                                 }
-                                                _context3.next = 21;
-                                                return _this2._execCallback(_this2.onBeforeChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+                                                _context3.next = 22;
+                                                return _this3._execCallback(_this3.onBeforeChange)('goback', oldLocation, newLocation, discardLoctions, needInclude ? [newLocation] : []);
 
-                                            case 21:
+                                            case 22:
                                                 result = _context3.sent;
 
-                                                if (!(result !== false)) {
-                                                    _context3.next = 29;
-                                                    break;
-                                                }
+                                                // 处理取消情况
+                                                handleCancell(result);
+                                                _this3._goback(discardLoctions.length, needInclude ? newState : null, false);
+                                                // 确保跳转完成
+                                                _context3.next = 27;
+                                                return new Promise(function (r) {
+                                                    return DOMUtils_1.nextTick(r);
+                                                });
 
-                                                _this2._goback(discardLoctions.length, needInclude ? newState : null, false);
-                                                _context3.next = 26;
-                                                return _this2._execCallback(_this2.onChange, 'goback', oldLocation, newState.location, discardLoctions, needInclude ? [newState.location] : []);
+                                            case 27:
+                                                _this3._switchState(1);
+                                                _context3.next = 30;
+                                                return _this3._execCallback(_this3.onChange)('goback', oldLocation, newLocation, discardLoctions, needInclude ? [newLocation] : []);
 
-                                            case 26:
-                                                return _context3.abrupt("return", newState.location);
+                                            case 30:
+                                                return _context3.abrupt("return", _this3._readonlyLocation(newState));
 
-                                            case 29:
-                                                error = new Error('User cancelled');
+                                            case 33:
+                                                _context3.prev = 33;
+                                                _context3.t0 = _context3["catch"](1);
 
-                                                error.isCancelled = true;
-                                                throw error;
+                                                // 完成后切换状态1
+                                                _this3._switchState(1);
+                                                throw _context3.t0;
 
-                                            case 32:
-                                                _context3.prev = 32;
-
-                                                _this2._switchState(1);
-                                                return _context3.finish(32);
-
-                                            case 35:
+                                            case 37:
                                             case "end":
                                                 return _context3.stop();
                                         }
                                     }
-                                }, _callee3, _this2, [[1,, 32, 35]]);
+                                }, _callee3, _this3, [[1, 33]]);
                             }));
 
-                            return function goback(_x3) {
+                            return function goback() {
                                 return _ref3.apply(this, arguments);
                             };
                         }(),
                         reload: function reload() {
-                            return _this2._state.replace(_this2._stackTop.location.href);
+                            return _this3._state.replace(_this3._stackTop.location.href);
                         },
                         hashChange: function hashChange(event) {
-                            if (history.state && history.state.type === 'GOBACK') {
+                            var state = _this3._win.history.state;
+                            if (state && state.type === 'GOBACK') {
                                 // 用户手动退回，前进一个页面，让history的修正
-                                _this2._pushState(_this2._stackTop);
-                                _this2._state.goback(1);
-                            } else if (!history.state && _this2._getHrefToPath(event.oldURL) === _this2._stateStack[_this2._stateStack.length - 1].location.href) {
+                                _this3._pushState(_this3._stackTop);
+                                _this3._state.goback(1);
+                            } else if (!state && _this3._getHrefToPath(event.oldURL) === _this3._stateStack[_this3._stateStack.length - 1].location.href) {
                                 // 判断是否是用户手动修改hash跳转，或者a标签切换hash。判断方法如下：
                                 // 1.当前history没有state，或者state不等于State变量
                                 // 2.oldURL等于当前_stateStack栈顶的href（即使这样也不能确定该页面是从系统页面栈顶跳转过来的，但是没有其他更好的方式）
                                 // 先切户到手动修正用户修改url的状态2，保留用户要跳转的url
-                                _this2._switchState(2);
-                                _this2._stateData = _this2._getHrefToPath(event.newURL);
+                                _this3._switchState(2);
+                                _this3._stateData = _this3._getHrefToPath(event.newURL);
                                 // 后退两次，退回到goback页面
-                                history.go(-2);
+                                _this3._win.history.go(-2);
                             } else {
                                 // 如果不是从栈顶的url转跳转到该状态，就无法确定返回页面就在当前页面的前面，因此触发修正
-                                _this2._correct();
+                                _this3._correct();
+                                // 纠正后重新后退
+                                _this3._win.history.back();
                             }
                         }
                     };
+                    // 重新置回1，设置_notBusyDef为resolve
+                    if (this._notBusyDef) {
+                        this._notBusyDef.resolve(undefined);
+                        this._notBusyDef = null;
+                    }
                     break;
                 case 2:
-                    this._state = (0, _assign2.default)({ type: 2 }, baseHistoryState, { hashChange: function hashChange(event) {
+                    this._state = Object.assign({ type: 2 }, baseHistoryState, { hashChange: function hashChange(event) {
                             // 对纠正的处理步骤
                             // 1. 一直后退，直到后退到goback页面
                             // 2. 前进到gobackNext页面，把用户给出的地址放到gobackNext页面中。
-                            var state = history.state;
+                            var state = _this3._win.history.state;
                             if (state && state.type === 'NORMAL') {
                                 // 如果当前处于gobackNext页面，表示上一页就是goback，则退回，这主要是为了修改ios的safari那种无法使用go(-2)的浏览器时候的处理方式
-                                _this2._globalHistory.back();
+                                _this3._win.history.back();
                             } else if (state && state.type === 'GOBACK') {
                                 // 如果已经在goback页面了，则跳转到用户手输入的地址
                                 var now = Date.now();
-                                var _location = _this2._pathToLocation(_this2._stateData, now);
+                                var _location = _this3._pathToLocation(_this3._stateData, now);
                                 // 切回正在状态，这样就完成了对页面的修正
-                                _this2._switchState(1);
-                                _this2._pushState(_this2._stackTop);
-                                _this2._state.push(_location.href);
+                                _this3._switchState(1);
+                                _this3._pushState(_this3._stackTop);
+                                _this3._state.push(_location.href);
                             } else {
                                 // 在纠正的时候，如果跳转到了goback和gobackNext以外的页面，视为异常，进行异常纠正
-                                _this2._correct();
+                                _this3._correct();
+                                // 纠正后重新后退
+                                _this3._win.history.back();
                             }
                         } });
                     break;
                 case 3:
                 case 6:
-                    this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
-                            if (!history.state && _this2._getHrefToPath(event.oldURL) === _this2._stateStack[_this2._stateStack.length - 1].location.href) {
-                                // 如果用户在此期间手动修改url，直接就在
-                                _this2._correct();
+                    this._state = Object.assign({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
+                            if (!_this3._win.history.state && _this3._getHrefToPath(event.oldURL) === _this3._stateStack[_this3._stateStack.length - 1].location.href) {
+                                // 如果用户在此期间手动修改url，直接纠正
+                                _this3._correct();
                             } else {
                                 // 用户手动退回，前进一个页面，让history的修正
-                                _this2._pushState(_this2._stackTop);
+                                _this3._pushState(_this3._stackTop);
                             }
                         } });
                     break;
                 case 4:
                 case 5:
-                    this._state = (0, _assign2.default)({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
-                            _this2._globalHistory.back();
+                    this._state = Object.assign({ type: stateType }, baseHistoryState, { hashChange: function hashChange(event) {
+                            _this3._win.history.back();
                         } });
+                    break;
+                case 7:
+                    this._state = {
+                        type: stateType,
+                        hashChange: function hashChange(event) {
+                            _this3._win.history.back();
+                        },
+                        push: function () {
+                            var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(path, state) {
+                                return regeneratorRuntime.wrap(function _callee4$(_context4) {
+                                    while (1) {
+                                        switch (_context4.prev = _context4.next) {
+                                            case 0:
+                                                _this3._notBusyDef = new Deferred_1.Deferred();
+                                                return _context4.abrupt("return", _this3._notBusyDef.promise.then(function () {
+                                                    return _this3.push(path, state);
+                                                }));
+
+                                            case 2:
+                                            case "end":
+                                                return _context4.stop();
+                                        }
+                                    }
+                                }, _callee4, _this3);
+                            }));
+
+                            return function push(_x7, _x8) {
+                                return _ref4.apply(this, arguments);
+                            };
+                        }(),
+                        replace: function () {
+                            var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(path, state) {
+                                return regeneratorRuntime.wrap(function _callee5$(_context5) {
+                                    while (1) {
+                                        switch (_context5.prev = _context5.next) {
+                                            case 0:
+                                                _this3._notBusyDef = new Deferred_1.Deferred();
+                                                return _context5.abrupt("return", _this3._notBusyDef.promise.then(function () {
+                                                    return _this3.replace(path, state);
+                                                }));
+
+                                            case 2:
+                                            case "end":
+                                                return _context5.stop();
+                                        }
+                                    }
+                                }, _callee5, _this3);
+                            }));
+
+                            return function replace(_x9, _x10) {
+                                return _ref5.apply(this, arguments);
+                            };
+                        }(),
+                        goback: function () {
+                            var _ref6 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee6(arg) {
+                                return regeneratorRuntime.wrap(function _callee6$(_context6) {
+                                    while (1) {
+                                        switch (_context6.prev = _context6.next) {
+                                            case 0:
+                                                _this3._notBusyDef = new Deferred_1.Deferred();
+                                                return _context6.abrupt("return", _this3._notBusyDef.promise.then(function () {
+                                                    return _this3.goback(arg);
+                                                }));
+
+                                            case 2:
+                                            case "end":
+                                                return _context6.stop();
+                                        }
+                                    }
+                                }, _callee6, _this3);
+                            }));
+
+                            return function goback(_x11) {
+                                return _ref6.apply(this, arguments);
+                            };
+                        }(),
+                        reload: function () {
+                            var _ref7 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee7() {
+                                return regeneratorRuntime.wrap(function _callee7$(_context7) {
+                                    while (1) {
+                                        switch (_context7.prev = _context7.next) {
+                                            case 0:
+                                                _this3._notBusyDef = new Deferred_1.Deferred();
+                                                return _context7.abrupt("return", _this3._notBusyDef.promise.then(function () {
+                                                    return _this3.reload();
+                                                }));
+
+                                            case 2:
+                                            case "end":
+                                                return _context7.stop();
+                                        }
+                                    }
+                                }, _callee7, _this3);
+                            }));
+
+                            return function reload() {
+                                return _ref7.apply(this, arguments);
+                            };
+                        }()
+                    };
                     break;
             }
         }
@@ -1411,12 +731,32 @@ var MyHistory = function () {
     }, {
         key: "_getHrefToPath",
         value: function _getHrefToPath() {
-            var href = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : window.location.href;
+            var href = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : this._win.location.href;
 
             // We can't use window.location.hash here because it's not
             // consistent across browsers - Firefox will pre-decode it!
             var hashIndex = href.indexOf('#');
             return hashIndex === -1 ? '' : href.substring(hashIndex + 1);
+        }
+        // 检查data，确保data可以序列化
+
+    }, {
+        key: "_checkData",
+        value: function _checkData(data) {
+            if (data != null) {
+                JSON.stringify(data);
+            }
+        }
+        // 检查路由是否处于可以跳转状态（state为1或7，如果处于7仅能跳转1次）
+
+    }, {
+        key: "_checkState",
+        value: function _checkState() {
+            if (this.isBusy) {
+                var error = new Error('MyHistory busy');
+                error.isBusy = true;
+                throw error;
+            }
         }
         /**
          * 将给定的path封装成一个location
@@ -1436,40 +776,61 @@ var MyHistory = function () {
             // 创建的location
             return LocationUtils_1.createLocation(path, timeStamp + '');
         }
-        /**
-         * 将给定的path封装成一个State
-         * @private
-         * @memberOf MyHistory
-         */
-
     }, {
         key: "_pathToState",
-        value: function _pathToState(path, type) {
-            var timeStamp = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : Date.now();
+        value: function _pathToState(path) {
+            var data = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : null;
+            var type = arguments[2];
+            var timeStamp = arguments[3];
 
+            var location = void 0;
+            if ((typeof path === "undefined" ? "undefined" : _typeof(path)) === 'object') {
+                location = path;
+            } else {
+                location = this._pathToLocation(path, timeStamp);
+            }
             return {
-                location: typeof path === 'string' ? this._pathToLocation(path) : path,
+                location: location,
                 type: type,
-                timeStamp: timeStamp
+                timeStamp: timeStamp,
+                data: JSON.parse(JSON.stringify(data))
             };
+        }
+    }, {
+        key: "_readonlyLocation",
+        value: function _readonlyLocation(state) {
+            var data = state.data;
+            var location = Object.assign({}, state.location, { state: data });
+            // 只读对象
+            var readonlyLocation = _defineProperty({}, locationKey, location);
+            // 通过只设置getter不设置setter实现只读。不使用freeze是因为freeze在严格模式下赋值会抛出错误。
+            Object.keys(location).forEach(function (key) {
+                Object.defineProperty(readonlyLocation, key, {
+                    get: function get() {
+                        return this[locationKey][key];
+                    },
+                    set: function set() {}
+                });
+            });
+            return readonlyLocation;
         }
     }, {
         key: "_push",
         value: function () {
-            var _ref4 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee4(state) {
+            var _ref8 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee8(state) {
                 var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
                 var tempTitle;
-                return _regenerator2.default.wrap(function _callee4$(_context4) {
+                return regeneratorRuntime.wrap(function _callee8$(_context8) {
                     while (1) {
-                        switch (_context4.prev = _context4.next) {
+                        switch (_context8.prev = _context8.next) {
                             case 0:
                                 if (push) {
+                                    tempTitle = this._win.document.title;
                                     // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                                    document.title = this._config.gobackName;
-                                    tempTitle = document.title;
 
+                                    this._win.document.title = this._config.gobackName;
                                     this._pushState(state);
-                                    document.title = tempTitle;
+                                    this._win.document.title = tempTitle;
                                 } else {
                                     this._replaceState(state);
                                 }
@@ -1477,14 +838,14 @@ var MyHistory = function () {
 
                             case 2:
                             case "end":
-                                return _context4.stop();
+                                return _context8.stop();
                         }
                     }
-                }, _callee4, this);
+                }, _callee8, this);
             }));
 
-            function _push(_x7) {
-                return _ref4.apply(this, arguments);
+            function _push(_x15) {
+                return _ref8.apply(this, arguments);
             }
 
             return _push;
@@ -1492,36 +853,36 @@ var MyHistory = function () {
     }, {
         key: "_replace",
         value: function () {
-            var _ref5 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee5(state) {
+            var _ref9 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee9(state) {
                 var push = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
                 var tempTitle;
-                return _regenerator2.default.wrap(function _callee5$(_context5) {
+                return regeneratorRuntime.wrap(function _callee9$(_context9) {
                     while (1) {
-                        switch (_context5.prev = _context5.next) {
+                        switch (_context9.prev = _context9.next) {
                             case 0:
                                 this._stateStack.pop();
                                 this._stateStack.push(state);
                                 if (push) {
+                                    tempTitle = this._win.document.title;
                                     // 修改title为gobackName，这样地址栏显示的时候会是一个给定的gobackName，而不是页面的title
-                                    document.title = this._config.gobackName;
-                                    tempTitle = document.title;
 
+                                    this._win.document.title = this._config.gobackName;
                                     this._pushState(state);
-                                    document.title = tempTitle;
+                                    this._win.document.title = tempTitle;
                                 } else {
                                     this._replaceState(state);
                                 }
 
                             case 3:
                             case "end":
-                                return _context5.stop();
+                                return _context9.stop();
                         }
                     }
-                }, _callee5, this);
+                }, _callee9, this);
             }));
 
-            function _replace(_x9) {
-                return _ref5.apply(this, arguments);
+            function _replace(_x17) {
+                return _ref9.apply(this, arguments);
             }
 
             return _replace;
@@ -1549,149 +910,107 @@ var MyHistory = function () {
     }, {
         key: "_replaceState",
         value: function _replaceState(state) {
-            this._globalHistory.replaceState(state, null, '#' + this._encodePath(state.location.href));
+            this._win.history.replaceState(state, null, '#' + this._encodePath(state.location.href));
         }
     }, {
         key: "_pushState",
         value: function _pushState(state) {
-            this._globalHistory.pushState(state, null, '#' + this._encodePath(state.location.href));
+            this._win.history.pushState(state, null, '#' + this._encodePath(state.location.href));
         }
+        /**
+         * 当用处于未知页面（既不是goback页面，也不是normal页面时候），触发纠正
+         */
+
     }, {
         key: "_correct",
         value: function _correct() {
             // 暂时先记录日志
-            console.error('异常', this._stateStack, history.state, location.hash);
+            console.error('异常', this._stateStack, this._win.history.state, location.hash);
+            // 初始化goback
+            var isGobackNextLocation = this._initGoback(this._gobackState.timeStamp);
+            // 初始化当前页面
+            this._push(this._stackTop, !isGobackNextLocation);
         }
     }, {
         key: "push",
-        value: function () {
-            var _ref6 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee6(path) {
-                return _regenerator2.default.wrap(function _callee6$(_context6) {
-                    while (1) {
-                        switch (_context6.prev = _context6.next) {
-                            case 0:
-                                _context6.next = 2;
-                                return this._state.push(path);
-
-                            case 2:
-                                return _context6.abrupt("return", _context6.sent);
-
-                            case 3:
-                            case "end":
-                                return _context6.stop();
-                        }
-                    }
-                }, _callee6, this);
-            }));
-
-            function push(_x13) {
-                return _ref6.apply(this, arguments);
-            }
-
-            return push;
-        }()
+        value: function push(path, data) {
+            this._checkState();
+            return this._state.push(path, data);
+        }
     }, {
         key: "replace",
-        value: function () {
-            var _ref7 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee7(path) {
-                return _regenerator2.default.wrap(function _callee7$(_context7) {
-                    while (1) {
-                        switch (_context7.prev = _context7.next) {
-                            case 0:
-                                _context7.next = 2;
-                                return this._state.replace(path);
-
-                            case 2:
-                                return _context7.abrupt("return", _context7.sent);
-
-                            case 3:
-                            case "end":
-                                return _context7.stop();
-                        }
-                    }
-                }, _callee7, this);
-            }));
-
-            function replace(_x14) {
-                return _ref7.apply(this, arguments);
-            }
-
-            return replace;
-        }()
+        value: function replace(path, data) {
+            this._checkState();
+            return this._state.replace(path, data);
+        }
     }, {
         key: "goback",
-        value: function () {
-            var _ref8 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee8(n) {
-                return _regenerator2.default.wrap(function _callee8$(_context8) {
-                    while (1) {
-                        switch (_context8.prev = _context8.next) {
-                            case 0:
-                                _context8.next = 2;
-                                return this._state.goback(n);
-
-                            case 2:
-                                return _context8.abrupt("return", _context8.sent);
-
-                            case 3:
-                            case "end":
-                                return _context8.stop();
-                        }
-                    }
-                }, _callee8, this);
-            }));
-
-            function goback(_x15) {
-                return _ref8.apply(this, arguments);
-            }
-
-            return goback;
-        }()
+        value: function goback(n) {
+            this._checkState();
+            return this._state.goback(n);
+        }
     }, {
         key: "reload",
         value: function reload() {
+            this._checkState();
             return this._state.reload();
         }
     }, {
         key: "destroy",
         value: function () {
-            var _ref9 = (0, _asyncToGenerator3.default)( /*#__PURE__*/_regenerator2.default.mark(function _callee9() {
+            var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10() {
                 var state;
-                return _regenerator2.default.wrap(function _callee9$(_context9) {
+                return regeneratorRuntime.wrap(function _callee10$(_context10) {
                     while (1) {
-                        switch (_context9.prev = _context9.next) {
+                        switch (_context10.prev = _context10.next) {
                             case 0:
                                 this._destroyEventListener();
-                                state = this._globalHistory.state;
-
                                 this.onBeforeChange = null;
                                 this.onChange = null;
-                                if (state.type === 'NORMAL') {
-                                    this._globalHistory.back();
+                                state = this._win.history.state;
+
+                                sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false;
+
+                                if (!(state.type === 'NORMAL')) {
+                                    _context10.next = 9;
+                                    break;
                                 }
+
+                                this._win.history.back();
                                 // 延时，等back执行完
-                                _context9.next = 7;
-                                return new _promise2.default(function (r) {
-                                    return setTimeout(r, 10);
+                                _context10.next = 9;
+                                return new Promise(function (r) {
+                                    return DOMUtils_1.nextTick(r);
                                 });
 
-                            case 7:
-                                this._globalHistory.pushState(null, null, this._stackTop.location.href);
+                            case 9:
+                                this._win.history.replaceState(null, null, this._stackTop.location.href);
+                                // 延时，等pushState执行完
+                                _context10.next = 12;
+                                return new Promise(function (r) {
+                                    return DOMUtils_1.nextTick(r);
+                                });
+
+                            case 12:
                                 this._stateStack = null;
                                 this._config = null;
                                 this._stateData = null;
                                 this._state = null;
-                                historyCount--;
+                                if (this._win === window) {
+                                    delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT];
+                                }
+                                this._win = null;
 
-                            case 13:
+                            case 18:
                             case "end":
-                                return _context9.stop();
+                                return _context10.stop();
                         }
                     }
-                }, _callee9, this);
+                }, _callee10, this);
             }));
 
             function destroy() {
-                return _ref9.apply(this, arguments);
+                return _ref10.apply(this, arguments);
             }
 
             return destroy;
@@ -1699,14 +1018,56 @@ var MyHistory = function () {
     }, {
         key: "_execCallback",
         value: function _execCallback(callback) {
-            if (typeof callback === 'function') {
-                for (var _len = arguments.length, args = Array(_len > 1 ? _len - 1 : 0), _key = 1; _key < _len; _key++) {
-                    args[_key - 1] = arguments[_key];
-                }
+            var _this4 = this;
 
-                return callback.apply(this, args);
+            if (typeof callback === 'function') {
+                return function () {
+                    var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11() {
+                        for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
+                            args[_key] = arguments[_key];
+                        }
+
+                        var state, result;
+                        return regeneratorRuntime.wrap(function _callee11$(_context11) {
+                            while (1) {
+                                switch (_context11.prev = _context11.next) {
+                                    case 0:
+                                        state = _this4._state.type;
+                                        _context11.prev = 1;
+
+                                        _this4._switchState(7);
+                                        _context11.next = 5;
+                                        return callback.apply(_this4, args);
+
+                                    case 5:
+                                        result = _context11.sent;
+
+                                        _this4._switchState(state);
+                                        return _context11.abrupt("return", result);
+
+                                    case 10:
+                                        _context11.prev = 10;
+                                        _context11.t0 = _context11["catch"](1);
+
+                                        _this4._switchState(state);
+                                        throw _context11.t0;
+
+                                    case 14:
+                                    case "end":
+                                        return _context11.stop();
+                                }
+                            }
+                        }, _callee11, _this4, [[1, 10]]);
+                    }));
+
+                    return function () {
+                        return _ref11.apply(this, arguments);
+                    };
+                }();
             } else {
-                return _promise2.default.resolve();
+                return function () {
+                    return Promise.resolve();
+                };
             }
         }
     }, {
@@ -1721,8 +1082,10 @@ var MyHistory = function () {
     }, {
         key: "stack",
         get: function get() {
+            var _this5 = this;
+
             return this._stateStack.map(function (state) {
-                return state.location;
+                return _this5._readonlyLocation(state);
             });
         }
     }, {
@@ -1731,1959 +1094,165 @@ var MyHistory = function () {
             return this._stateStack.length;
         }
     }, {
+        key: "isBusy",
+        get: function get() {
+            return this._state.type !== 1 && this._state.type !== 7 || this._notBusyDef && this._state.type === 7;
+        }
+    }, {
         key: "location",
         get: function get() {
-            return this._stackTop.location;
+            return this._readonlyLocation(this._stackTop);
         }
     }]);
+
     return MyHistory;
 }();
 
 exports.MyHistory = MyHistory;
 
 /***/ }),
-/* 43 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(44);
-
-
-/***/ }),
-/* 44 */
-/***/ (function(module, exports, __webpack_require__) {
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-// This method of obtaining a reference to the global object needs to be
-// kept identical to the way it is obtained in runtime.js
-var g = (function() { return this })() || Function("return this")();
-
-// Use `getOwnPropertyNames` because not all browsers support calling
-// `hasOwnProperty` on the global `self` object in a worker. See #183.
-var hadRuntime = g.regeneratorRuntime &&
-  Object.getOwnPropertyNames(g).indexOf("regeneratorRuntime") >= 0;
-
-// Save the old regeneratorRuntime in case it needs to be restored later.
-var oldRuntime = hadRuntime && g.regeneratorRuntime;
-
-// Force reevalutation of runtime.js.
-g.regeneratorRuntime = undefined;
-
-module.exports = __webpack_require__(45);
-
-if (hadRuntime) {
-  // Restore the original runtime.
-  g.regeneratorRuntime = oldRuntime;
-} else {
-  // Remove the global property added by runtime.js.
-  try {
-    delete g.regeneratorRuntime;
-  } catch(e) {
-    g.regeneratorRuntime = undefined;
-  }
-}
-
-
-/***/ }),
-/* 45 */
-/***/ (function(module, exports) {
-
-/**
- * Copyright (c) 2014-present, Facebook, Inc.
- *
- * This source code is licensed under the MIT license found in the
- * LICENSE file in the root directory of this source tree.
- */
-
-!(function(global) {
-  "use strict";
-
-  var Op = Object.prototype;
-  var hasOwn = Op.hasOwnProperty;
-  var undefined; // More compressible than void 0.
-  var $Symbol = typeof Symbol === "function" ? Symbol : {};
-  var iteratorSymbol = $Symbol.iterator || "@@iterator";
-  var asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator";
-  var toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-
-  var inModule = typeof module === "object";
-  var runtime = global.regeneratorRuntime;
-  if (runtime) {
-    if (inModule) {
-      // If regeneratorRuntime is defined globally and we're in a module,
-      // make the exports object identical to regeneratorRuntime.
-      module.exports = runtime;
-    }
-    // Don't bother evaluating the rest of this file if the runtime was
-    // already defined globally.
-    return;
-  }
-
-  // Define the runtime globally (as expected by generated code) as either
-  // module.exports (if we're in a module) or a new, empty object.
-  runtime = global.regeneratorRuntime = inModule ? module.exports : {};
-
-  function wrap(innerFn, outerFn, self, tryLocsList) {
-    // If outerFn provided and outerFn.prototype is a Generator, then outerFn.prototype instanceof Generator.
-    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator;
-    var generator = Object.create(protoGenerator.prototype);
-    var context = new Context(tryLocsList || []);
-
-    // The ._invoke method unifies the implementations of the .next,
-    // .throw, and .return methods.
-    generator._invoke = makeInvokeMethod(innerFn, self, context);
-
-    return generator;
-  }
-  runtime.wrap = wrap;
-
-  // Try/catch helper to minimize deoptimizations. Returns a completion
-  // record like context.tryEntries[i].completion. This interface could
-  // have been (and was previously) designed to take a closure to be
-  // invoked without arguments, but in all the cases we care about we
-  // already have an existing method we want to call, so there's no need
-  // to create a new function object. We can even get away with assuming
-  // the method takes exactly one argument, since that happens to be true
-  // in every case, so we don't have to touch the arguments object. The
-  // only additional allocation required is the completion record, which
-  // has a stable shape and so hopefully should be cheap to allocate.
-  function tryCatch(fn, obj, arg) {
-    try {
-      return { type: "normal", arg: fn.call(obj, arg) };
-    } catch (err) {
-      return { type: "throw", arg: err };
-    }
-  }
-
-  var GenStateSuspendedStart = "suspendedStart";
-  var GenStateSuspendedYield = "suspendedYield";
-  var GenStateExecuting = "executing";
-  var GenStateCompleted = "completed";
-
-  // Returning this object from the innerFn has the same effect as
-  // breaking out of the dispatch switch statement.
-  var ContinueSentinel = {};
-
-  // Dummy constructor functions that we use as the .constructor and
-  // .constructor.prototype properties for functions that return Generator
-  // objects. For full spec compliance, you may wish to configure your
-  // minifier not to mangle the names of these two functions.
-  function Generator() {}
-  function GeneratorFunction() {}
-  function GeneratorFunctionPrototype() {}
-
-  // This is a polyfill for %IteratorPrototype% for environments that
-  // don't natively support it.
-  var IteratorPrototype = {};
-  IteratorPrototype[iteratorSymbol] = function () {
-    return this;
-  };
-
-  var getProto = Object.getPrototypeOf;
-  var NativeIteratorPrototype = getProto && getProto(getProto(values([])));
-  if (NativeIteratorPrototype &&
-      NativeIteratorPrototype !== Op &&
-      hasOwn.call(NativeIteratorPrototype, iteratorSymbol)) {
-    // This environment has a native %IteratorPrototype%; use it instead
-    // of the polyfill.
-    IteratorPrototype = NativeIteratorPrototype;
-  }
-
-  var Gp = GeneratorFunctionPrototype.prototype =
-    Generator.prototype = Object.create(IteratorPrototype);
-  GeneratorFunction.prototype = Gp.constructor = GeneratorFunctionPrototype;
-  GeneratorFunctionPrototype.constructor = GeneratorFunction;
-  GeneratorFunctionPrototype[toStringTagSymbol] =
-    GeneratorFunction.displayName = "GeneratorFunction";
-
-  // Helper for defining the .next, .throw, and .return methods of the
-  // Iterator interface in terms of a single ._invoke method.
-  function defineIteratorMethods(prototype) {
-    ["next", "throw", "return"].forEach(function(method) {
-      prototype[method] = function(arg) {
-        return this._invoke(method, arg);
-      };
-    });
-  }
-
-  runtime.isGeneratorFunction = function(genFun) {
-    var ctor = typeof genFun === "function" && genFun.constructor;
-    return ctor
-      ? ctor === GeneratorFunction ||
-        // For the native GeneratorFunction constructor, the best we can
-        // do is to check its .name property.
-        (ctor.displayName || ctor.name) === "GeneratorFunction"
-      : false;
-  };
-
-  runtime.mark = function(genFun) {
-    if (Object.setPrototypeOf) {
-      Object.setPrototypeOf(genFun, GeneratorFunctionPrototype);
-    } else {
-      genFun.__proto__ = GeneratorFunctionPrototype;
-      if (!(toStringTagSymbol in genFun)) {
-        genFun[toStringTagSymbol] = "GeneratorFunction";
-      }
-    }
-    genFun.prototype = Object.create(Gp);
-    return genFun;
-  };
-
-  // Within the body of any async function, `await x` is transformed to
-  // `yield regeneratorRuntime.awrap(x)`, so that the runtime can test
-  // `hasOwn.call(value, "__await")` to determine if the yielded value is
-  // meant to be awaited.
-  runtime.awrap = function(arg) {
-    return { __await: arg };
-  };
-
-  function AsyncIterator(generator) {
-    function invoke(method, arg, resolve, reject) {
-      var record = tryCatch(generator[method], generator, arg);
-      if (record.type === "throw") {
-        reject(record.arg);
-      } else {
-        var result = record.arg;
-        var value = result.value;
-        if (value &&
-            typeof value === "object" &&
-            hasOwn.call(value, "__await")) {
-          return Promise.resolve(value.__await).then(function(value) {
-            invoke("next", value, resolve, reject);
-          }, function(err) {
-            invoke("throw", err, resolve, reject);
-          });
-        }
-
-        return Promise.resolve(value).then(function(unwrapped) {
-          // When a yielded Promise is resolved, its final value becomes
-          // the .value of the Promise<{value,done}> result for the
-          // current iteration. If the Promise is rejected, however, the
-          // result for this iteration will be rejected with the same
-          // reason. Note that rejections of yielded Promises are not
-          // thrown back into the generator function, as is the case
-          // when an awaited Promise is rejected. This difference in
-          // behavior between yield and await is important, because it
-          // allows the consumer to decide what to do with the yielded
-          // rejection (swallow it and continue, manually .throw it back
-          // into the generator, abandon iteration, whatever). With
-          // await, by contrast, there is no opportunity to examine the
-          // rejection reason outside the generator function, so the
-          // only option is to throw it from the await expression, and
-          // let the generator function handle the exception.
-          result.value = unwrapped;
-          resolve(result);
-        }, reject);
-      }
-    }
-
-    var previousPromise;
-
-    function enqueue(method, arg) {
-      function callInvokeWithMethodAndArg() {
-        return new Promise(function(resolve, reject) {
-          invoke(method, arg, resolve, reject);
-        });
-      }
-
-      return previousPromise =
-        // If enqueue has been called before, then we want to wait until
-        // all previous Promises have been resolved before calling invoke,
-        // so that results are always delivered in the correct order. If
-        // enqueue has not been called before, then it is important to
-        // call invoke immediately, without waiting on a callback to fire,
-        // so that the async generator function has the opportunity to do
-        // any necessary setup in a predictable way. This predictability
-        // is why the Promise constructor synchronously invokes its
-        // executor callback, and why async functions synchronously
-        // execute code before the first await. Since we implement simple
-        // async functions in terms of async generators, it is especially
-        // important to get this right, even though it requires care.
-        previousPromise ? previousPromise.then(
-          callInvokeWithMethodAndArg,
-          // Avoid propagating failures to Promises returned by later
-          // invocations of the iterator.
-          callInvokeWithMethodAndArg
-        ) : callInvokeWithMethodAndArg();
-    }
-
-    // Define the unified helper method that is used to implement .next,
-    // .throw, and .return (see defineIteratorMethods).
-    this._invoke = enqueue;
-  }
-
-  defineIteratorMethods(AsyncIterator.prototype);
-  AsyncIterator.prototype[asyncIteratorSymbol] = function () {
-    return this;
-  };
-  runtime.AsyncIterator = AsyncIterator;
-
-  // Note that simple async functions are implemented on top of
-  // AsyncIterator objects; they just return a Promise for the value of
-  // the final result produced by the iterator.
-  runtime.async = function(innerFn, outerFn, self, tryLocsList) {
-    var iter = new AsyncIterator(
-      wrap(innerFn, outerFn, self, tryLocsList)
-    );
-
-    return runtime.isGeneratorFunction(outerFn)
-      ? iter // If outerFn is a generator, return the full iterator.
-      : iter.next().then(function(result) {
-          return result.done ? result.value : iter.next();
-        });
-  };
-
-  function makeInvokeMethod(innerFn, self, context) {
-    var state = GenStateSuspendedStart;
-
-    return function invoke(method, arg) {
-      if (state === GenStateExecuting) {
-        throw new Error("Generator is already running");
-      }
-
-      if (state === GenStateCompleted) {
-        if (method === "throw") {
-          throw arg;
-        }
-
-        // Be forgiving, per 25.3.3.3.3 of the spec:
-        // https://people.mozilla.org/~jorendorff/es6-draft.html#sec-generatorresume
-        return doneResult();
-      }
-
-      context.method = method;
-      context.arg = arg;
-
-      while (true) {
-        var delegate = context.delegate;
-        if (delegate) {
-          var delegateResult = maybeInvokeDelegate(delegate, context);
-          if (delegateResult) {
-            if (delegateResult === ContinueSentinel) continue;
-            return delegateResult;
-          }
-        }
-
-        if (context.method === "next") {
-          // Setting context._sent for legacy support of Babel's
-          // function.sent implementation.
-          context.sent = context._sent = context.arg;
-
-        } else if (context.method === "throw") {
-          if (state === GenStateSuspendedStart) {
-            state = GenStateCompleted;
-            throw context.arg;
-          }
-
-          context.dispatchException(context.arg);
-
-        } else if (context.method === "return") {
-          context.abrupt("return", context.arg);
-        }
-
-        state = GenStateExecuting;
-
-        var record = tryCatch(innerFn, self, context);
-        if (record.type === "normal") {
-          // If an exception is thrown from innerFn, we leave state ===
-          // GenStateExecuting and loop back for another invocation.
-          state = context.done
-            ? GenStateCompleted
-            : GenStateSuspendedYield;
-
-          if (record.arg === ContinueSentinel) {
-            continue;
-          }
-
-          return {
-            value: record.arg,
-            done: context.done
-          };
-
-        } else if (record.type === "throw") {
-          state = GenStateCompleted;
-          // Dispatch the exception by looping back around to the
-          // context.dispatchException(context.arg) call above.
-          context.method = "throw";
-          context.arg = record.arg;
-        }
-      }
-    };
-  }
-
-  // Call delegate.iterator[context.method](context.arg) and handle the
-  // result, either by returning a { value, done } result from the
-  // delegate iterator, or by modifying context.method and context.arg,
-  // setting context.delegate to null, and returning the ContinueSentinel.
-  function maybeInvokeDelegate(delegate, context) {
-    var method = delegate.iterator[context.method];
-    if (method === undefined) {
-      // A .throw or .return when the delegate iterator has no .throw
-      // method always terminates the yield* loop.
-      context.delegate = null;
-
-      if (context.method === "throw") {
-        if (delegate.iterator.return) {
-          // If the delegate iterator has a return method, give it a
-          // chance to clean up.
-          context.method = "return";
-          context.arg = undefined;
-          maybeInvokeDelegate(delegate, context);
-
-          if (context.method === "throw") {
-            // If maybeInvokeDelegate(context) changed context.method from
-            // "return" to "throw", let that override the TypeError below.
-            return ContinueSentinel;
-          }
-        }
-
-        context.method = "throw";
-        context.arg = new TypeError(
-          "The iterator does not provide a 'throw' method");
-      }
-
-      return ContinueSentinel;
-    }
-
-    var record = tryCatch(method, delegate.iterator, context.arg);
-
-    if (record.type === "throw") {
-      context.method = "throw";
-      context.arg = record.arg;
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    var info = record.arg;
-
-    if (! info) {
-      context.method = "throw";
-      context.arg = new TypeError("iterator result is not an object");
-      context.delegate = null;
-      return ContinueSentinel;
-    }
-
-    if (info.done) {
-      // Assign the result of the finished delegate to the temporary
-      // variable specified by delegate.resultName (see delegateYield).
-      context[delegate.resultName] = info.value;
-
-      // Resume execution at the desired location (see delegateYield).
-      context.next = delegate.nextLoc;
-
-      // If context.method was "throw" but the delegate handled the
-      // exception, let the outer generator proceed normally. If
-      // context.method was "next", forget context.arg since it has been
-      // "consumed" by the delegate iterator. If context.method was
-      // "return", allow the original .return call to continue in the
-      // outer generator.
-      if (context.method !== "return") {
-        context.method = "next";
-        context.arg = undefined;
-      }
-
-    } else {
-      // Re-yield the result returned by the delegate method.
-      return info;
-    }
-
-    // The delegate iterator is finished, so forget it and continue with
-    // the outer generator.
-    context.delegate = null;
-    return ContinueSentinel;
-  }
-
-  // Define Generator.prototype.{next,throw,return} in terms of the
-  // unified ._invoke helper method.
-  defineIteratorMethods(Gp);
-
-  Gp[toStringTagSymbol] = "Generator";
-
-  // A Generator should always return itself as the iterator object when the
-  // @@iterator function is called on it. Some browsers' implementations of the
-  // iterator prototype chain incorrectly implement this, causing the Generator
-  // object to not be returned from this call. This ensures that doesn't happen.
-  // See https://github.com/facebook/regenerator/issues/274 for more details.
-  Gp[iteratorSymbol] = function() {
-    return this;
-  };
-
-  Gp.toString = function() {
-    return "[object Generator]";
-  };
-
-  function pushTryEntry(locs) {
-    var entry = { tryLoc: locs[0] };
-
-    if (1 in locs) {
-      entry.catchLoc = locs[1];
-    }
-
-    if (2 in locs) {
-      entry.finallyLoc = locs[2];
-      entry.afterLoc = locs[3];
-    }
-
-    this.tryEntries.push(entry);
-  }
-
-  function resetTryEntry(entry) {
-    var record = entry.completion || {};
-    record.type = "normal";
-    delete record.arg;
-    entry.completion = record;
-  }
-
-  function Context(tryLocsList) {
-    // The root entry object (effectively a try statement without a catch
-    // or a finally block) gives us a place to store values thrown from
-    // locations where there is no enclosing try statement.
-    this.tryEntries = [{ tryLoc: "root" }];
-    tryLocsList.forEach(pushTryEntry, this);
-    this.reset(true);
-  }
-
-  runtime.keys = function(object) {
-    var keys = [];
-    for (var key in object) {
-      keys.push(key);
-    }
-    keys.reverse();
-
-    // Rather than returning an object with a next method, we keep
-    // things simple and return the next function itself.
-    return function next() {
-      while (keys.length) {
-        var key = keys.pop();
-        if (key in object) {
-          next.value = key;
-          next.done = false;
-          return next;
-        }
-      }
-
-      // To avoid creating an additional object, we just hang the .value
-      // and .done properties off the next function object itself. This
-      // also ensures that the minifier will not anonymize the function.
-      next.done = true;
-      return next;
-    };
-  };
-
-  function values(iterable) {
-    if (iterable) {
-      var iteratorMethod = iterable[iteratorSymbol];
-      if (iteratorMethod) {
-        return iteratorMethod.call(iterable);
-      }
-
-      if (typeof iterable.next === "function") {
-        return iterable;
-      }
-
-      if (!isNaN(iterable.length)) {
-        var i = -1, next = function next() {
-          while (++i < iterable.length) {
-            if (hasOwn.call(iterable, i)) {
-              next.value = iterable[i];
-              next.done = false;
-              return next;
-            }
-          }
-
-          next.value = undefined;
-          next.done = true;
-
-          return next;
-        };
-
-        return next.next = next;
-      }
-    }
-
-    // Return an iterator with no values.
-    return { next: doneResult };
-  }
-  runtime.values = values;
-
-  function doneResult() {
-    return { value: undefined, done: true };
-  }
-
-  Context.prototype = {
-    constructor: Context,
-
-    reset: function(skipTempReset) {
-      this.prev = 0;
-      this.next = 0;
-      // Resetting context._sent for legacy support of Babel's
-      // function.sent implementation.
-      this.sent = this._sent = undefined;
-      this.done = false;
-      this.delegate = null;
-
-      this.method = "next";
-      this.arg = undefined;
-
-      this.tryEntries.forEach(resetTryEntry);
-
-      if (!skipTempReset) {
-        for (var name in this) {
-          // Not sure about the optimal order of these conditions:
-          if (name.charAt(0) === "t" &&
-              hasOwn.call(this, name) &&
-              !isNaN(+name.slice(1))) {
-            this[name] = undefined;
-          }
-        }
-      }
-    },
-
-    stop: function() {
-      this.done = true;
-
-      var rootEntry = this.tryEntries[0];
-      var rootRecord = rootEntry.completion;
-      if (rootRecord.type === "throw") {
-        throw rootRecord.arg;
-      }
-
-      return this.rval;
-    },
-
-    dispatchException: function(exception) {
-      if (this.done) {
-        throw exception;
-      }
-
-      var context = this;
-      function handle(loc, caught) {
-        record.type = "throw";
-        record.arg = exception;
-        context.next = loc;
-
-        if (caught) {
-          // If the dispatched exception was caught by a catch block,
-          // then let that catch block handle the exception normally.
-          context.method = "next";
-          context.arg = undefined;
-        }
-
-        return !! caught;
-      }
-
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        var record = entry.completion;
-
-        if (entry.tryLoc === "root") {
-          // Exception thrown outside of any try block that could handle
-          // it, so set the completion value of the entire function to
-          // throw the exception.
-          return handle("end");
-        }
-
-        if (entry.tryLoc <= this.prev) {
-          var hasCatch = hasOwn.call(entry, "catchLoc");
-          var hasFinally = hasOwn.call(entry, "finallyLoc");
-
-          if (hasCatch && hasFinally) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            } else if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else if (hasCatch) {
-            if (this.prev < entry.catchLoc) {
-              return handle(entry.catchLoc, true);
-            }
-
-          } else if (hasFinally) {
-            if (this.prev < entry.finallyLoc) {
-              return handle(entry.finallyLoc);
-            }
-
-          } else {
-            throw new Error("try statement without catch or finally");
-          }
-        }
-      }
-    },
-
-    abrupt: function(type, arg) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc <= this.prev &&
-            hasOwn.call(entry, "finallyLoc") &&
-            this.prev < entry.finallyLoc) {
-          var finallyEntry = entry;
-          break;
-        }
-      }
-
-      if (finallyEntry &&
-          (type === "break" ||
-           type === "continue") &&
-          finallyEntry.tryLoc <= arg &&
-          arg <= finallyEntry.finallyLoc) {
-        // Ignore the finally entry if control is not jumping to a
-        // location outside the try/catch block.
-        finallyEntry = null;
-      }
-
-      var record = finallyEntry ? finallyEntry.completion : {};
-      record.type = type;
-      record.arg = arg;
-
-      if (finallyEntry) {
-        this.method = "next";
-        this.next = finallyEntry.finallyLoc;
-        return ContinueSentinel;
-      }
-
-      return this.complete(record);
-    },
-
-    complete: function(record, afterLoc) {
-      if (record.type === "throw") {
-        throw record.arg;
-      }
-
-      if (record.type === "break" ||
-          record.type === "continue") {
-        this.next = record.arg;
-      } else if (record.type === "return") {
-        this.rval = this.arg = record.arg;
-        this.method = "return";
-        this.next = "end";
-      } else if (record.type === "normal" && afterLoc) {
-        this.next = afterLoc;
-      }
-
-      return ContinueSentinel;
-    },
-
-    finish: function(finallyLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.finallyLoc === finallyLoc) {
-          this.complete(entry.completion, entry.afterLoc);
-          resetTryEntry(entry);
-          return ContinueSentinel;
-        }
-      }
-    },
-
-    "catch": function(tryLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc === tryLoc) {
-          var record = entry.completion;
-          if (record.type === "throw") {
-            var thrown = record.arg;
-            resetTryEntry(entry);
-          }
-          return thrown;
-        }
-      }
-
-      // The context.catch method must only be called with a location
-      // argument that corresponds to a known catch block.
-      throw new Error("illegal catch attempt");
-    },
-
-    delegateYield: function(iterable, resultName, nextLoc) {
-      this.delegate = {
-        iterator: values(iterable),
-        resultName: resultName,
-        nextLoc: nextLoc
-      };
-
-      if (this.method === "next") {
-        // Deliberately forget the last sent value so that we don't
-        // accidentally pass it on to the delegate.
-        this.arg = undefined;
-      }
-
-      return ContinueSentinel;
-    }
-  };
-})(
-  // In sloppy mode, unbound `this` refers to the global object, fallback to
-  // Function constructor if we're in global strict mode. That is sadly a form
-  // of indirect eval which violates Content Security Policy.
-  (function() { return this })() || Function("return this")()
-);
-
-
-/***/ }),
-/* 46 */
+/* 1 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
-
-exports.__esModule = true;
-
-var _promise = __webpack_require__(23);
-
-var _promise2 = _interopRequireDefault(_promise);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = function (fn) {
-  return function () {
-    var gen = fn.apply(this, arguments);
-    return new _promise2.default(function (resolve, reject) {
-      function step(key, arg) {
-        try {
-          var info = gen[key](arg);
-          var value = info.value;
-        } catch (error) {
-          reject(error);
-          return;
-        }
-
-        if (info.done) {
-          resolve(value);
-        } else {
-          return _promise2.default.resolve(value).then(function (value) {
-            step("next", value);
-          }, function (err) {
-            step("throw", err);
-          });
-        }
-      }
-
-      return step("next");
-    });
-  };
-};
-
-/***/ }),
-/* 47 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(48);
-__webpack_require__(49);
-__webpack_require__(61);
-__webpack_require__(65);
-__webpack_require__(77);
-__webpack_require__(78);
-module.exports = __webpack_require__(2).Promise;
-
-
-/***/ }),
-/* 48 */
-/***/ (function(module, exports) {
-
-
-
-/***/ }),
-/* 49 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var $at = __webpack_require__(50)(true);
-
-// 21.1.3.27 String.prototype[@@iterator]()
-__webpack_require__(24)(String, 'String', function (iterated) {
-  this._t = String(iterated); // target
-  this._i = 0;                // next index
-// 21.1.5.2.1 %StringIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var index = this._i;
-  var point;
-  if (index >= O.length) return { value: undefined, done: true };
-  point = $at(O, index);
-  this._i += point.length;
-  return { value: point, done: false };
-});
-
-
-/***/ }),
-/* 50 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var toInteger = __webpack_require__(14);
-var defined = __webpack_require__(15);
-// true  -> String#at
-// false -> String#codePointAt
-module.exports = function (TO_STRING) {
-  return function (that, pos) {
-    var s = String(defined(that));
-    var i = toInteger(pos);
-    var l = s.length;
-    var a, b;
-    if (i < 0 || i >= l) return TO_STRING ? '' : undefined;
-    a = s.charCodeAt(i);
-    return a < 0xd800 || a > 0xdbff || i + 1 === l || (b = s.charCodeAt(i + 1)) < 0xdc00 || b > 0xdfff
-      ? TO_STRING ? s.charAt(i) : a
-      : TO_STRING ? s.slice(i, i + 2) : (a - 0xd800 << 10) + (b - 0xdc00) + 0x10000;
-  };
-};
-
-
-/***/ }),
-/* 51 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = !__webpack_require__(6) && !__webpack_require__(17)(function () {
-  return Object.defineProperty(__webpack_require__(18)('div'), 'a', { get: function () { return 7; } }).a != 7;
-});
-
-
-/***/ }),
-/* 52 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 7.1.1 ToPrimitive(input [, PreferredType])
-var isObject = __webpack_require__(8);
-// instead of the ES6 spec version, we didn't implement @@toPrimitive case
-// and the second argument - flag - preferred type is a string
-module.exports = function (it, S) {
-  if (!isObject(it)) return it;
-  var fn, val;
-  if (S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (typeof (fn = it.valueOf) == 'function' && !isObject(val = fn.call(it))) return val;
-  if (!S && typeof (fn = it.toString) == 'function' && !isObject(val = fn.call(it))) return val;
-  throw TypeError("Can't convert object to primitive value");
-};
-
-
-/***/ }),
-/* 53 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = __webpack_require__(5);
-
-
-/***/ }),
-/* 54 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var create = __webpack_require__(55);
-var descriptor = __webpack_require__(25);
-var setToStringTag = __webpack_require__(21);
-var IteratorPrototype = {};
-
-// 25.1.2.1.1 %IteratorPrototype%[@@iterator]()
-__webpack_require__(5)(IteratorPrototype, __webpack_require__(1)('iterator'), function () { return this; });
-
-module.exports = function (Constructor, NAME, next) {
-  Constructor.prototype = create(IteratorPrototype, { next: descriptor(1, next) });
-  setToStringTag(Constructor, NAME + ' Iterator');
-};
-
-
-/***/ }),
-/* 55 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
-var anObject = __webpack_require__(3);
-var dPs = __webpack_require__(56);
-var enumBugKeys = __webpack_require__(31);
-var IE_PROTO = __webpack_require__(20)('IE_PROTO');
-var Empty = function () { /* empty */ };
-var PROTOTYPE = 'prototype';
-
-// Create object with fake `null` prototype: use iframe Object with cleared prototype
-var createDict = function () {
-  // Thrash, waste and sodomy: IE GC bug
-  var iframe = __webpack_require__(18)('iframe');
-  var i = enumBugKeys.length;
-  var lt = '<';
-  var gt = '>';
-  var iframeDocument;
-  iframe.style.display = 'none';
-  __webpack_require__(32).appendChild(iframe);
-  iframe.src = 'javascript:'; // eslint-disable-line no-script-url
-  // createDict = iframe.contentWindow.Object;
-  // html.removeChild(iframe);
-  iframeDocument = iframe.contentWindow.document;
-  iframeDocument.open();
-  iframeDocument.write(lt + 'script' + gt + 'document.F=Object' + lt + '/script' + gt);
-  iframeDocument.close();
-  createDict = iframeDocument.F;
-  while (i--) delete createDict[PROTOTYPE][enumBugKeys[i]];
-  return createDict();
-};
-
-module.exports = Object.create || function create(O, Properties) {
-  var result;
-  if (O !== null) {
-    Empty[PROTOTYPE] = anObject(O);
-    result = new Empty();
-    Empty[PROTOTYPE] = null;
-    // add "__proto__" for Object.getPrototypeOf polyfill
-    result[IE_PROTO] = O;
-  } else result = createDict();
-  return Properties === undefined ? result : dPs(result, Properties);
-};
-
-
-/***/ }),
-/* 56 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var dP = __webpack_require__(7);
-var anObject = __webpack_require__(3);
-var getKeys = __webpack_require__(26);
-
-module.exports = __webpack_require__(6) ? Object.defineProperties : function defineProperties(O, Properties) {
-  anObject(O);
-  var keys = getKeys(Properties);
-  var length = keys.length;
-  var i = 0;
-  var P;
-  while (length > i) dP.f(O, P = keys[i++], Properties[P]);
-  return O;
-};
-
-
-/***/ }),
-/* 57 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var has = __webpack_require__(12);
-var toIObject = __webpack_require__(19);
-var arrayIndexOf = __webpack_require__(58)(false);
-var IE_PROTO = __webpack_require__(20)('IE_PROTO');
-
-module.exports = function (object, names) {
-  var O = toIObject(object);
-  var i = 0;
-  var result = [];
-  var key;
-  for (key in O) if (key != IE_PROTO) has(O, key) && result.push(key);
-  // Don't enum bug & hidden keys
-  while (names.length > i) if (has(O, key = names[i++])) {
-    ~arrayIndexOf(result, key) || result.push(key);
-  }
-  return result;
-};
-
-
-/***/ }),
-/* 58 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// false -> Array#indexOf
-// true  -> Array#includes
-var toIObject = __webpack_require__(19);
-var toLength = __webpack_require__(28);
-var toAbsoluteIndex = __webpack_require__(59);
-module.exports = function (IS_INCLUDES) {
-  return function ($this, el, fromIndex) {
-    var O = toIObject($this);
-    var length = toLength(O.length);
-    var index = toAbsoluteIndex(fromIndex, length);
-    var value;
-    // Array#includes uses SameValueZero equality algorithm
-    // eslint-disable-next-line no-self-compare
-    if (IS_INCLUDES && el != el) while (length > index) {
-      value = O[index++];
-      // eslint-disable-next-line no-self-compare
-      if (value != value) return true;
-    // Array#indexOf ignores holes, Array#includes - not
-    } else for (;length > index; index++) if (IS_INCLUDES || index in O) {
-      if (O[index] === el) return IS_INCLUDES || index || 0;
-    } return !IS_INCLUDES && -1;
-  };
-};
-
-
-/***/ }),
-/* 59 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var toInteger = __webpack_require__(14);
-var max = Math.max;
-var min = Math.min;
-module.exports = function (index, length) {
-  index = toInteger(index);
-  return index < 0 ? max(index + length, 0) : min(index, length);
-};
-
-
-/***/ }),
-/* 60 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
-var has = __webpack_require__(12);
-var toObject = __webpack_require__(33);
-var IE_PROTO = __webpack_require__(20)('IE_PROTO');
-var ObjectProto = Object.prototype;
-
-module.exports = Object.getPrototypeOf || function (O) {
-  O = toObject(O);
-  if (has(O, IE_PROTO)) return O[IE_PROTO];
-  if (typeof O.constructor == 'function' && O instanceof O.constructor) {
-    return O.constructor.prototype;
-  } return O instanceof Object ? ObjectProto : null;
-};
-
-
-/***/ }),
-/* 61 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(62);
-var global = __webpack_require__(0);
-var hide = __webpack_require__(5);
-var Iterators = __webpack_require__(9);
-var TO_STRING_TAG = __webpack_require__(1)('toStringTag');
-
-var DOMIterables = ('CSSRuleList,CSSStyleDeclaration,CSSValueList,ClientRectList,DOMRectList,DOMStringList,' +
-  'DOMTokenList,DataTransferItemList,FileList,HTMLAllCollection,HTMLCollection,HTMLFormElement,HTMLSelectElement,' +
-  'MediaList,MimeTypeArray,NamedNodeMap,NodeList,PaintRequestList,Plugin,PluginArray,SVGLengthList,SVGNumberList,' +
-  'SVGPathSegList,SVGPointList,SVGStringList,SVGTransformList,SourceBufferList,StyleSheetList,TextTrackCueList,' +
-  'TextTrackList,TouchList').split(',');
-
-for (var i = 0; i < DOMIterables.length; i++) {
-  var NAME = DOMIterables[i];
-  var Collection = global[NAME];
-  var proto = Collection && Collection.prototype;
-  if (proto && !proto[TO_STRING_TAG]) hide(proto, TO_STRING_TAG, NAME);
-  Iterators[NAME] = Iterators.Array;
-}
-
-
-/***/ }),
-/* 62 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var addToUnscopables = __webpack_require__(63);
-var step = __webpack_require__(64);
-var Iterators = __webpack_require__(9);
-var toIObject = __webpack_require__(19);
-
-// 22.1.3.4 Array.prototype.entries()
-// 22.1.3.13 Array.prototype.keys()
-// 22.1.3.29 Array.prototype.values()
-// 22.1.3.30 Array.prototype[@@iterator]()
-module.exports = __webpack_require__(24)(Array, 'Array', function (iterated, kind) {
-  this._t = toIObject(iterated); // target
-  this._i = 0;                   // next index
-  this._k = kind;                // kind
-// 22.1.5.2.1 %ArrayIteratorPrototype%.next()
-}, function () {
-  var O = this._t;
-  var kind = this._k;
-  var index = this._i++;
-  if (!O || index >= O.length) {
-    this._t = undefined;
-    return step(1);
-  }
-  if (kind == 'keys') return step(0, index);
-  if (kind == 'values') return step(0, O[index]);
-  return step(0, [index, O[index]]);
-}, 'values');
-
-// argumentsList[@@iterator] is %ArrayProto_values% (9.4.4.6, 9.4.4.7)
-Iterators.Arguments = Iterators.Array;
-
-addToUnscopables('keys');
-addToUnscopables('values');
-addToUnscopables('entries');
-
-
-/***/ }),
-/* 63 */
-/***/ (function(module, exports) {
-
-module.exports = function () { /* empty */ };
-
-
-/***/ }),
-/* 64 */
-/***/ (function(module, exports) {
-
-module.exports = function (done, value) {
-  return { value: value, done: !!done };
-};
-
-
-/***/ }),
-/* 65 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var LIBRARY = __webpack_require__(16);
-var global = __webpack_require__(0);
-var ctx = __webpack_require__(10);
-var classof = __webpack_require__(34);
-var $export = __webpack_require__(4);
-var isObject = __webpack_require__(8);
-var aFunction = __webpack_require__(11);
-var anInstance = __webpack_require__(66);
-var forOf = __webpack_require__(67);
-var speciesConstructor = __webpack_require__(35);
-var task = __webpack_require__(36).set;
-var microtask = __webpack_require__(72)();
-var newPromiseCapabilityModule = __webpack_require__(22);
-var perform = __webpack_require__(37);
-var userAgent = __webpack_require__(73);
-var promiseResolve = __webpack_require__(38);
-var PROMISE = 'Promise';
-var TypeError = global.TypeError;
-var process = global.process;
-var versions = process && process.versions;
-var v8 = versions && versions.v8 || '';
-var $Promise = global[PROMISE];
-var isNode = classof(process) == 'process';
-var empty = function () { /* empty */ };
-var Internal, newGenericPromiseCapability, OwnPromiseCapability, Wrapper;
-var newPromiseCapability = newGenericPromiseCapability = newPromiseCapabilityModule.f;
-
-var USE_NATIVE = !!function () {
-  try {
-    // correct subclassing with @@species support
-    var promise = $Promise.resolve(1);
-    var FakePromise = (promise.constructor = {})[__webpack_require__(1)('species')] = function (exec) {
-      exec(empty, empty);
-    };
-    // unhandled rejections tracking support, NodeJS Promise without it fails @@species test
-    return (isNode || typeof PromiseRejectionEvent == 'function')
-      && promise.then(empty) instanceof FakePromise
-      // v8 6.6 (Node 10 and Chrome 66) have a bug with resolving custom thenables
-      // https://bugs.chromium.org/p/chromium/issues/detail?id=830565
-      // we can't detect it synchronously, so just check versions
-      && v8.indexOf('6.6') !== 0
-      && userAgent.indexOf('Chrome/66') === -1;
-  } catch (e) { /* empty */ }
-}();
-
-// helpers
-var isThenable = function (it) {
-  var then;
-  return isObject(it) && typeof (then = it.then) == 'function' ? then : false;
-};
-var notify = function (promise, isReject) {
-  if (promise._n) return;
-  promise._n = true;
-  var chain = promise._c;
-  microtask(function () {
-    var value = promise._v;
-    var ok = promise._s == 1;
-    var i = 0;
-    var run = function (reaction) {
-      var handler = ok ? reaction.ok : reaction.fail;
-      var resolve = reaction.resolve;
-      var reject = reaction.reject;
-      var domain = reaction.domain;
-      var result, then, exited;
-      try {
-        if (handler) {
-          if (!ok) {
-            if (promise._h == 2) onHandleUnhandled(promise);
-            promise._h = 1;
-          }
-          if (handler === true) result = value;
-          else {
-            if (domain) domain.enter();
-            result = handler(value); // may throw
-            if (domain) {
-              domain.exit();
-              exited = true;
-            }
-          }
-          if (result === reaction.promise) {
-            reject(TypeError('Promise-chain cycle'));
-          } else if (then = isThenable(result)) {
-            then.call(result, resolve, reject);
-          } else resolve(result);
-        } else reject(value);
-      } catch (e) {
-        if (domain && !exited) domain.exit();
-        reject(e);
-      }
-    };
-    while (chain.length > i) run(chain[i++]); // variable length - can't use forEach
-    promise._c = [];
-    promise._n = false;
-    if (isReject && !promise._h) onUnhandled(promise);
-  });
-};
-var onUnhandled = function (promise) {
-  task.call(global, function () {
-    var value = promise._v;
-    var unhandled = isUnhandled(promise);
-    var result, handler, console;
-    if (unhandled) {
-      result = perform(function () {
-        if (isNode) {
-          process.emit('unhandledRejection', value, promise);
-        } else if (handler = global.onunhandledrejection) {
-          handler({ promise: promise, reason: value });
-        } else if ((console = global.console) && console.error) {
-          console.error('Unhandled promise rejection', value);
-        }
-      });
-      // Browsers should not trigger `rejectionHandled` event if it was handled here, NodeJS - should
-      promise._h = isNode || isUnhandled(promise) ? 2 : 1;
-    } promise._a = undefined;
-    if (unhandled && result.e) throw result.v;
-  });
-};
-var isUnhandled = function (promise) {
-  return promise._h !== 1 && (promise._a || promise._c).length === 0;
-};
-var onHandleUnhandled = function (promise) {
-  task.call(global, function () {
-    var handler;
-    if (isNode) {
-      process.emit('rejectionHandled', promise);
-    } else if (handler = global.onrejectionhandled) {
-      handler({ promise: promise, reason: promise._v });
-    }
-  });
-};
-var $reject = function (value) {
-  var promise = this;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  promise._v = value;
-  promise._s = 2;
-  if (!promise._a) promise._a = promise._c.slice();
-  notify(promise, true);
-};
-var $resolve = function (value) {
-  var promise = this;
-  var then;
-  if (promise._d) return;
-  promise._d = true;
-  promise = promise._w || promise; // unwrap
-  try {
-    if (promise === value) throw TypeError("Promise can't be resolved itself");
-    if (then = isThenable(value)) {
-      microtask(function () {
-        var wrapper = { _w: promise, _d: false }; // wrap
-        try {
-          then.call(value, ctx($resolve, wrapper, 1), ctx($reject, wrapper, 1));
-        } catch (e) {
-          $reject.call(wrapper, e);
-        }
-      });
-    } else {
-      promise._v = value;
-      promise._s = 1;
-      notify(promise, false);
-    }
-  } catch (e) {
-    $reject.call({ _w: promise, _d: false }, e); // wrap
-  }
-};
-
-// constructor polyfill
-if (!USE_NATIVE) {
-  // 25.4.3.1 Promise(executor)
-  $Promise = function Promise(executor) {
-    anInstance(this, $Promise, PROMISE, '_h');
-    aFunction(executor);
-    Internal.call(this);
-    try {
-      executor(ctx($resolve, this, 1), ctx($reject, this, 1));
-    } catch (err) {
-      $reject.call(this, err);
-    }
-  };
-  // eslint-disable-next-line no-unused-vars
-  Internal = function Promise(executor) {
-    this._c = [];             // <- awaiting reactions
-    this._a = undefined;      // <- checked in isUnhandled reactions
-    this._s = 0;              // <- state
-    this._d = false;          // <- done
-    this._v = undefined;      // <- value
-    this._h = 0;              // <- rejection state, 0 - default, 1 - handled, 2 - unhandled
-    this._n = false;          // <- notify
-  };
-  Internal.prototype = __webpack_require__(74)($Promise.prototype, {
-    // 25.4.5.3 Promise.prototype.then(onFulfilled, onRejected)
-    then: function then(onFulfilled, onRejected) {
-      var reaction = newPromiseCapability(speciesConstructor(this, $Promise));
-      reaction.ok = typeof onFulfilled == 'function' ? onFulfilled : true;
-      reaction.fail = typeof onRejected == 'function' && onRejected;
-      reaction.domain = isNode ? process.domain : undefined;
-      this._c.push(reaction);
-      if (this._a) this._a.push(reaction);
-      if (this._s) notify(this, false);
-      return reaction.promise;
-    },
-    // 25.4.5.1 Promise.prototype.catch(onRejected)
-    'catch': function (onRejected) {
-      return this.then(undefined, onRejected);
-    }
-  });
-  OwnPromiseCapability = function () {
-    var promise = new Internal();
-    this.promise = promise;
-    this.resolve = ctx($resolve, promise, 1);
-    this.reject = ctx($reject, promise, 1);
-  };
-  newPromiseCapabilityModule.f = newPromiseCapability = function (C) {
-    return C === $Promise || C === Wrapper
-      ? new OwnPromiseCapability(C)
-      : newGenericPromiseCapability(C);
-  };
-}
-
-$export($export.G + $export.W + $export.F * !USE_NATIVE, { Promise: $Promise });
-__webpack_require__(21)($Promise, PROMISE);
-__webpack_require__(75)(PROMISE);
-Wrapper = __webpack_require__(2)[PROMISE];
-
-// statics
-$export($export.S + $export.F * !USE_NATIVE, PROMISE, {
-  // 25.4.4.5 Promise.reject(r)
-  reject: function reject(r) {
-    var capability = newPromiseCapability(this);
-    var $$reject = capability.reject;
-    $$reject(r);
-    return capability.promise;
-  }
-});
-$export($export.S + $export.F * (LIBRARY || !USE_NATIVE), PROMISE, {
-  // 25.4.4.6 Promise.resolve(x)
-  resolve: function resolve(x) {
-    return promiseResolve(LIBRARY && this === Wrapper ? $Promise : this, x);
-  }
-});
-$export($export.S + $export.F * !(USE_NATIVE && __webpack_require__(76)(function (iter) {
-  $Promise.all(iter)['catch'](empty);
-})), PROMISE, {
-  // 25.4.4.1 Promise.all(iterable)
-  all: function all(iterable) {
-    var C = this;
-    var capability = newPromiseCapability(C);
-    var resolve = capability.resolve;
-    var reject = capability.reject;
-    var result = perform(function () {
-      var values = [];
-      var index = 0;
-      var remaining = 1;
-      forOf(iterable, false, function (promise) {
-        var $index = index++;
-        var alreadyCalled = false;
-        values.push(undefined);
-        remaining++;
-        C.resolve(promise).then(function (value) {
-          if (alreadyCalled) return;
-          alreadyCalled = true;
-          values[$index] = value;
-          --remaining || resolve(values);
-        }, reject);
-      });
-      --remaining || resolve(values);
-    });
-    if (result.e) reject(result.v);
-    return capability.promise;
-  },
-  // 25.4.4.4 Promise.race(iterable)
-  race: function race(iterable) {
-    var C = this;
-    var capability = newPromiseCapability(C);
-    var reject = capability.reject;
-    var result = perform(function () {
-      forOf(iterable, false, function (promise) {
-        C.resolve(promise).then(capability.resolve, reject);
-      });
-    });
-    if (result.e) reject(result.v);
-    return capability.promise;
-  }
-});
-
-
-/***/ }),
-/* 66 */
-/***/ (function(module, exports) {
-
-module.exports = function (it, Constructor, name, forbiddenField) {
-  if (!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)) {
-    throw TypeError(name + ': incorrect invocation!');
-  } return it;
-};
-
-
-/***/ }),
-/* 67 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var ctx = __webpack_require__(10);
-var call = __webpack_require__(68);
-var isArrayIter = __webpack_require__(69);
-var anObject = __webpack_require__(3);
-var toLength = __webpack_require__(28);
-var getIterFn = __webpack_require__(70);
-var BREAK = {};
-var RETURN = {};
-var exports = module.exports = function (iterable, entries, fn, that, ITERATOR) {
-  var iterFn = ITERATOR ? function () { return iterable; } : getIterFn(iterable);
-  var f = ctx(fn, that, entries ? 2 : 1);
-  var index = 0;
-  var length, step, iterator, result;
-  if (typeof iterFn != 'function') throw TypeError(iterable + ' is not iterable!');
-  // fast case for arrays with default iterator
-  if (isArrayIter(iterFn)) for (length = toLength(iterable.length); length > index; index++) {
-    result = entries ? f(anObject(step = iterable[index])[0], step[1]) : f(iterable[index]);
-    if (result === BREAK || result === RETURN) return result;
-  } else for (iterator = iterFn.call(iterable); !(step = iterator.next()).done;) {
-    result = call(iterator, f, step.value, entries);
-    if (result === BREAK || result === RETURN) return result;
-  }
-};
-exports.BREAK = BREAK;
-exports.RETURN = RETURN;
-
-
-/***/ }),
-/* 68 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// call something on iterator step with safe closing on error
-var anObject = __webpack_require__(3);
-module.exports = function (iterator, fn, value, entries) {
-  try {
-    return entries ? fn(anObject(value)[0], value[1]) : fn(value);
-  // 7.4.6 IteratorClose(iterator, completion)
-  } catch (e) {
-    var ret = iterator['return'];
-    if (ret !== undefined) anObject(ret.call(iterator));
-    throw e;
-  }
-};
-
-
-/***/ }),
-/* 69 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// check on default Array iterator
-var Iterators = __webpack_require__(9);
-var ITERATOR = __webpack_require__(1)('iterator');
-var ArrayProto = Array.prototype;
-
-module.exports = function (it) {
-  return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
-};
-
-
-/***/ }),
-/* 70 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var classof = __webpack_require__(34);
-var ITERATOR = __webpack_require__(1)('iterator');
-var Iterators = __webpack_require__(9);
-module.exports = __webpack_require__(2).getIteratorMethod = function (it) {
-  if (it != undefined) return it[ITERATOR]
-    || it['@@iterator']
-    || Iterators[classof(it)];
-};
-
-
-/***/ }),
-/* 71 */
-/***/ (function(module, exports) {
-
-// fast apply, http://jsperf.lnkit.com/fast-apply/5
-module.exports = function (fn, args, that) {
-  var un = that === undefined;
-  switch (args.length) {
-    case 0: return un ? fn()
-                      : fn.call(that);
-    case 1: return un ? fn(args[0])
-                      : fn.call(that, args[0]);
-    case 2: return un ? fn(args[0], args[1])
-                      : fn.call(that, args[0], args[1]);
-    case 3: return un ? fn(args[0], args[1], args[2])
-                      : fn.call(that, args[0], args[1], args[2]);
-    case 4: return un ? fn(args[0], args[1], args[2], args[3])
-                      : fn.call(that, args[0], args[1], args[2], args[3]);
-  } return fn.apply(that, args);
-};
-
-
-/***/ }),
-/* 72 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0);
-var macrotask = __webpack_require__(36).set;
-var Observer = global.MutationObserver || global.WebKitMutationObserver;
-var process = global.process;
-var Promise = global.Promise;
-var isNode = __webpack_require__(13)(process) == 'process';
-
-module.exports = function () {
-  var head, last, notify;
-
-  var flush = function () {
-    var parent, fn;
-    if (isNode && (parent = process.domain)) parent.exit();
-    while (head) {
-      fn = head.fn;
-      head = head.next;
-      try {
-        fn();
-      } catch (e) {
-        if (head) notify();
-        else last = undefined;
-        throw e;
-      }
-    } last = undefined;
-    if (parent) parent.enter();
-  };
-
-  // Node.js
-  if (isNode) {
-    notify = function () {
-      process.nextTick(flush);
-    };
-  // browsers with MutationObserver, except iOS Safari - https://github.com/zloirock/core-js/issues/339
-  } else if (Observer && !(global.navigator && global.navigator.standalone)) {
-    var toggle = true;
-    var node = document.createTextNode('');
-    new Observer(flush).observe(node, { characterData: true }); // eslint-disable-line no-new
-    notify = function () {
-      node.data = toggle = !toggle;
-    };
-  // environments with maybe non-completely correct, but existent Promise
-  } else if (Promise && Promise.resolve) {
-    // Promise.resolve without an argument throws an error in LG WebOS 2
-    var promise = Promise.resolve(undefined);
-    notify = function () {
-      promise.then(flush);
-    };
-  // for other environments - macrotask based on:
-  // - setImmediate
-  // - MessageChannel
-  // - window.postMessag
-  // - onreadystatechange
-  // - setTimeout
-  } else {
-    notify = function () {
-      // strange IE + webpack dev server bug - use .call(global)
-      macrotask.call(global, flush);
-    };
-  }
-
-  return function (fn) {
-    var task = { fn: fn, next: undefined };
-    if (last) last.next = task;
-    if (!head) {
-      head = task;
-      notify();
-    } last = task;
-  };
-};
-
-
-/***/ }),
-/* 73 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var global = __webpack_require__(0);
-var navigator = global.navigator;
-
-module.exports = navigator && navigator.userAgent || '';
-
-
-/***/ }),
-/* 74 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var hide = __webpack_require__(5);
-module.exports = function (target, src, safe) {
-  for (var key in src) {
-    if (safe && target[key]) target[key] = src[key];
-    else hide(target, key, src[key]);
-  } return target;
-};
-
-
-/***/ }),
-/* 75 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-var global = __webpack_require__(0);
-var core = __webpack_require__(2);
-var dP = __webpack_require__(7);
-var DESCRIPTORS = __webpack_require__(6);
-var SPECIES = __webpack_require__(1)('species');
-
-module.exports = function (KEY) {
-  var C = typeof core[KEY] == 'function' ? core[KEY] : global[KEY];
-  if (DESCRIPTORS && C && !C[SPECIES]) dP.f(C, SPECIES, {
-    configurable: true,
-    get: function () { return this; }
-  });
-};
-
-
-/***/ }),
-/* 76 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var ITERATOR = __webpack_require__(1)('iterator');
-var SAFE_CLOSING = false;
-
-try {
-  var riter = [7][ITERATOR]();
-  riter['return'] = function () { SAFE_CLOSING = true; };
-  // eslint-disable-next-line no-throw-literal
-  Array.from(riter, function () { throw 2; });
-} catch (e) { /* empty */ }
-
-module.exports = function (exec, skipClosing) {
-  if (!skipClosing && !SAFE_CLOSING) return false;
-  var safe = false;
-  try {
-    var arr = [7];
-    var iter = arr[ITERATOR]();
-    iter.next = function () { return { done: safe = true }; };
-    arr[ITERATOR] = function () { return iter; };
-    exec(arr);
-  } catch (e) { /* empty */ }
-  return safe;
-};
-
-
-/***/ }),
-/* 77 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-// https://github.com/tc39/proposal-promise-finally
-
-var $export = __webpack_require__(4);
-var core = __webpack_require__(2);
-var global = __webpack_require__(0);
-var speciesConstructor = __webpack_require__(35);
-var promiseResolve = __webpack_require__(38);
-
-$export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
-  var C = speciesConstructor(this, core.Promise || global.Promise);
-  var isFunction = typeof onFinally == 'function';
-  return this.then(
-    isFunction ? function (x) {
-      return promiseResolve(C, onFinally()).then(function () { return x; });
-    } : onFinally,
-    isFunction ? function (e) {
-      return promiseResolve(C, onFinally()).then(function () { throw e; });
-    } : onFinally
-  );
-} });
-
-
-/***/ }),
-/* 78 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// https://github.com/tc39/proposal-promise-try
-var $export = __webpack_require__(4);
-var newPromiseCapability = __webpack_require__(22);
-var perform = __webpack_require__(37);
-
-$export($export.S, 'Promise', { 'try': function (callbackfn) {
-  var promiseCapability = newPromiseCapability.f(this);
-  var result = perform(callbackfn);
-  (result.e ? promiseCapability.reject : promiseCapability.resolve)(result.v);
-  return promiseCapability.promise;
-} });
-
-
-/***/ }),
-/* 79 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(80);
-module.exports = __webpack_require__(2).Object.assign;
-
-
-/***/ }),
-/* 80 */
-/***/ (function(module, exports, __webpack_require__) {
-
-// 19.1.3.1 Object.assign(target, source)
-var $export = __webpack_require__(4);
-
-$export($export.S + $export.F, 'Object', { assign: __webpack_require__(81) });
-
-
-/***/ }),
-/* 81 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-// 19.1.2.1 Object.assign(target, source, ...)
-var getKeys = __webpack_require__(26);
-var gOPS = __webpack_require__(82);
-var pIE = __webpack_require__(83);
-var toObject = __webpack_require__(33);
-var IObject = __webpack_require__(27);
-var $assign = Object.assign;
-
-// should work with symbols and should have deterministic property order (V8 bug)
-module.exports = !$assign || __webpack_require__(17)(function () {
-  var A = {};
-  var B = {};
-  // eslint-disable-next-line no-undef
-  var S = Symbol();
-  var K = 'abcdefghijklmnopqrst';
-  A[S] = 7;
-  K.split('').forEach(function (k) { B[k] = k; });
-  return $assign({}, A)[S] != 7 || Object.keys($assign({}, B)).join('') != K;
-}) ? function assign(target, source) { // eslint-disable-line no-unused-vars
-  var T = toObject(target);
-  var aLen = arguments.length;
-  var index = 1;
-  var getSymbols = gOPS.f;
-  var isEnum = pIE.f;
-  while (aLen > index) {
-    var S = IObject(arguments[index++]);
-    var keys = getSymbols ? getKeys(S).concat(getSymbols(S)) : getKeys(S);
-    var length = keys.length;
-    var j = 0;
-    var key;
-    while (length > j) if (isEnum.call(S, key = keys[j++])) T[key] = S[key];
-  } return T;
-} : $assign;
-
-
-/***/ }),
-/* 82 */
-/***/ (function(module, exports) {
-
-exports.f = Object.getOwnPropertySymbols;
-
-
-/***/ }),
-/* 83 */
-/***/ (function(module, exports) {
-
-exports.f = {}.propertyIsEnumerable;
-
-
-/***/ }),
-/* 84 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-exports.default = function (instance, Constructor) {
-  if (!(instance instanceof Constructor)) {
-    throw new TypeError("Cannot call a class as a function");
-  }
-};
-
-/***/ }),
-/* 85 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-exports.__esModule = true;
-
-var _defineProperty = __webpack_require__(86);
-
-var _defineProperty2 = _interopRequireDefault(_defineProperty);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
-
-exports.default = function () {
-  function defineProperties(target, props) {
-    for (var i = 0; i < props.length; i++) {
-      var descriptor = props[i];
-      descriptor.enumerable = descriptor.enumerable || false;
-      descriptor.configurable = true;
-      if ("value" in descriptor) descriptor.writable = true;
-      (0, _defineProperty2.default)(target, descriptor.key, descriptor);
-    }
-  }
-
-  return function (Constructor, protoProps, staticProps) {
-    if (protoProps) defineProperties(Constructor.prototype, protoProps);
-    if (staticProps) defineProperties(Constructor, staticProps);
-    return Constructor;
-  };
-}();
-
-/***/ }),
-/* 86 */
-/***/ (function(module, exports, __webpack_require__) {
-
-module.exports = { "default": __webpack_require__(87), __esModule: true };
-
-/***/ }),
-/* 87 */
-/***/ (function(module, exports, __webpack_require__) {
-
-__webpack_require__(88);
-var $Object = __webpack_require__(2).Object;
-module.exports = function defineProperty(it, key, desc) {
-  return $Object.defineProperty(it, key, desc);
-};
-
-
-/***/ }),
-/* 88 */
-/***/ (function(module, exports, __webpack_require__) {
-
-var $export = __webpack_require__(4);
-// 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
-$export($export.S + $export.F * !__webpack_require__(6), 'Object', { defineProperty: __webpack_require__(7).f });
-
-
-/***/ }),
-/* 89 */
-/***/ (function(module, exports, __webpack_require__) {
-
-"use strict";
-
-
-var _assign = __webpack_require__(39);
-
-var _assign2 = _interopRequireDefault(_assign);
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 Object.defineProperty(exports, "__esModule", { value: true });
-var resolve_pathname_1 = __webpack_require__(90);
-var PathUtils_1 = __webpack_require__(40);
+/**
+ * 增加'/'到path
+ * @export
+ * @param {string} path
+ * @returns {string}
+ */
+function addLeadingSlash(path) {
+    return path.charAt(0) === '/' ? path : '/' + path;
+}
+exports.addLeadingSlash = addLeadingSlash;
+// /**
+//  * 移除path的根'/'
+//  * @export
+//  * @param {string} path 
+//  * @returns {string} 
+//  */
+// export function stripLeadingSlash(path: string): string {
+//     return path.charAt(0) === '/' ? path.substr(1) : path;
+// }
+// /**
+//  * 移除path最后的'/'
+//  * @export
+//  * @param {string} path 
+//  * @returns {string} 
+//  */
+// export function stripTrailingSlash(path: string): string {
+//     return path.charAt(path.length - 1) === '/' ? path.slice(0, -1) : path;
+// }
+/**
+ * 将一个path转为location对象形式
+ * @export
+ * @param {string} path
+ * @param {any} state
+ * @returns {ILocation}
+ */
+function parsePath(path) {
+    var pathname = path || '/';
+    var search = '';
+    var hash = '';
+    var hashIndex = pathname.indexOf('#');
+    if (hashIndex !== -1) {
+        hash = pathname.substr(hashIndex);
+        pathname = pathname.substr(0, hashIndex);
+    }
+    var searchIndex = pathname.indexOf('?');
+    if (searchIndex !== -1) {
+        search = pathname.substr(searchIndex);
+        pathname = pathname.substr(0, searchIndex);
+    }
+    return {
+        pathname: pathname,
+        search: search === '?' ? '' : search,
+        hash: hash === '#' ? '' : hash,
+        key: '',
+        get href() {
+            return this.pathname + this.search + this.hash;
+        }
+    };
+}
+exports.parsePath = parsePath;
+// /**
+//  * 将一个location对象转为path对象
+//  * @export
+//  * @param {ILocation} location 
+//  * @returns {string} 
+//  */
+// export function createPath(location: ILocation): string {
+//     const { pathname, search, hash } = location;
+//     let path = pathname || '/';
+//     if (search && search !== '?')
+//         path += search.charAt(0) === '?' ? search : `?${search}`;
+//     if (hash && hash !== '#') path += hash.charAt(0) === '#' ? hash : `#${hash}`;
+//     return path;
+// }
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports) {
+
+var g;
+
+// This works in non-strict mode
+g = (function() {
+	return this;
+})();
+
+try {
+	// This works if eval is allowed (see CSP)
+	g = g || Function("return this")() || (1,eval)("this");
+} catch(e) {
+	// This works if the window reference is available
+	if(typeof window === "object")
+		g = window;
+}
+
+// g can still be undefined, but nothing to do about it...
+// We return undefined, instead of nothing here, so it's
+// easier to handle this case. if(!global) { ...}
+
+module.exports = g;
+
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+function __export(m) {
+    for (var p in m) {
+        if (!exports.hasOwnProperty(p)) exports[p] = m[p];
+    }
+}
+Object.defineProperty(exports, "__esModule", { value: true });
+__export(__webpack_require__(0));
+var History_1 = __webpack_require__(0);
+exports.default = History_1.MyHistory;
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", { value: true });
+var resolve_pathname_1 = __webpack_require__(5);
+var PathUtils_1 = __webpack_require__(1);
 /**
  *
  * @export
- * @param {string | ILocation} path href字符串或者location对象
- * @param {any} state history的state
+ * @param {string | Location} path href字符串或者location对象
  * @param {any} key 猜测是一个标记location的key
- * @param {ILocation} currentLocation 当前的location对象，用于解析出相对路径
+ * @param {Location} currentLocation 当前的location对象，用于解析出相对路径
  * @returns
  */
 function createLocation(path) {
@@ -3693,12 +1262,11 @@ function createLocation(path) {
     var location = void 0;
     // 如果path是字符串，将其封装成location
     if (typeof path === 'string') {
-        // Two-arg form: push(path, state)
         location = PathUtils_1.parsePath(path);
     } else {
         // 如果path不是字符串，认为他是location，
         // One-arg form: push(location)
-        location = (0, _assign2.default)({}, path);
+        location = Object.assign({}, path);
         // 规范化传入的location的pathname、search、hash。如果存在这些数据，索性置为“”，反正后面会根据
         if (location.pathname === undefined) location.pathname = '';
         if (location.search) {
@@ -3742,20 +1310,35 @@ function createLocation(path) {
     return location;
 }
 exports.createLocation = createLocation;
+// /**
+//  * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
+//  * @export
+//  * @param {any} a 
+//  * @param {any} b 
+//  * @returns 
+//  */
+// export function locationsAreEqual(a: Location, b: Location) {
+//     return a.href === b.href
+// }
+var timeStamp = void 0;
+var count = 0;
 /**
- * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
+ * 创建location的ID
  * @export
- * @param {any} a
- * @param {any} b
+ * @param {number} _timeStamp
  * @returns
  */
-function locationsAreEqual(a, b) {
-    return a.href === b.href;
+function crateNo(_timeStamp) {
+    if (timeStamp !== _timeStamp) {
+        timeStamp = _timeStamp;
+        count = 0;
+    }
+    return timeStamp * 100 + count++;
 }
-exports.locationsAreEqual = locationsAreEqual;
+exports.crateNo = crateNo;
 
 /***/ }),
-/* 90 */
+/* 5 */
 /***/ (function(module, __webpack_exports__, __webpack_require__) {
 
 "use strict";
@@ -3838,62 +1421,561 @@ function resolvePathname(to, from) {
 
 
 /***/ }),
-/* 91 */
+/* 6 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+/* WEBPACK VAR INJECTION */(function(setImmediate) {
+
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
+/**
+ * 在下一个任务队列中执行
+ * @export
+ * @param {Function} cb         回调函数
+ * @param {Object} [ctx]
+ */
+function nextTick(cb, ctx) {
+    var callback = function callback() {
+        if (typeof cb === 'function') {
+            cb.call(ctx);
+        }
+    };
+    if (typeof setImmediate !== 'undefined') {
+        setImmediate(callback);
+    } else if (typeof MessageChannel !== 'undefined' && (/native code/.test(MessageChannel.toString()) || MessageChannel.toString() === '[object MessageChannelConstructor]')) {
+        var channel = new MessageChannel();
+        var port = channel.port2;
+        channel.port1.onmessage = callback;
+        port.postMessage(1);
+    } else {
+        setTimeout(callback, 0);
+    }
+}
+exports.nextTick = nextTick;
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(7).setImmediate))
+
+/***/ }),
+/* 7 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global) {var scope = (typeof global !== "undefined" && global) ||
+            (typeof self !== "undefined" && self) ||
+            window;
+var apply = Function.prototype.apply;
+
+// DOM APIs, for completeness
+
+exports.setTimeout = function() {
+  return new Timeout(apply.call(setTimeout, scope, arguments), clearTimeout);
+};
+exports.setInterval = function() {
+  return new Timeout(apply.call(setInterval, scope, arguments), clearInterval);
+};
+exports.clearTimeout =
+exports.clearInterval = function(timeout) {
+  if (timeout) {
+    timeout.close();
+  }
+};
+
+function Timeout(id, clearFn) {
+  this._id = id;
+  this._clearFn = clearFn;
+}
+Timeout.prototype.unref = Timeout.prototype.ref = function() {};
+Timeout.prototype.close = function() {
+  this._clearFn.call(scope, this._id);
+};
+
+// Does not start the time, just sets up the members needed.
+exports.enroll = function(item, msecs) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = msecs;
+};
+
+exports.unenroll = function(item) {
+  clearTimeout(item._idleTimeoutId);
+  item._idleTimeout = -1;
+};
+
+exports._unrefActive = exports.active = function(item) {
+  clearTimeout(item._idleTimeoutId);
+
+  var msecs = item._idleTimeout;
+  if (msecs >= 0) {
+    item._idleTimeoutId = setTimeout(function onTimeout() {
+      if (item._onTimeout)
+        item._onTimeout();
+    }, msecs);
+  }
+};
+
+// setimmediate attaches itself to the global object
+__webpack_require__(8);
+// On some exotic environments, it's not clear which object `setimmediate` was
+// able to install onto.  Search each possibility in the same order as the
+// `setimmediate` library.
+exports.setImmediate = (typeof self !== "undefined" && self.setImmediate) ||
+                       (typeof global !== "undefined" && global.setImmediate) ||
+                       (this && this.setImmediate);
+exports.clearImmediate = (typeof self !== "undefined" && self.clearImmediate) ||
+                         (typeof global !== "undefined" && global.clearImmediate) ||
+                         (this && this.clearImmediate);
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2)))
+
+/***/ }),
+/* 8 */
+/***/ (function(module, exports, __webpack_require__) {
+
+/* WEBPACK VAR INJECTION */(function(global, process) {(function (global, undefined) {
+    "use strict";
+
+    if (global.setImmediate) {
+        return;
+    }
+
+    var nextHandle = 1; // Spec says greater than zero
+    var tasksByHandle = {};
+    var currentlyRunningATask = false;
+    var doc = global.document;
+    var registerImmediate;
+
+    function setImmediate(callback) {
+      // Callback can either be a function or a string
+      if (typeof callback !== "function") {
+        callback = new Function("" + callback);
+      }
+      // Copy function arguments
+      var args = new Array(arguments.length - 1);
+      for (var i = 0; i < args.length; i++) {
+          args[i] = arguments[i + 1];
+      }
+      // Store and register the task
+      var task = { callback: callback, args: args };
+      tasksByHandle[nextHandle] = task;
+      registerImmediate(nextHandle);
+      return nextHandle++;
+    }
+
+    function clearImmediate(handle) {
+        delete tasksByHandle[handle];
+    }
+
+    function run(task) {
+        var callback = task.callback;
+        var args = task.args;
+        switch (args.length) {
+        case 0:
+            callback();
+            break;
+        case 1:
+            callback(args[0]);
+            break;
+        case 2:
+            callback(args[0], args[1]);
+            break;
+        case 3:
+            callback(args[0], args[1], args[2]);
+            break;
+        default:
+            callback.apply(undefined, args);
+            break;
+        }
+    }
+
+    function runIfPresent(handle) {
+        // From the spec: "Wait until any invocations of this algorithm started before this one have completed."
+        // So if we're currently running a task, we'll need to delay this invocation.
+        if (currentlyRunningATask) {
+            // Delay by doing a setTimeout. setImmediate was tried instead, but in Firefox 7 it generated a
+            // "too much recursion" error.
+            setTimeout(runIfPresent, 0, handle);
+        } else {
+            var task = tasksByHandle[handle];
+            if (task) {
+                currentlyRunningATask = true;
+                try {
+                    run(task);
+                } finally {
+                    clearImmediate(handle);
+                    currentlyRunningATask = false;
+                }
+            }
+        }
+    }
+
+    function installNextTickImplementation() {
+        registerImmediate = function(handle) {
+            process.nextTick(function () { runIfPresent(handle); });
+        };
+    }
+
+    function canUsePostMessage() {
+        // The test against `importScripts` prevents this implementation from being installed inside a web worker,
+        // where `global.postMessage` means something completely different and can't be used for this purpose.
+        if (global.postMessage && !global.importScripts) {
+            var postMessageIsAsynchronous = true;
+            var oldOnMessage = global.onmessage;
+            global.onmessage = function() {
+                postMessageIsAsynchronous = false;
+            };
+            global.postMessage("", "*");
+            global.onmessage = oldOnMessage;
+            return postMessageIsAsynchronous;
+        }
+    }
+
+    function installPostMessageImplementation() {
+        // Installs an event handler on `global` for the `message` event: see
+        // * https://developer.mozilla.org/en/DOM/window.postMessage
+        // * http://www.whatwg.org/specs/web-apps/current-work/multipage/comms.html#crossDocumentMessages
+
+        var messagePrefix = "setImmediate$" + Math.random() + "$";
+        var onGlobalMessage = function(event) {
+            if (event.source === global &&
+                typeof event.data === "string" &&
+                event.data.indexOf(messagePrefix) === 0) {
+                runIfPresent(+event.data.slice(messagePrefix.length));
+            }
+        };
+
+        if (global.addEventListener) {
+            global.addEventListener("message", onGlobalMessage, false);
+        } else {
+            global.attachEvent("onmessage", onGlobalMessage);
+        }
+
+        registerImmediate = function(handle) {
+            global.postMessage(messagePrefix + handle, "*");
+        };
+    }
+
+    function installMessageChannelImplementation() {
+        var channel = new MessageChannel();
+        channel.port1.onmessage = function(event) {
+            var handle = event.data;
+            runIfPresent(handle);
+        };
+
+        registerImmediate = function(handle) {
+            channel.port2.postMessage(handle);
+        };
+    }
+
+    function installReadyStateChangeImplementation() {
+        var html = doc.documentElement;
+        registerImmediate = function(handle) {
+            // Create a <script> element; its readystatechange event will be fired asynchronously once it is inserted
+            // into the document. Do so, thus queuing up the task. Remember to clean up once it's been called.
+            var script = doc.createElement("script");
+            script.onreadystatechange = function () {
+                runIfPresent(handle);
+                script.onreadystatechange = null;
+                html.removeChild(script);
+                script = null;
+            };
+            html.appendChild(script);
+        };
+    }
+
+    function installSetTimeoutImplementation() {
+        registerImmediate = function(handle) {
+            setTimeout(runIfPresent, 0, handle);
+        };
+    }
+
+    // If supported, we should attach to the prototype of global, since that is where setTimeout et al. live.
+    var attachTo = Object.getPrototypeOf && Object.getPrototypeOf(global);
+    attachTo = attachTo && attachTo.setTimeout ? attachTo : global;
+
+    // Don't get fooled by e.g. browserify environments.
+    if ({}.toString.call(global.process) === "[object process]") {
+        // For Node.js before 0.9
+        installNextTickImplementation();
+
+    } else if (canUsePostMessage()) {
+        // For non-IE10 modern browsers
+        installPostMessageImplementation();
+
+    } else if (global.MessageChannel) {
+        // For web workers, where supported
+        installMessageChannelImplementation();
+
+    } else if (doc && "onreadystatechange" in doc.createElement("script")) {
+        // For IE 6–8
+        installReadyStateChangeImplementation();
+
+    } else {
+        // For older browsers
+        installSetTimeoutImplementation();
+    }
+
+    attachTo.setImmediate = setImmediate;
+    attachTo.clearImmediate = clearImmediate;
+}(typeof self === "undefined" ? typeof global === "undefined" ? this : global : self));
+
+/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(2), __webpack_require__(9)))
+
+/***/ }),
+/* 9 */
+/***/ (function(module, exports) {
+
+// shim for using process in browser
+var process = module.exports = {};
+
+// cached from whatever global is present so that test runners that stub it
+// don't break things.  But we need to wrap it in a try catch in case it is
+// wrapped in strict mode code which doesn't define any globals.  It's inside a
+// function because try/catches deoptimize in certain engines.
+
+var cachedSetTimeout;
+var cachedClearTimeout;
+
+function defaultSetTimout() {
+    throw new Error('setTimeout has not been defined');
+}
+function defaultClearTimeout () {
+    throw new Error('clearTimeout has not been defined');
+}
+(function () {
+    try {
+        if (typeof setTimeout === 'function') {
+            cachedSetTimeout = setTimeout;
+        } else {
+            cachedSetTimeout = defaultSetTimout;
+        }
+    } catch (e) {
+        cachedSetTimeout = defaultSetTimout;
+    }
+    try {
+        if (typeof clearTimeout === 'function') {
+            cachedClearTimeout = clearTimeout;
+        } else {
+            cachedClearTimeout = defaultClearTimeout;
+        }
+    } catch (e) {
+        cachedClearTimeout = defaultClearTimeout;
+    }
+} ())
+function runTimeout(fun) {
+    if (cachedSetTimeout === setTimeout) {
+        //normal enviroments in sane situations
+        return setTimeout(fun, 0);
+    }
+    // if setTimeout wasn't available but was latter defined
+    if ((cachedSetTimeout === defaultSetTimout || !cachedSetTimeout) && setTimeout) {
+        cachedSetTimeout = setTimeout;
+        return setTimeout(fun, 0);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedSetTimeout(fun, 0);
+    } catch(e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't trust the global object when called normally
+            return cachedSetTimeout.call(null, fun, 0);
+        } catch(e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error
+            return cachedSetTimeout.call(this, fun, 0);
+        }
+    }
+
+
+}
+function runClearTimeout(marker) {
+    if (cachedClearTimeout === clearTimeout) {
+        //normal enviroments in sane situations
+        return clearTimeout(marker);
+    }
+    // if clearTimeout wasn't available but was latter defined
+    if ((cachedClearTimeout === defaultClearTimeout || !cachedClearTimeout) && clearTimeout) {
+        cachedClearTimeout = clearTimeout;
+        return clearTimeout(marker);
+    }
+    try {
+        // when when somebody has screwed with setTimeout but no I.E. maddness
+        return cachedClearTimeout(marker);
+    } catch (e){
+        try {
+            // When we are in I.E. but the script has been evaled so I.E. doesn't  trust the global object when called normally
+            return cachedClearTimeout.call(null, marker);
+        } catch (e){
+            // same as above but when it's a version of I.E. that must have the global object for 'this', hopfully our context correct otherwise it will throw a global error.
+            // Some versions of I.E. have different rules for clearTimeout vs setTimeout
+            return cachedClearTimeout.call(this, marker);
+        }
+    }
+
+
+
+}
+var queue = [];
+var draining = false;
+var currentQueue;
+var queueIndex = -1;
+
+function cleanUpNextTick() {
+    if (!draining || !currentQueue) {
+        return;
+    }
+    draining = false;
+    if (currentQueue.length) {
+        queue = currentQueue.concat(queue);
+    } else {
+        queueIndex = -1;
+    }
+    if (queue.length) {
+        drainQueue();
+    }
+}
+
+function drainQueue() {
+    if (draining) {
+        return;
+    }
+    var timeout = runTimeout(cleanUpNextTick);
+    draining = true;
+
+    var len = queue.length;
+    while(len) {
+        currentQueue = queue;
+        queue = [];
+        while (++queueIndex < len) {
+            if (currentQueue) {
+                currentQueue[queueIndex].run();
+            }
+        }
+        queueIndex = -1;
+        len = queue.length;
+    }
+    currentQueue = null;
+    draining = false;
+    runClearTimeout(timeout);
+}
+
+process.nextTick = function (fun) {
+    var args = new Array(arguments.length - 1);
+    if (arguments.length > 1) {
+        for (var i = 1; i < arguments.length; i++) {
+            args[i - 1] = arguments[i];
+        }
+    }
+    queue.push(new Item(fun, args));
+    if (queue.length === 1 && !draining) {
+        runTimeout(drainQueue);
+    }
+};
+
+// v8 likes predictible objects
+function Item(fun, array) {
+    this.fun = fun;
+    this.array = array;
+}
+Item.prototype.run = function () {
+    this.fun.apply(null, this.array);
+};
+process.title = 'browser';
+process.browser = true;
+process.env = {};
+process.argv = [];
+process.version = ''; // empty string to avoid regexp issues
+process.versions = {};
+
+function noop() {}
+
+process.on = noop;
+process.addListener = noop;
+process.once = noop;
+process.off = noop;
+process.removeListener = noop;
+process.removeAllListeners = noop;
+process.emit = noop;
+process.prependListener = noop;
+process.prependOnceListener = noop;
+
+process.listeners = function (name) { return [] }
+
+process.binding = function (name) {
+    throw new Error('process.binding is not supported');
+};
+
+process.cwd = function () { return '/' };
+process.chdir = function (dir) {
+    throw new Error('process.chdir is not supported');
+};
+process.umask = function() { return 0; };
+
+
+/***/ }),
+/* 10 */
 /***/ (function(module, exports, __webpack_require__) {
 
 "use strict";
 
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.canUseDOM = !!(typeof window !== 'undefined' && window.document && window.document.createElement);
-// 对window.confirm对回调，用于window上面没有alert等情况？
-function getConfirmation(message, callback) {
-    callback(window.confirm(message)); // eslint-disable-line no-alert
-}
-exports.getConfirmation = getConfirmation;
 /**
- * Returns true if the HTML5 history API is supported. Taken from Modernizr.
- *
- * https://github.com/Modernizr/Modernizr/blob/master/LICENSE
- * https://github.com/Modernizr/Modernizr/blob/master/feature-detects/history.js
- * changed to avoid false negatives for Windows Phones: https://github.com/reactjs/react-router/issues/586
+ * 反转promise的异步控制的对象模型——Deferred
+ * @returns
  */
-// 判断浏览器是否支持HTML5的replaceState、pushSatate、onpopstate等方法
-function supportsHistory() {
-    var ua = window.navigator.userAgent;
-    // 安装2系列不支持。安装2系列和4.0不支持。Mobile Safari中不带Chrome和Windows Phone不支持，难到有safari跑到了按照和winphoe？？？？
-    if ((ua.indexOf('Android 2.') !== -1 || ua.indexOf('Android 4.0') !== -1) && ua.indexOf('Mobile Safari') !== -1 && ua.indexOf('Chrome') === -1 && ua.indexOf('Windows Phone') === -1) return false;
-    //直接看window的history有米有pushState最靠谱
-    return window.history && 'pushState' in window.history;
-}
-exports.supportsHistory = supportsHistory;
-/**
- * Returns true if browser fires popstate on hash change.
- * IE10 and IE11 do not.
- */
-// 经实验除了ie10、ie11外的浏览器都在hashchange的时候触发popstate事件
-function supportsPopStateOnHashChange() {
-    return window.navigator.userAgent.indexOf('Trident') === -1;
-}
-exports.supportsPopStateOnHashChange = supportsPopStateOnHashChange;
-/**
- * Returns false if using go(n) with hash history causes a full page reload.
- */
-// 没试验过这种场景
-function supportsGoWithoutReloadUsingHash() {
-    return window.navigator.userAgent.indexOf('Firefox') === -1;
-}
-exports.supportsGoWithoutReloadUsingHash = supportsGoWithoutReloadUsingHash;
-/**
- * Returns true if a given popstate event is an extraneous WebKit event.
- * Accounts for the fact that Chrome on iOS fires real popstate events
- * containing undefined state when pressing the back button.
- */
-// 没遇到过这种情况
-function isExtraneousPopstateEvent(event) {
-    event.state === undefined && navigator.userAgent.indexOf('CriOS') === -1;
-}
-exports.isExtraneousPopstateEvent = isExtraneousPopstateEvent;
+
+var Deferred = function () {
+    function Deferred() {
+        var _this = this;
+
+        _classCallCheck(this, Deferred);
+
+        /**
+         * promise是否已经完成
+         * @type {boolean}
+         */
+        this.$isFinished = false;
+        //返回的参数
+        this.promise = new Promise(function (resolve, reject) {
+            _this.$resolve = resolve;
+            _this.$reject = reject;
+        });
+    }
+
+    _createClass(Deferred, [{
+        key: "resolve",
+
+        /**
+         * 对外暴露的接口，promise正常完成
+         * @param {T} args
+         */
+        value: function resolve(args) {
+            this.$isFinished = true;
+            this.$resolve(args);
+        }
+        /**
+         * 对外暴露的接口，promise异常结束
+         * @param {any} args
+         */
+
+    }, {
+        key: "reject",
+        value: function reject(args) {
+            this.$isFinished = true;
+            this.$reject(args);
+        }
+    }, {
+        key: "isFinished",
+        get: function get() {
+            return this.$isFinished;
+        }
+    }]);
+
+    return Deferred;
+}();
+
+exports.Deferred = Deferred;
 
 /***/ })
 /******/ ]);

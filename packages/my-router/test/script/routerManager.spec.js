@@ -1,20 +1,35 @@
-import { RouterManager, RouterAction } from '../../src/router/'
+import { MyRouter } from '../../src/core/MyRouter'
 
 describe('路由的模块测试', function() {
     this.timeout(8000);
 
+    let routerManager = new MyRouter()
+    beforeEach(async function() {
+        if(routerManager){
+            await routerManager.destroy()
+            routerManager = null
+        }
+    });
+    afterEach(async function() {
+        // console.log('afterEach-before', location.href, history.state, sessionStorage)
+        if(routerManager){
+            await routerManager.destroy()
+            routerManager = null
+        }
+        await new Promise(r=>setTimeout(r, 100))
+    });
+
     it('初始化测试', function() {
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
-                //用内存history模拟浏览器路由
-                mode: 'm',
+            routerManager = new MyRouter({
+                // 用内存history模拟浏览器路由
                 routes: [{
                     path: '/',
                     meta: {
                         id: 1
                     }
                 }],
-                onURLChange: (result, from, to, clears)=>{
+                onURLChange: (result, from, to, news, clears)=>{
                     try{
                         assert.deepEqual(result, RouterAction.PUSH)
                         assert.isArray(clears)
@@ -32,8 +47,8 @@ describe('路由的模块测试', function() {
 
     it('设置路由，匹配路由', function() {
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
-                //用内存history模拟浏览器路由
+            routerManager = new MyRouter({
+                // 用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{
                     path: '/xxx',
@@ -60,8 +75,8 @@ describe('路由的模块测试', function() {
 
     it('路由getCurrentRouteData函数和RouteData测试', function() {
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
-                //用内存history模拟浏览器路由
+            routerManager = new MyRouter({
+                // 用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{
                     path: '/xxx/:testPath',
@@ -73,18 +88,18 @@ describe('路由的模块测试', function() {
                     var routeData = routerManager.getCurrentRouteData()
 
 
-                    //获取url全路径
+                    // 获取url全路径
                     assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
-                    //获取查询参数
+                    // 获取查询参数
                     assert.deepEqual(routeData.queryData.testQuery, 'testQuery')
-                    //获取session参数
+                    // 获取session参数
                     assert.deepEqual(routeData.sessionData.testSession, 'testSession')
-                    //获取路径参数
+                    // 获取路径参数
                     assert.deepEqual(routeData.pathData.testPath, 'testPath')
-                    //获取查询参数和路径参数的混合参数
+                    // 获取查询参数和路径参数的混合参数
                     assert.deepEqual(routeData.routeData.testQuery, 'testQuery')
                     assert.deepEqual(routeData.routeData.testPath, 'testPath')
-                    //获取当前页信息对应的配置
+                    // 获取当前页信息对应的配置
                     assert.deepEqual(routeData.routeConfig, {
                         path: '/xxx/:testPath',
                         meta: {
@@ -101,8 +116,8 @@ describe('路由的模块测试', function() {
 
 
     it('测试路由session的navigateTo', ()=> {
-        const routerManager = new RouterManager({
-            //用内存history模拟浏览器路由
+        routerManager = new MyRouter({
+            // 用内存history模拟浏览器路由
             mode: 'm',
             routes: [{
                 path: '/xxx',
@@ -125,8 +140,8 @@ describe('路由的模块测试', function() {
     });
 
     it('测试路由session的navigateTo，浏览器退回', ()=> {
-        const routerManager = new RouterManager({
-            //用内存history模拟浏览器路由
+        routerManager = new MyRouter({
+            // 用内存history模拟浏览器路由
             mode: 'm',
             routes: [{
                 path: '/xxx',
@@ -149,8 +164,8 @@ describe('路由的模块测试', function() {
     });
 
     it('测试路由session的redirectTo', function() {
-        const routerManager = new RouterManager({
-            //用内存history模拟浏览器路由
+        routerManager = new MyRouter({
+            // 用内存history模拟浏览器路由
             mode: 'm',
             routes: [{
                 path: '/xxx',
@@ -180,7 +195,7 @@ describe('路由的模块测试', function() {
 
     it('测试路由session的reload', function() {
         let count = 0
-        const routerManager = new RouterManager({
+        routerManager = new MyRouter({
             //用内存history模拟浏览器路由
             mode: 'm',
             routes: [{
@@ -210,7 +225,7 @@ describe('路由的模块测试', function() {
 
     it('测试路由缓存移除', function() {
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
+            routerManager = new MyRouter({
                 //用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{
@@ -238,7 +253,7 @@ describe('路由的模块测试', function() {
     it('测试路由监听beforeUpdateListener', function() {
         var hasToken = false
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
+            routerManager = new MyRouter({
                 //用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{
@@ -282,7 +297,7 @@ describe('路由的模块测试', function() {
     it('测试路由监听beforeRouteEnterListener', function() {
         var hasToken = false
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
+            routerManager = new MyRouter({
                 //用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{
@@ -330,7 +345,7 @@ describe('路由的模块测试', function() {
     it('测试路由监听clearCacheListener', function() {
         var step = 0
         return new Promise((resolve, reject)=>{
-            const routerManager = new RouterManager({
+            routerManager = new MyRouter({
                 //用内存history模拟浏览器路由
                 mode: 'm',
                 routes: [{

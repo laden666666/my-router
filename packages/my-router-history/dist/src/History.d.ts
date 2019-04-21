@@ -1,10 +1,12 @@
-import { IHistory, BeforeChangeEventCallback, ChangeEventCallback } from './model/IHistory';
-import { ILocation } from './model/ILocation';
-import { IHistoryConfig } from './model/IHistoryConfig';
+import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, Location } from './model/IHistory';
+import { Location as _Location } from './model/Location';
+import { HistoryConfig } from './model/HistoryConfig';
+export { Location, ChangeEventCallback };
 interface State {
-    location: ILocation;
+    location: _Location;
     timeStamp: number;
     type: 'GOBACK' | 'NORMAL';
+    data?: any;
 }
 /**
  * 路由错误
@@ -33,8 +35,8 @@ export declare class MyHistory implements IHistory {
     private _stateStack;
     private _gobackState;
     readonly _stackTop: State;
-    constructor(_config: IHistoryConfig);
-    private _globalHistory;
+    constructor(_config: HistoryConfig, _window?: Window);
+    private _win;
     /**
      * 初始化goback的location
      * goback的location有2个作用：
@@ -57,10 +59,17 @@ export declare class MyHistory implements IHistory {
     private _initEventListener;
     private _destroyEventListener;
     /**
+     * 如果在beforeChange生命周期，出现了跳转，会在路由重新回归1的时候执行。
+     * 如果_notBusyDef已经存在，即使是在beforeChange生命周期（state为7）的时候，也不可以跳转
+     * @private
+     * @type {Deferred}
+     * @memberOf MyHistory
+     */
+    private _notBusyDef;
+    /**
      * 切换状态
      * @private
      * @param {any} stateType
-     *
      * @memberOf MyHistory
      */
     private _switchState;
@@ -81,6 +90,8 @@ export declare class MyHistory implements IHistory {
      */
     private _decodePath;
     private _getHrefToPath;
+    private _checkData;
+    private _checkState;
     /**
      * 将给定的path封装成一个location
      * @private
@@ -96,24 +107,28 @@ export declare class MyHistory implements IHistory {
      * @memberOf MyHistory
      */
     private _pathToState;
+    private _readonlyLocation;
     private _push;
     private _replace;
     private _goback;
     _replaceState(state: State): void;
     _pushState(state: State): void;
+    /**
+     * 当用处于未知页面（既不是goback页面，也不是normal页面时候），触发纠正
+     */
     _correct(): void;
-    push(path: string): Promise<ILocation>;
-    replace(path: string): Promise<ILocation>;
-    goback(n: number | string | {
-        (fn: Readonly<ILocation>): boolean;
-    }): Promise<ILocation>;
-    reload(): Promise<ILocation>;
+    push(path: string, data?: any): Promise<Location>;
+    replace(path: string, data?: any): Promise<Location>;
+    goback(n?: number | string | {
+        (fn: Readonly<Location>): boolean;
+    }): Promise<Location>;
+    reload(): Promise<Location>;
     destroy(): Promise<void>;
-    readonly stack: ILocation[];
+    readonly stack: Location[];
     readonly length: number;
-    readonly location: ILocation;
+    readonly isBusy: boolean;
+    readonly location: Location;
     onBeforeChange: BeforeChangeEventCallback;
     onChange: ChangeEventCallback;
-    _execCallback<T extends Function>(callback: T, ...args: any[]): any;
+    _execCallback<T extends Function>(callback: T): T;
 }
-export {};

@@ -1,0 +1,42 @@
+{
+    "name": "my-router",
+    "background": "Particles",
+    "describe": "",
+    "link": [
+        {
+            "title": "文档",
+            "path": "/",
+            "primary": true
+        },
+        {
+            "title": "源码",
+            "path": "https://www.github.com/laden666666/my-router"
+        }
+    ],
+    "menu": [
+        {
+            "title": "概述",
+            "path": "#/"
+        },{
+            "title": "my-router-history",
+            "children": [
+                {
+                    "title": "概述",
+                    "path": "#/my-router-history/Index"
+                },
+                {
+                    "title": "使用",
+                    "path": "#/my-router-history/Usage"
+                },
+                {
+                    "title": "Api",
+                    "path": "#/my-router-history/Api"
+                },
+                {
+                    "title": "与浏览器history的区别",
+                    "path": "#/my-router-history/Different"
+                }
+            ]
+        }
+    ]
+}

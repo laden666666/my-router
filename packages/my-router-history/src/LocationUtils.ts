@@ -1,22 +1,20 @@
 import resolvePathname from 'resolve-pathname';
 
 import { parsePath } from './PathUtils';
-import { ILocation } from './model/ILocation';
+import { Location } from './model/Location';
 
 /**
  * 
  * @export
- * @param {string | ILocation} path href字符串或者location对象
- * @param {any} state history的state
+ * @param {string | Location} path href字符串或者location对象
  * @param {any} key 猜测是一个标记location的key
- * @param {ILocation} currentLocation 当前的location对象，用于解析出相对路径
+ * @param {Location} currentLocation 当前的location对象，用于解析出相对路径
  * @returns 
  */
-export function createLocation(path: string | ILocation, key: string = '', currentLocation: ILocation = null) {
-    let location: ILocation;
+export function createLocation(path: string | Location, key: string = '', currentLocation: Location = null) {
+    let location: Location;
     // 如果path是字符串，将其封装成location
     if (typeof path === 'string') {
-        // Two-arg form: push(path, state)
         location = parsePath(path);
     } else {
         // 如果path不是字符串，认为他是location，
@@ -80,13 +78,30 @@ export function createLocation(path: string | ILocation, key: string = '', curre
     return location;
 }
 
+// /**
+//  * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
+//  * @export
+//  * @param {any} a 
+//  * @param {any} b 
+//  * @returns 
+//  */
+// export function locationsAreEqual(a: Location, b: Location) {
+//     return a.href === b.href
+// }
+
+let timeStamp: number;
+let count: number = 0;
 /**
- * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
+ * 创建location的ID
  * @export
- * @param {any} a 
- * @param {any} b 
+ * @param {number} _timeStamp 
  * @returns 
  */
-export function locationsAreEqual(a: ILocation, b: ILocation) {
-    return a.href === b.href
+export function crateNo(_timeStamp: number) {
+    if(timeStamp !== _timeStamp){
+        timeStamp = _timeStamp
+        count = 0
+    }
+
+    return timeStamp * 100 + count++;
 }

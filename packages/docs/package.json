@@ -1,0 +1,27 @@
+{
+  "name": "my-router-doc",
+  "version": "0.0.0",
+  "description": "",
+  "scripts": {
+    "init": "mydoc init",
+    "dev": "mydoc dev",
+    "build": "mydoc build"
+  },
+  "author": "laden666666",
+  "license": "MIT",
+  "dependencies": {
+    "jsdom": "^13.2.0",
+    "my-router": "^0.0.0",
+    "my-router-history": "^0.0.0",
+    "my-vue-doc": "^0.0.3"
+  },
+  "engines": {
+    "node": ">= 6.0.0",
+    "npm": ">= 3.0.0"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not ie <= 8"
+  ]
+}
