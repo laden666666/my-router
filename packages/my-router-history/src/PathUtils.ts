@@ -1,10 +1,10 @@
-import {Location} from './model/Location'
+import { _Location } from "./API";
 
 /**
  * 增加'/'到path
  * @export
- * @param {string} path 
- * @returns {string} 
+ * @param {string} path
+ * @returns {string}
  */
 export function addLeadingSlash(path: string): string {
     return path.charAt(0) === '/' ? path : '/' + path;
@@ -13,8 +13,8 @@ export function addLeadingSlash(path: string): string {
 // /**
 //  * 移除path的根'/'
 //  * @export
-//  * @param {string} path 
-//  * @returns {string} 
+//  * @param {string} path
+//  * @returns {string}
 //  */
 // export function stripLeadingSlash(path: string): string {
 //     return path.charAt(0) === '/' ? path.substr(1) : path;
@@ -23,8 +23,8 @@ export function addLeadingSlash(path: string): string {
 // /**
 //  * 移除path最后的'/'
 //  * @export
-//  * @param {string} path 
-//  * @returns {string} 
+//  * @param {string} path
+//  * @returns {string}
 //  */
 // export function stripTrailingSlash(path: string): string {
 //     return path.charAt(path.length - 1) === '/' ? path.slice(0, -1) : path;
@@ -33,11 +33,11 @@ export function addLeadingSlash(path: string): string {
 /**
  * 将一个path转为location对象形式
  * @export
- * @param {string} path 
- * @param {any} state 
- * @returns {ILocation} 
+ * @param {string} path
+ * @param {any} state
+ * @returns {ILocation}
  */
-export function parsePath(path: string): Location {
+export function parsePath(path: string): _Location {
     let pathname = path || '/';
     let search = '';
     let hash = '';
@@ -53,7 +53,7 @@ export function parsePath(path: string): Location {
         search = pathname.substr(searchIndex);
         pathname = pathname.substr(0, searchIndex);
     }
-    
+
     return {
         pathname,
         search: search === '?' ? '' : search,
@@ -68,8 +68,8 @@ export function parsePath(path: string): Location {
 // /**
 //  * 将一个location对象转为path对象
 //  * @export
-//  * @param {ILocation} location 
-//  * @returns {string} 
+//  * @param {ILocation} location
+//  * @returns {string}
 //  */
 // export function createPath(location: ILocation): string {
 //     const { pathname, search, hash } = location;

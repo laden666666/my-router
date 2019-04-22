@@ -1,18 +1,18 @@
 import resolvePathname from 'resolve-pathname';
 
 import { parsePath } from './PathUtils';
-import { Location } from './model/Location';
+import { _Location } from './API';
 
 /**
- * 
+ *
  * @export
- * @param {string | Location} path href字符串或者location对象
+ * @param {string | _Location} path href字符串或者location对象
  * @param {any} key 猜测是一个标记location的key
- * @param {Location} currentLocation 当前的location对象，用于解析出相对路径
- * @returns 
+ * @param {_Location} currentLocation 当前的location对象，用于解析出相对路径
+ * @returns
  */
-export function createLocation(path: string | Location, key: string = '', currentLocation: Location = null) {
-    let location: Location;
+export function createLocation(path: string | _Location, key: string = '', currentLocation: _Location = null) {
+    let location: _Location;
     // 如果path是字符串，将其封装成location
     if (typeof path === 'string') {
         location = parsePath(path);
@@ -81,11 +81,11 @@ export function createLocation(path: string | Location, key: string = '', curren
 // /**
 //  * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
 //  * @export
-//  * @param {any} a 
-//  * @param {any} b 
-//  * @returns 
+//  * @param {any} a
+//  * @param {any} b
+//  * @returns
 //  */
-// export function locationsAreEqual(a: Location, b: Location) {
+// export function locationsAreEqual(a: _Location, b: _Location) {
 //     return a.href === b.href
 // }
 
@@ -94,8 +94,8 @@ let count: number = 0;
 /**
  * 创建location的ID
  * @export
- * @param {number} _timeStamp 
- * @returns 
+ * @param {number} _timeStamp
+ * @returns
  */
 export function crateNo(_timeStamp: number) {
     if(timeStamp !== _timeStamp){
