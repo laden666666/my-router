@@ -11,7 +11,7 @@ describe('history的push', function(){
             await myHistory.destroy()
             myHistory = null
         }
-        history.replaceState(null, null, '#/')
+        location.href = '#/'
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });
@@ -28,13 +28,13 @@ describe('history的push', function(){
     });
 
     it('测试push', async function() {
+
         myHistory = new MyHistory({
             root: '/'
         })
 
         await myHistory.push('test')
-        console.log(myHistory.stack.length)
-
+        console.log(111, myHistory.stack)
         assert.equal(myHistory.stack.length, 2)
         assert.deepEqual(myHistory.stack[1], myHistory.location)
         assert.equal(myHistory.location.href, '/test')

@@ -1,6 +1,4 @@
-import { IHistory, BeforeChangeEventCallback, ChangeEventCallback, Location } from './model/IHistory';
-import { Location as _Location } from './model/Location';
-import { HistoryConfig } from './model/HistoryConfig';
+import { History as IHistory, BeforeChangeEventCallback, ChangeEventCallback, Location, _Location, HistoryConfig } from './API';
 export { Location, ChangeEventCallback };
 interface State {
     location: _Location;
@@ -44,7 +42,7 @@ export declare class MyHistory implements IHistory {
      * 2.当用户手动修改浏览器的location的hash时候，history会增加一条location记录，这时候myhistory会先退回到goback的location，再前进到用户输入的lactation中，这样可以清除浏览器地址栏的前进按钮
      * @private
      * @param {number} now      初始化时候的时间戳
-     * @returns {boolean}       完成的goback处于上一页。返回false表示当前就是goback页面。
+     * @returns {boolean}       是否是goback处于上一页。返回false表示当前就是goback页面。
      * @memberOf MyHistory
      */
     private _initGoback;

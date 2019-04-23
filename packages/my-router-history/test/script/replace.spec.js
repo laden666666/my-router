@@ -11,7 +11,7 @@ describe('history的replace', function(){
             await myHistory.destroy()
             myHistory = null
         }
-        history.replaceState(null, null, '#/')
+        location.href = '#/'
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });

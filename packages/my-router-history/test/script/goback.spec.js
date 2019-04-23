@@ -12,7 +12,7 @@ describe('history的goback', function(){
             await myHistory.destroy()
             myHistory = null
         }
-        history.replaceState(null, null, '#/')
+        location.href = '#/'
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });
@@ -252,12 +252,10 @@ describe('history的goback', function(){
                     if(e.isCancelled){
                         r(e)
                     }
-                    console.log(333, myHistory.stack)
                 })
         })
 
         await promise
-        console.log(444, myHistory.stack)
     });
 
     it('测试onBeforeChange的goback(n)监听器，function取消', async function() {
@@ -307,41 +305,41 @@ describe('history的goback', function(){
         await promise
     });
 
-    // it('测试onBeforeChange的goback(n)监听器', async function() {
-    //     myHistory = new MyHistory({
-    //         root: '/'
-    //     })
+    it('测试onBeforeChange的goback(n)监听器', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
 
-    //     await myHistory.push('test1')
-    //     await myHistory.push('test2')
-    //     await myHistory.push('test3')
+        await myHistory.push('test1')
+        await myHistory.push('test2')
+        await myHistory.push('test3')
 
-    //     let promise = new Promise(r=>{
-    //         myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
-    //             try{
-    //                 if(action === 'init'){
-    //                     return
-    //                 }
-    //                 assert.equal(action, 'goback')
-    //                 assert.equal(oldLocation.href, '/test3')
-    //                 assert.equal(location.href, '/test1')
-    //                 assert.equal(discardLoctions.length, 2)
-    //                 assert.equal(newLocation.length, 0)
-    //                 assert.deepEqual(discardLoctions[0].href, '/test3')
-    //                 assert.deepEqual(discardLoctions[1].href, '/test2')
-    //                 assert.equal(myHistory.location.href, '/test3')
+        let promise = new Promise(r=>{
+            myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                try{
+                    if(action === 'init'){
+                        return
+                    }
+                    assert.equal(action, 'goback')
+                    assert.equal(oldLocation.href, '/test3')
+                    assert.equal(location.href, '/test1')
+                    assert.equal(discardLoctions.length, 2)
+                    assert.equal(newLocation.length, 0)
+                    assert.deepEqual(discardLoctions[0].href, '/test3')
+                    assert.deepEqual(discardLoctions[1].href, '/test2')
+                    assert.equal(myHistory.location.href, '/test3')
 
-    //                 r(false)
+                    r(false)
 
-    //                 myHistory.onBeforeChange = null
-    //             } catch(e){
-    //                 console.error('测试onBeforeChange的goback(n)监听器2', e, action, oldLocation, location, discardLoctions, newLocation)
-    //             }
-    //         }
-    //     })
+                    myHistory.onBeforeChange = null
+                } catch(e){
+                    console.error('测试onBeforeChange的goback(n)监听器2', e, action, oldLocation, location, discardLoctions, newLocation)
+                }
+            }
+        })
 
-    //     await myHistory.goback(2)
+        await myHistory.goback(2)
 
-    //     await promise
-    // });
+        await promise
+    });
 });

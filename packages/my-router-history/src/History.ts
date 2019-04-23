@@ -740,17 +740,23 @@ export class MyHistory implements IHistory {
             this._notBusyDef = null
         }
 
-        let state: State = this._win.history.state
         sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false
-        if(state && state.type === 'NORMAL'){
-            this._win.history.back()
-            // 延时，等back执行完
-            await new Promise(r=> nextTick(r))
+
+        let goGoBackPage = async ()=>{
+            if(this._win.history.state && this._win.history.state.type === 'NORMAL'){
+                this._win.history.back()
+                await new Promise(r=> setTimeout(r, 50))
+                await goGoBackPage()
+            } else {
+                this._win.location.replace('#' + this._stackTop.location.href)
+                await new Promise(r=> setTimeout(r, 50))
+            }
         }
-        console.log(666, this._stackTop.location.href, history.state)
-        this._win.history.replaceState(null, null, this._stackTop.location.href)
+        await goGoBackPage()
+        console.log(history.state)
+
+
         // 延时，等pushState执行完
-        await new Promise(r=> nextTick(r))
         this._stateStack = null
         this._config = null
         this._stateData = null
@@ -759,8 +765,6 @@ export class MyHistory implements IHistory {
             delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT]
         }
         this._win = null
-
-        console.log(history.state)
     }
 
     get stack(){

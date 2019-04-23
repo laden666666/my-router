@@ -12,7 +12,7 @@ describe('history的生命周期', function(){
             await myHistory.destroy()
             myHistory = null
         }
-        history.replaceState(null, null, '#/')
+        location.href = '#/'
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });
@@ -36,7 +36,7 @@ describe('history的生命周期', function(){
         myHistory.push('test')
         assert.equal(myHistory.isBusy, true)
         assert.throw(()=> {
-            console.log(myHistory.push('test1'))
+            console.error(myHistory.push('test1'))
         })
     });
 

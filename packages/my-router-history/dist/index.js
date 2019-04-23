@@ -159,7 +159,7 @@ var MyHistory = function () {
          * 2.当用户手动修改浏览器的location的hash时候，history会增加一条location记录，这时候myhistory会先退回到goback的location，再前进到用户输入的lactation中，这样可以清除浏览器地址栏的前进按钮
          * @private
          * @param {number} now      初始化时候的时间戳
-         * @returns {boolean}       完成的goback处于上一页。返回false表示当前就是goback页面。
+         * @returns {boolean}       是否是goback处于上一页。返回false表示当前就是goback页面。
          * @memberOf MyHistory
          */
         value: function _initGoback(now) {
@@ -809,7 +809,9 @@ var MyHistory = function () {
                     get: function get() {
                         return this[locationKey][key];
                     },
-                    set: function set() {}
+                    set: function set() {},
+
+                    enumerable: true
                 });
             });
             return readonlyLocation;
@@ -959,7 +961,7 @@ var MyHistory = function () {
         key: "destroy",
         value: function () {
             var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10() {
-                var state;
+                var error, state;
                 return regeneratorRuntime.wrap(function _callee10$(_context10) {
                     while (1) {
                         switch (_context10.prev = _context10.next) {
@@ -967,31 +969,39 @@ var MyHistory = function () {
                                 this._destroyEventListener();
                                 this.onBeforeChange = null;
                                 this.onChange = null;
+                                if (this._notBusyDef) {
+                                    error = new Error('User cancelled');
+
+                                    error.isCancelled = true;
+                                    this._notBusyDef.reject(error);
+                                    this._notBusyDef = null;
+                                }
                                 state = this._win.history.state;
 
                                 sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false;
 
-                                if (!(state.type === 'NORMAL')) {
-                                    _context10.next = 9;
+                                if (!(state && state.type === 'NORMAL')) {
+                                    _context10.next = 10;
                                     break;
                                 }
 
                                 this._win.history.back();
                                 // 延时，等back执行完
-                                _context10.next = 9;
+                                _context10.next = 10;
                                 return new Promise(function (r) {
                                     return DOMUtils_1.nextTick(r);
                                 });
 
-                            case 9:
+                            case 10:
+                                console.log(666, this._stackTop.location.href, history.state);
                                 this._win.history.replaceState(null, null, this._stackTop.location.href);
                                 // 延时，等pushState执行完
-                                _context10.next = 12;
+                                _context10.next = 14;
                                 return new Promise(function (r) {
                                     return DOMUtils_1.nextTick(r);
                                 });
 
-                            case 12:
+                            case 14:
                                 this._stateStack = null;
                                 this._config = null;
                                 this._stateData = null;
@@ -1000,8 +1010,9 @@ var MyHistory = function () {
                                     delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT];
                                 }
                                 this._win = null;
+                                console.log(history.state);
 
-                            case 18:
+                            case 21:
                             case "end":
                                 return _context10.stop();
                         }
@@ -1131,8 +1142,8 @@ exports.addLeadingSlash = addLeadingSlash;
 // /**
 //  * 移除path的根'/'
 //  * @export
-//  * @param {string} path 
-//  * @returns {string} 
+//  * @param {string} path
+//  * @returns {string}
 //  */
 // export function stripLeadingSlash(path: string): string {
 //     return path.charAt(0) === '/' ? path.substr(1) : path;
@@ -1140,8 +1151,8 @@ exports.addLeadingSlash = addLeadingSlash;
 // /**
 //  * 移除path最后的'/'
 //  * @export
-//  * @param {string} path 
-//  * @returns {string} 
+//  * @param {string} path
+//  * @returns {string}
 //  */
 // export function stripTrailingSlash(path: string): string {
 //     return path.charAt(path.length - 1) === '/' ? path.slice(0, -1) : path;
@@ -1181,8 +1192,8 @@ exports.parsePath = parsePath;
 // /**
 //  * 将一个location对象转为path对象
 //  * @export
-//  * @param {ILocation} location 
-//  * @returns {string} 
+//  * @param {ILocation} location
+//  * @returns {string}
 //  */
 // export function createPath(location: ILocation): string {
 //     const { pathname, search, hash } = location;
@@ -1250,9 +1261,9 @@ var PathUtils_1 = __webpack_require__(1);
 /**
  *
  * @export
- * @param {string | Location} path href字符串或者location对象
+ * @param {string | _Location} path href字符串或者location对象
  * @param {any} key 猜测是一个标记location的key
- * @param {Location} currentLocation 当前的location对象，用于解析出相对路径
+ * @param {_Location} currentLocation 当前的location对象，用于解析出相对路径
  * @returns
  */
 function createLocation(path) {
@@ -1313,11 +1324,11 @@ exports.createLocation = createLocation;
 // /**
 //  * 判断两个location对象是否相等。这里的key是增加的功能，用于区分两个完全一样的url
 //  * @export
-//  * @param {any} a 
-//  * @param {any} b 
-//  * @returns 
+//  * @param {any} a
+//  * @param {any} b
+//  * @returns
 //  */
-// export function locationsAreEqual(a: Location, b: Location) {
+// export function locationsAreEqual(a: _Location, b: _Location) {
 //     return a.href === b.href
 // }
 var timeStamp = void 0;
@@ -1357,11 +1368,11 @@ function spliceOne(list, index) {
 }
 
 // This implementation is based heavily on node's url.parse
-function resolvePathname(to, from) {
-  if (from === undefined) from = '';
+function resolvePathname(to) {
+  var from = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : '';
 
-  var toParts = (to && to.split('/')) || [];
-  var fromParts = (from && from.split('/')) || [];
+  var toParts = to && to.split('/') || [];
+  var fromParts = from && from.split('/') || [];
 
   var isToAbs = to && isAbsolute(to);
   var isFromAbs = from && isAbsolute(from);
@@ -1378,7 +1389,7 @@ function resolvePathname(to, from) {
 
   if (!fromParts.length) return '/';
 
-  var hasTrailingSlash;
+  var hasTrailingSlash = void 0;
   if (fromParts.length) {
     var last = fromParts[fromParts.length - 1];
     hasTrailingSlash = last === '.' || last === '..' || last === '';
@@ -1401,14 +1412,9 @@ function resolvePathname(to, from) {
     }
   }
 
-  if (!mustEndAbs) for (; up--; up) fromParts.unshift('..');
-
-  if (
-    mustEndAbs &&
-    fromParts[0] !== '' &&
-    (!fromParts[0] || !isAbsolute(fromParts[0]))
-  )
-    fromParts.unshift('');
+  if (!mustEndAbs) for (; up--; up) {
+    fromParts.unshift('..');
+  }if (mustEndAbs && fromParts[0] !== '' && (!fromParts[0] || !isAbsolute(fromParts[0]))) fromParts.unshift('');
 
   var result = fromParts.join('/');
 
@@ -1418,7 +1424,6 @@ function resolvePathname(to, from) {
 }
 
 /* harmony default export */ __webpack_exports__["default"] = (resolvePathname);
-
 
 /***/ }),
 /* 6 */

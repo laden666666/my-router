@@ -1,4 +1,4 @@
-import { Location } from './model/Location';
+import { _Location } from "./API";
 /**
  * 增加'/'到path
  * @export
@@ -13,4 +13,4 @@ export declare function addLeadingSlash(path: string): string;
  * @param {any} state
  * @returns {ILocation}
  */
-export declare function parsePath(path: string): Location;
+export declare function parsePath(path: string): _Location;
