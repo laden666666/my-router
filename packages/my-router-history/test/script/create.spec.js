@@ -12,6 +12,7 @@ describe('创建和销毁测试', function(){
             myHistory = null
         }
         location.href = '#/'
+        await new Promise(r=>setTimeout(r, 100))
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });

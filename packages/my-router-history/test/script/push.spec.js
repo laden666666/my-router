@@ -12,6 +12,7 @@ describe('history的push', function(){
             myHistory = null
         }
         location.href = '#/'
+        await new Promise(r=>setTimeout(r, 100))
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });
@@ -34,7 +35,6 @@ describe('history的push', function(){
         })
 
         await myHistory.push('test')
-        console.log(111, myHistory.stack)
         assert.equal(myHistory.stack.length, 2)
         assert.deepEqual(myHistory.stack[1], myHistory.location)
         assert.equal(myHistory.location.href, '/test')

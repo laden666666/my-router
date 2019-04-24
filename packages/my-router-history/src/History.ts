@@ -747,14 +747,16 @@ export class MyHistory implements IHistory {
                 this._win.history.back()
                 await new Promise(r=> setTimeout(r, 50))
                 await goGoBackPage()
+            } else if(this._win.history.state){
+                this._win.history.replaceState(null, null, '#' + this._stackTop.location.href)
+                this._win.location.hash = '#' + this._stackTop.location.href
+                await new Promise(r=> setTimeout(r, 50))
+                await goGoBackPage()
             } else {
-                this._win.location.replace('#' + this._stackTop.location.href)
                 await new Promise(r=> setTimeout(r, 50))
             }
         }
         await goGoBackPage()
-        console.log(history.state)
-
 
         // 延时，等pushState执行完
         this._stateStack = null

@@ -13,6 +13,7 @@ describe('history的goback', function(){
             myHistory = null
         }
         location.href = '#/'
+        await new Promise(r=>setTimeout(r, 100))
         // console.log('beforeEach-after', location.href, history.state, sessionStorage)
 
     });
@@ -58,7 +59,7 @@ describe('history的goback', function(){
 
         assert.equal(myHistory.stack.length, 4)
 
-        await myHistory.goback(5)
+        await myHistory.goback(5, true)
         assert.equal(myHistory.stack.length, 1)
         assert.deepEqual(myHistory.stack[0], myHistory.location)
         assert.equal(myHistory.location.href, '/')
