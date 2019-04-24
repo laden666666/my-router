@@ -1,7 +1,8 @@
-import MyHistory, {ChangeEventCallback} from 'my-router-history'
-import {MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location, PopEventCallback} from '../API'
+import MyHistory, { ChangeEventCallback } from 'my-router-history'
+import { MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location, PopEventCallback} from '../API'
 import { LocationState } from './LocationState';
 import { Deferred } from './util/Deferred';
+import { PathRegexp } from './PathRegexp';
 
 let defaultOptions: MyRouterOptions = {
     routes: [],
@@ -23,7 +24,7 @@ export class MyRouter implements IMyRouter {
 
     /**
      * 构造函数
-     * @param {MyRouterOptions} options 
+     * @param {MyRouterOptions} options
      * @memberOf MyRouter
      */
     constructor(options: MyRouterOptions){
@@ -37,15 +38,15 @@ export class MyRouter implements IMyRouter {
         this.addURLChange(this._options.onURLChange)
         this.addPopLocation(this._options.onPopLocation)
 
-        this._history.onChange = ((action: 'init' | 'push' | 'goback' | 'replace' | 'reload', 
-            oldLoction: Location, newLoction: Location, 
+        this._history.onChange = (async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
+            oldLoction: Location, newLoction: Location,
             discardLoctions: Location[], includeLoctions: Location[]) => {
 
             // 将新增的地址放入_stateCache
             includeLoctions.forEach((location)=>{
                 this._stateCache[location.key] = new LocationState(location)
             })
-                
+
             // 处理不同跳转类型的情况
             switch(action){
                 case('init'):
@@ -65,6 +66,10 @@ export class MyRouter implements IMyRouter {
                     break;
             }
 
+            this._changes.forEach(async callback=>{
+                await callback(action, oldLoction, newLoction, discardLoctions, includeLoctions)
+            })
+
             // 释放掉移除的地址数据。
             // discardLoctions.forEach((location)=>{
             //     let state = this._stateCache[location.key]
@@ -73,7 +78,7 @@ export class MyRouter implements IMyRouter {
             //         delete this._stateCache[location.key]
             //     }
             // })
-            
+
         }) as ChangeEventCallback
     }
 
@@ -99,7 +104,7 @@ export class MyRouter implements IMyRouter {
      * @type {IPathRegexp}
      * @memberOf MyRouter
      */
-    private _pathRegexp: IPathRegexp
+    private _pathRegexp: IPathRegexp = new PathRegexp()
 
     /**
      * 状态缓存
@@ -157,25 +162,25 @@ export class MyRouter implements IMyRouter {
      * @memberOf MyRouter
      */
     readonly routeStack: Location[];
-    
+
     /**
      * 注册BeforeChange生命周期
-     * @param callback 
+     * @param callback
      */
-    private _beforeChanges: ChangeEventCallback[]
+    private _beforeChanges: ChangeEventCallback[] = []
     addBeforeURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
                 .map(callback=>this._beforeChanges.push(callback))
         }
     }
-    
+
     /**
      * 注册URLChange生命周期
-     * @param {ChangeEventCallback} callback 
+     * @param {ChangeEventCallback} callback
      * @memberOf MyRouter
      */
-    private _changes: ChangeEventCallback[]
+    private _changes: ChangeEventCallback[] = []
     addURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
@@ -188,7 +193,7 @@ export class MyRouter implements IMyRouter {
      * @type {{(locations: Location[]): void}}
      * @memberOf MyRouter
      */
-    private _popEvent: PopEventCallback[]
+    private _popEvent: PopEventCallback[] = []
     addPopLocation(callback: PopEventCallback | PopEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
@@ -201,10 +206,10 @@ export class MyRouter implements IMyRouter {
      * @param {string} path                 去往的地址
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<any>} 
+     * @returns {Promise<any>}
      * @memberOf MyRouter
      */
-    async push(path: string, sessionData?: any,state?: any): Promise<any>{
+    async push(path: string, sessionData?: any, state?: any): Promise<any>{
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
@@ -212,8 +217,12 @@ export class MyRouter implements IMyRouter {
         const backDeferred = new Deferred<any>()
 
         // 如同url获取对应的路由信息
-        const result = this._pathRegexp.recognize(path)
-        
+        try{
+            var result = this._pathRegexp.recognize(path)
+        } catch(e){
+            console.error(1111, e)
+        }
+
         // 真正的跳转
         await this._history.push(path, state)
 
@@ -273,19 +282,19 @@ export class MyRouter implements IMyRouter {
 
         await this._history.reload()
     }
-    
+
     /**
      * 增加一组MyRouteConfig
-     * @param {MyRouteConfig[]} routes 
+     * @param {MyRouteConfig[]} routes
      * @memberOf MyRouter
      */
     addRoutes (routes: MyRouteConfig[]): void{
         this._pathRegexp.addRoutes(routes)
     }
-    
+
     /**
      * 增加MyRouteConfig配置
-     * @param {MyRouteConfig} routes 
+     * @param {MyRouteConfig} routes
      * @memberOf MyRouter
      */
     addRoute (route: MyRouteConfig): void{
@@ -296,17 +305,17 @@ export class MyRouter implements IMyRouter {
      * 销毁路由实例
      * @memberOf IMyRouter
      */
-    destroy(): void{
-        this._history.destroy()
+    async destroy(): Promise<void>{
+        await this._history.destroy()
         this._history = null
         this._options = null
         this._pathRegexp = null
     }
 
     /**
-     * 
-     * @param {String} url 
-     * @returns {any[]} 
+     *
+     * @param {String} url
+     * @returns {any[]}
      * @memberOf MyRouter
      */
     getMatchedComponents (url: String): any[]{
@@ -314,8 +323,8 @@ export class MyRouter implements IMyRouter {
     }
 
     /**
-     * 
-     * @param {*} adapter 
+     *
+     * @param {*} adapter
      * @memberOf IMyRouter
      */
     getAdapterInstance<T>(adapter: Adapter): T{

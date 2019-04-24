@@ -60,7 +60,7 @@ export class PathRegexp implements IPathRegexp{
             } else if(paths1.length < paths2.lenght){
                 return -1
             }
-            
+
             return 0
         })
 
@@ -72,20 +72,20 @@ export class PathRegexp implements IPathRegexp{
             }])
         });
     }
-    
+
     /**
      * 增加单个路由配置
-     * @param {MyRouteConfig} route 
+     * @param {MyRouteConfig} route
      * @memberof RouteRecognizer
      */
     addRoute(route: MyRouteConfig): void{
         this.routes.push(route)
         this.precisionMatch();
     }
-    
+
     /**
      * 增加一组路由配置
-     * @param {MyRouteConfig[]} routes 
+     * @param {MyRouteConfig[]} routes
      * @memberof RouteRecognizer
      */
     addRoutes(routes: MyRouteConfig[]): void{
@@ -96,8 +96,8 @@ export class PathRegexp implements IPathRegexp{
 
     /**
      * 根据url匹配出缓存的路由信息
-     * @param {string|IRouterURL} url 
-     * @returns {PathRegexpResult} 
+     * @param {string|IRouterURL} url
+     * @returns {PathRegexpResult}
      */
     recognize(url: string): PathRegexpResult {
 
@@ -106,7 +106,7 @@ export class PathRegexp implements IPathRegexp{
 
         if(routeList){
             const route = routeList ? Array.from(routeList)[0] : null
-            
+
             const recognizeResult : PathRegexpResult = {} as PathRegexpResult
             recognizeResult.routeConfig = route.handler as any
             recognizeResult.pathData = (route ? route.params : {}) as any
@@ -115,7 +115,7 @@ export class PathRegexp implements IPathRegexp{
             delete recognizeResult.pathData['']
             recognizeResult.queryData = routeList.queryParams
             recognizeResult.url = url
-            
+
             return recognizeResult;
         } else {
             return null
