@@ -99,6 +99,14 @@ export class MyRouter implements IMyRouter {
     private _history: MyHistory
 
     /**
+     * 一个专门用于保存系统session参数的地方
+     * @private
+     * @type {Record<string, object>}
+     * @memberof MyRouter
+     */
+    private _session: Record<string, object> = {}
+
+    /**
      * 地址查找函数
      * @private
      * @type {IPathRegexp}
@@ -217,11 +225,7 @@ export class MyRouter implements IMyRouter {
         const backDeferred = new Deferred<any>()
 
         // 如同url获取对应的路由信息
-        try{
-            var result = this._pathRegexp.recognize(path)
-        } catch(e){
-            console.error(1111, e)
-        }
+        var result = this._pathRegexp.recognize(path)
 
         // 真正的跳转
         await this._history.push(path, state)

@@ -1,4 +1,4 @@
-import {Location, ChangeEventCallback} from 'my-router-history'
+import {Location as _Location, ChangeEventCallback} from 'my-router-history'
 
 /**
  * PopLocation事件回调
@@ -35,14 +35,14 @@ export interface MyRouter{
      * @memberOf MyRouter
      */
     readonly routeStack: Location[];
-  
+
     /**
      * 前进去往一个页面，名字取自history.push，他可返回的是一个promise，当页面返回到当前页面，他能把backValue的返回值返回
      * @param {string} path                 去往的地址
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<any>} 
-     * 
+     * @returns {Promise<any>}
+     *
      * @memberOf MyRouter
      */
     push(path: string, sessionData?: any,state?: any): Promise<any>
@@ -87,17 +87,17 @@ export interface MyRouter{
      * @memberOf IHistory
      */
     reload(): Promise<void>
-    
+
     /**
      * 增加一组MyRouteConfig
-     * @param {MyRouteConfig[]} routes 
+     * @param {MyRouteConfig[]} routes
      * @memberOf MyRouter
      */
     addRoutes (routes: MyRouteConfig[]): void;
-    
+
     /**
      * 增加MyRouteConfig配置
-     * @param {MyRouteConfig} routes 
+     * @param {MyRouteConfig} routes
      * @memberOf MyRouter
      */
     addRoute (routes: MyRouteConfig): void;
@@ -105,13 +105,13 @@ export interface MyRouter{
     // 注册生命周期
     /**
      * 注册BeforeChange生命周期
-     * @param callback 
+     * @param callback
      */
     addBeforeURLChange(callback: ChangeEventCallback)
-    
+
     /**
      * 注册URLChange生命周期
-     * @param {ChangeEventCallback} callback 
+     * @param {ChangeEventCallback} callback
      * @memberOf MyRouter
      */
     addURLChange(callback: ChangeEventCallback)
@@ -130,16 +130,16 @@ export interface MyRouter{
     destroy(): void
 
     /**
-     * 
-     * @param {String} url 
-     * @returns {any[]} 
+     *
+     * @param {String} url
+     * @returns {any[]}
      * @memberOf MyRouter
      */
     getMatchedComponents (url: String): any[];
 
     /**
-     * 
-     * @param {*} adapter 
+     *
+     * @param {*} adapter
      * @memberOf IMyRouter
      */
     getAdapterInstance<T>(adapter: Adapter): T
@@ -172,14 +172,14 @@ export interface MyRouterOptions {
     gobackName?: string;
     // 注册
     onBeforeURLChange?: ChangeEventCallback | ChangeEventCallback[]
-    // 
+    //
     onURLChange?: ChangeEventCallback | ChangeEventCallback[]
-    // 
+    //
     onPopLocation?: PopEventCallback | PopEventCallback[]
 }
 
 /**
- * 
+ *
  * @interface MyRouter
  */
 export interface MyRouteConfig{
@@ -189,7 +189,7 @@ export interface MyRouteConfig{
      * @memberOf MyRouteConfig
      */
     path: string;
-    
+
     /**
      * 映射的名字
      * @type {string}
@@ -245,7 +245,7 @@ export interface MyRouteConfig{
      * @memberOf MyRouteConfig
      */
     caseSensitive?: boolean;
-    
+
     /**
      * 页面的缓存模式:
      * standard： 标准模式，多实例，每一个href对应一个Component实例
@@ -257,11 +257,19 @@ export interface MyRouteConfig{
     lunchMode: 'standard' | 'single' | 'singleCache'
 }
 
-export {
+export interface Location {
     // 当前地址的抽象
-    Location
+    readonly hash: string;
+    readonly pathname: string;
+    readonly search: string;
+    readonly params: Record<string, string>;
+    readonly href: string;
+    readonly session: any
 }
-  
+
+
+export const LocationKey: Symbol = Symbol('MyRouter::LocationKey')
+
 /**
  * 一个URL匹配工具，系统默认会使用path-to-regexp实现，但是用户可以根据自己需要，定制化path-to-regexp
  * @interface IPathRegexp
@@ -269,14 +277,14 @@ export {
 export interface IPathRegexp{
     /**
      * 增加MyRouteConfig配置
-     * @param {MyRouteConfig} route 
+     * @param {MyRouteConfig} route
      * @memberOf IPathRegexp
      */
     addRoute(route: MyRouteConfig): void;
 
     /**
      * 增加一组MyRouteConfig配置
-     * @param {MyRouteConfig[]} route 
+     * @param {MyRouteConfig[]} route
      * @memberOf IPathRegexp
      */
     addRoutes(route: MyRouteConfig[]): void;
@@ -288,8 +296,8 @@ export interface IPathRegexp{
 
     /**
      * 根据URL获取匹配的route，并从URL中解析出URL参数
-     * @param {string} url 
-     * @returns {PathRegexpResult} 
+     * @param {string} url
+     * @returns {PathRegexpResult}
      * @memberOf IPathRegexp
      */
     recognize(url: string): PathRegexpResult
