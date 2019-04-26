@@ -89,7 +89,7 @@ export declare class MyHistory implements IHistory {
     private _decodePath;
     private _getHrefToPath;
     private _checkData;
-    private _checkState;
+    checkBusy(): void;
     /**
      * 将给定的path封装成一个location
      * @private

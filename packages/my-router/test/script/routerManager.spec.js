@@ -42,7 +42,7 @@ describe('路由的模块测试', function() {
                         assert.isEmpty(clears)
                         assert.isNull(from)
                         assert.equal(result, 'init')
-                        assert.deepEqual(to.href, '/')
+                        assert.deepEqual(to.path, '/')
                         resolve()
                     } catch(e){
                         reject(e)
@@ -66,8 +66,8 @@ describe('路由的模块测试', function() {
                     try{
                         if(to && to.href == '/xxx'){
                             assert.deepEqual(result, RouterAction.PUSH)
-                            // assert.deepEqual(to.queryData.test, 'testQuery')
-                            // assert.deepEqual(to.sessionData.test, 'testSession')
+                            assert.deepEqual(to.query.test, 'testQuery')
+                            assert.deepEqual(to.session.test, 'testSession')
                             resolve()
                         }
                     } catch (e){
@@ -97,23 +97,20 @@ describe('路由的模块测试', function() {
                     var routeData = routerManager.currentRoute
 
                     // 获取url全路径
-                    assert.deepEqual(routeData.href, '/xxx/testPath?testQuery=testQuery')
+                    assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
                     // 获取查询参数
-                    assert.deepEqual(routeData.search.testQuery, 'testQuery')
+                    assert.deepEqual(routeData.query.testQuery, 'testQuery')
                     // 获取session参数
                     assert.deepEqual(routeData.session.testSession, 'testSession')
                     // 获取路径参数
-                    assert.deepEqual(routeData.params.testPath, 'testPath')
-                    // 获取查询参数和路径参数的混合参数
-                    assert.deepEqual(routeData.params.testQuery, 'testQuery')
-                    assert.deepEqual(routeData.params.testPath, 'testPath')
+                    // assert.deepEqual(routeData.params.testPath, 'testPath')
                     // 获取当前页信息对应的配置
-                    assert.deepEqual(routeData.routeConfig, {
-                        path: '/xxx/:testPath',
-                        meta: {
-                            id: 1
-                        }
-                    })
+                    // assert.deepEqual(routeData.routeConfig, {
+                    //     path: '/xxx/:testPath',
+                    //     meta: {
+                    //         id: 1
+                    //     }
+                    // })
                     resolve()
                 }
             })

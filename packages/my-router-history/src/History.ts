@@ -565,7 +565,7 @@ export class MyHistory implements IHistory {
     }
 
     // 检查路由是否处于可以跳转状态（state为1或7，如果处于7仅能跳转1次）
-    private _checkState(){
+    checkBusy(){
         if(this.isBusy){
             let error: HistoryError = new Error('MyHistory busy')
             error.isBusy = true
@@ -709,22 +709,22 @@ export class MyHistory implements IHistory {
     }
 
     push(path: string, data?: any): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.push(path, data)
     }
 
     replace(path: string, data?: any): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.replace(path, data)
     }
 
     goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.goback(n as any)
     }
 
     reload(): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.reload()
     }
 

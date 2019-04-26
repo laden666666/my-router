@@ -268,15 +268,15 @@ export interface Location {
      * @type {string}
      * @memberof Location
      */
-    readonly pathname: string;
-    readonly search: string;
+    readonly path: string;
+    readonly query: Record<string, string>;
     /**
      * 路径参数
      * @type {Record<string, string>}
      * @memberof Location
      */
     readonly params: Record<string, string>;
-    readonly href: string;
+    readonly fullPath: string;
     /**
      * session参数
      * @type {*}

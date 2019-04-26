@@ -41,6 +41,15 @@ describe('history的生命周期', function(){
         })
     });
 
+    it('checkBusy测试', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        myHistory.push('test')
+        assert.throw(()=>myHistory.checkBusy())
+    });
+
     it('onChange生命周期跳转', async function() {
         myHistory = new MyHistory({
             root: '/'
@@ -87,5 +96,28 @@ describe('history的生命周期', function(){
             myHistory.push('test')
         })
         await errorPromise
+    });
+
+
+    it('onChange和onBeforeChange', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        let p1 = new Promise(r=>{
+            myHistory.onChange = ()=>{
+                r()
+            }
+        })
+
+        let p2 = new Promise(r=>{
+            myHistory.onBeforeChange = ()=>{
+                r()
+            }
+        })
+
+        myHistory.push('test')
+
+        await Promise.all([p1, p2])
     });
 })

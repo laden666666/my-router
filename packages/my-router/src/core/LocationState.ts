@@ -3,6 +3,19 @@ import { Deferred } from './util/Deferred';
 import { Location as HistoryLocation } from 'my-router-history';
 import { LocationKey } from './../API';
 
+/**
+ * 地址栏search字符串转map
+ * @param {string} search
+ * @returns {Record<string, string>}
+ */
+function search2Map(search: string): Record<string, string>{
+    return search && search[0] === '?' ? search.substr(1).split('&')
+        .map(str=> str.split('=')).reduce((map, arr)=>{
+            map[arr[0]] = arr[1]
+            return map
+        }, {}) : {}
+}
+
 export class LocationState {
 
     /**
@@ -71,10 +84,10 @@ export class LocationState {
         let {recognizeResult, hLocation} = state
         return {
             hash: hLocation.hash,
-            pathname: hLocation.pathname,
-            search: hLocation.search,
+            fullPath: hLocation.href,
+            query: search2Map(hLocation.search),
             params: recognizeResult ? state.recognizeResult.pathData : {},
-            href: hLocation.href,
+            path: hLocation.pathname,
             session: state.data,
             routeConfig: recognizeResult ? recognizeResult.routeConfig : null,
             routeConfigPath: recognizeResult ? recognizeResult.routeConfigPath : null,

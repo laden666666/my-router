@@ -49,14 +49,39 @@ export class MyRouter implements IMyRouter {
         this.addURLChange(this._options.onURLChange)
         this.addPopLocation(this._options.onPopLocation)
 
+        this._history.onBeforeChange = async (action: 'push' | 'goback' | 'replace' | 'reload',
+            oldLoction: HLocation, newLoction: HLocation,
+            discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
+
+            this._cacheSession = this._cacheSession || {}
+            this._cacheSession.map = this._cacheSession.map || {}
+
+            // 将新增的地址放入_cacheSession，在onChange中，再将他们放入_stateCache中
+            includeLoctions.forEach((location)=>{
+                this._cacheSession.map[location.key] = new LocationState(location)
+            })
+
+            // 将缓存的push、replace的session数据，放入缓存的LocationState对象中
+            if(this._cacheSession.data !== undefined && newLoction){
+                this._cacheSession.map[newLoction.key].data = this._cacheSession.data
+                this._cacheSession.data = null
+            }
+        }
+
         this._history.onChange = async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
             oldLoction: HLocation, newLoction: HLocation,
             discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
 
-            // 将新增的地址放入_stateCache
-            includeLoctions.forEach((location)=>{
-                this._stateCache[location.key] = new LocationState(location)
-            })
+
+            if(action === 'init'){
+                this._stateCache[newLoction.key] = new LocationState(newLoction)
+            } else {
+                // 将缓存的_cacheSession对象放入_stateCache中
+                for(let key in this._cacheSession.map){
+                    this._stateCache[key] = this._cacheSession.map[key]
+                }
+                this._cacheSession = null
+            }
 
             // 处理不同跳转类型的情况
             switch(action){
@@ -146,7 +171,8 @@ export class MyRouter implements IMyRouter {
      * @memberof MyRouter
      */
     private _getStateByKey(key: string): LocationState{
-        return this._stateCache[key]
+        return (this._cacheSession && this._cacheSession.map && this._cacheSession.map[key])
+            || this._stateCache[key] || null
     }
 
     /**
@@ -253,6 +279,16 @@ export class MyRouter implements IMyRouter {
         }
     }
 
+    /**
+     * 用于临时保存session
+     * @type {*}
+     * @memberof MyRouter
+     */
+    _cacheSession: {
+        data?: any,
+        map?: Record<string, LocationState>
+    };
+
      /**
      * 前进去往一个页面，名字取自history.push，他可返回的是一个promise，当页面返回到当前页面，他能把backValue的返回值返回
      * @param {string} path                 去往的地址
@@ -265,18 +301,24 @@ export class MyRouter implements IMyRouter {
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
+        this._history.checkBusy()
+
         // 跳转到新页面,并且从页面再跳转回来的Deferred
         const backDeferred = new Deferred<any>()
 
         // 如同url获取对应的路由信息
         var result = this._pathRegexp.recognize(path)
 
+        this._cacheSession = {data: sessionData}
+
         // 真正的跳转
         await this._history.push(path, state)
+
 
         if(this._currentState){
             this._currentState.sessionDeferred = backDeferred
             this._currentState.recognizeResult = result
+            this._currentState.data = sessionData
             return this._currentState.sessionDeferred.promise
         }
     }
