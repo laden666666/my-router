@@ -5,7 +5,6 @@ type Readonly<T> = {
     readonly [P in keyof T]: Readonly<T[P]>;
 }
 
-
 /**
  * 一个浏览记录的对象的封装，参考了window.location对象。该属性不暴露给外部用户，仅内部使用
  * @export

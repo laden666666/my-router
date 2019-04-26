@@ -40,6 +40,34 @@ describe('history的push', function(){
         assert.equal(myHistory.location.href, '/test')
     });
 
+    it('测试push带查询参数', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.push('test?test=test')
+        assert.equal(myHistory.stack.length, 2)
+        assert.deepEqual(myHistory.stack[1], myHistory.location)
+        assert.equal(myHistory.location.href, '/test?test=test')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.search, '?test=test')
+    });
+
+    it('测试push带hash', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.push('test#hash')
+        assert.equal(myHistory.stack.length, 2)
+        assert.deepEqual(myHistory.stack[1], myHistory.location)
+        assert.equal(myHistory.location.href, '/test#hash')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.hash, '#hash')
+    });
+
     it('测试push state', async function() {
         myHistory = new MyHistory({
             root: '/'

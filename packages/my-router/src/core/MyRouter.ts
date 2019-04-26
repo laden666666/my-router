@@ -201,14 +201,19 @@ export class MyRouter implements IMyRouter {
      * @type {Location}
      * @memberOf MyRouter
      */
-    readonly currentRoute: Location;
+    get currentRoute(): Location{
+        let loction = this._history.location
+        return this._getLoctionByKey(loction.key)
+    }
 
     /**
      * 缓存的路由队列
      * @type {Location[]}
      * @memberOf MyRouter
      */
-    readonly routeStack: Location[];
+    get routeStack(): Location[] {
+        return this._history.stack.map(l=> this._getLoctionByKey(l.key))
+    }
 
     /**
      * 注册BeforeChange生命周期

@@ -40,6 +40,30 @@ describe('history的replace', function(){
         assert.equal(myHistory.location.href, '/test')
     });
 
+    it('测试replace带查询参数', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.replace('test?test=test')
+        assert.equal(myHistory.location.href, '/test?test=test')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.search, '?test=test')
+    });
+
+    it('测试replace带hash', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.replace('test#hash')
+        assert.equal(myHistory.location.href, '/test#hash')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.hash, '#hash')
+    });
+
     it('测试replace state', async function() {
         myHistory = new MyHistory({
             root: '/'

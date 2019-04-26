@@ -14,6 +14,8 @@ describe('路由的模块测试', function() {
             await routerManager.destroy()
             routerManager = null
         }
+        location.href = '#/'
+        await new Promise(r=>setTimeout(r, 100))
     });
     afterEach(async function() {
         if(routerManager){
@@ -26,7 +28,7 @@ describe('路由的模块测试', function() {
     it('初始化测试', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
+
                 routes: [{
                     path: '/',
                     meta: {
@@ -53,7 +55,7 @@ describe('路由的模块测试', function() {
     it('设置路由，匹配路由', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
+
                 routes: [{
                     path: '/xxx',
                     meta: {
@@ -77,31 +79,34 @@ describe('路由的模块测试', function() {
         })
     });
 
-    it('路由getCurrentRouteData函数和RouteData测试', function() {
+    it('路由currentRoute函数和route测试', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
+
                 routes: [{
                     path: '/xxx/:testPath',
                     meta: {
                         id: 1
                     }
                 }],
-                onURLChange: ()=>{
-                    var routeData = routerManager.getCurrentRouteData()
+                onURLChange: (action)=>{
+                    if(action != 'push'){
+                        return
+                    }
 
+                    var routeData = routerManager.currentRoute
 
                     // 获取url全路径
-                    assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
+                    assert.deepEqual(routeData.href, '/xxx/testPath?testQuery=testQuery')
                     // 获取查询参数
-                    assert.deepEqual(routeData.queryData.testQuery, 'testQuery')
+                    assert.deepEqual(routeData.search.testQuery, 'testQuery')
                     // 获取session参数
-                    assert.deepEqual(routeData.sessionData.testSession, 'testSession')
+                    assert.deepEqual(routeData.session.testSession, 'testSession')
                     // 获取路径参数
-                    assert.deepEqual(routeData.pathData.testPath, 'testPath')
+                    assert.deepEqual(routeData.params.testPath, 'testPath')
                     // 获取查询参数和路径参数的混合参数
-                    assert.deepEqual(routeData.routeData.testQuery, 'testQuery')
-                    assert.deepEqual(routeData.routeData.testPath, 'testPath')
+                    assert.deepEqual(routeData.params.testQuery, 'testQuery')
+                    assert.deepEqual(routeData.params.testPath, 'testPath')
                     // 获取当前页信息对应的配置
                     assert.deepEqual(routeData.routeConfig, {
                         path: '/xxx/:testPath',
@@ -112,13 +117,14 @@ describe('路由的模块测试', function() {
                     resolve()
                 }
             })
-            routerManager.push('/xxx/testPath', {testQuery: 'testQuery'}, {testSession: 'testSession'})
+            routerManager.push('/xxx/testPath?testQuery=testQuery', {testSession: 'testSession'})
         })
     });
 
+
     // it('测试路由session的push', ()=> {
     //     routerManager = new MyRouter({
-    //         // 用内存history模拟浏览器路由
+    //
 
     //         routes: [{
     //             path: '/xxx',
@@ -142,7 +148,7 @@ describe('路由的模块测试', function() {
 
     // it('测试路由session的push，浏览器退回', ()=> {
     //     routerManager = new MyRouter({
-    //         // 用内存history模拟浏览器路由
+    //
 
     //         routes: [{
     //             path: '/xxx',
@@ -166,7 +172,7 @@ describe('路由的模块测试', function() {
 
     // it('测试路由session的redirectTo', function() {
     //     routerManager = new MyRouter({
-    //         // 用内存history模拟浏览器路由
+    //
 
     //         routes: [{
     //             path: '/xxx',

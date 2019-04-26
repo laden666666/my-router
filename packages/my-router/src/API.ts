@@ -284,6 +284,14 @@ export interface Location {
      */
     readonly session: any
     /**
+     * 匹配给定的url的RrouteConfig信息
+     */
+    routeConfig: MyRouteConfig,
+    /**
+     * 如果某个子MyRouteConfig匹配，将由子到父排序，依次保存在这个数组中
+     */
+    routeConfigPath: MyRouteConfig[],
+    /**
      * 给第三方程序集成使用的
      * @type {*}
      * @memberof Location

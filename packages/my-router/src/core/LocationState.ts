@@ -68,13 +68,16 @@ export class LocationState {
      * @memberof LocationState
      */
     static toLocation(state: LocationState): Location{
+        let {recognizeResult, hLocation} = state
         return {
-            hash: state.hLocation.hash,
-            pathname: state.hLocation.pathname,
-            search: state.hLocation.search,
-            params: state.recognizeResult ? state.recognizeResult.pathData : {},
-            href: state.hLocation.href,
+            hash: hLocation.hash,
+            pathname: hLocation.pathname,
+            search: hLocation.search,
+            params: recognizeResult ? state.recognizeResult.pathData : {},
+            href: hLocation.href,
             session: state.data,
+            routeConfig: recognizeResult ? recognizeResult.routeConfig : null,
+            routeConfigPath: recognizeResult ? recognizeResult.routeConfigPath : null,
             [LocationKey]: state.otherData
         }
     }
