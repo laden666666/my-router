@@ -1,13 +1,14 @@
-import { Location } from 'my-router-history'
-import { PathRegexpResult } from '../API';
+import { PathRegexpResult, Location } from '../API';
 import { Deferred } from './util/Deferred';
+import { Location as HistoryLocation } from 'my-router-history';
+import { LocationKey } from './../API';
 
 export class LocationState {
-    
+
     /**
      * 当前的location
      */
-    location: Location
+    hLocation: HistoryLocation
 
     /**
      * 路由匹配的结果
@@ -20,26 +21,27 @@ export class LocationState {
      * @type {*}
      */
     data: any
+
     /**
      * session的promise的控制器
      * @type {Deferred<any>}
      */
     sessionDeferred: Deferred<any>
-    
+
     /**
     * 页面返回值
     * @type {*}
     */
     backValue: any = null
-    
+
     /**
      * 其他信息（如果dom）
      * @type {*}
      */
     otherData: any = {}
 
-    constructor(location: Location){
-        this.location = location
+    constructor(historyLocation: HistoryLocation){
+        this.hLocation = historyLocation
     }
 
     /**
@@ -56,5 +58,24 @@ export class LocationState {
         this.sessionDeferred = null
         this.backValue = null
         this.otherData = null
+    }
+
+    /**
+     * 将LocationState转为Location对象
+     * @static
+     * @param {LocationState} state
+     * @returns {Location}
+     * @memberof LocationState
+     */
+    static toLocation(state: LocationState): Location{
+        return {
+            hash: state.hLocation.hash,
+            pathname: state.hLocation.pathname,
+            search: state.hLocation.search,
+            params: state.recognizeResult ? state.recognizeResult.pathData : {},
+            href: state.hLocation.href,
+            session: state.data,
+            [LocationKey]: state.otherData
+        }
     }
 }

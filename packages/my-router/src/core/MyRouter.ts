@@ -1,9 +1,20 @@
-import MyHistory, { ChangeEventCallback } from 'my-router-history'
-import { MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location, PopEventCallback} from '../API'
+import MyHistory, { Location as HLocation } from 'my-router-history'
+import {
+    MyRouter as IMyRouter,
+    MyRouterOptions,
+    MyRouteConfig,
+    Adapter,
+    IPathRegexp,
+    Location,
+    PopEventCallback,
+    BeforeChangeEventCallback,
+    ChangeEventCallback
+} from '../API'
 import { LocationState } from './LocationState';
 import { Deferred } from './util/Deferred';
 import { PathRegexp } from './PathRegexp';
 
+// 默认配置
 let defaultOptions: MyRouterOptions = {
     routes: [],
     // precisionMatch?: boolean;
@@ -38,9 +49,9 @@ export class MyRouter implements IMyRouter {
         this.addURLChange(this._options.onURLChange)
         this.addPopLocation(this._options.onPopLocation)
 
-        this._history.onChange = (async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
-            oldLoction: Location, newLoction: Location,
-            discardLoctions: Location[], includeLoctions: Location[]) => {
+        this._history.onChange = async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
+            oldLoction: HLocation, newLoction: HLocation,
+            discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
 
             // 将新增的地址放入_stateCache
             includeLoctions.forEach((location)=>{
@@ -67,7 +78,12 @@ export class MyRouter implements IMyRouter {
             }
 
             this._changes.forEach(async callback=>{
-                await callback(action, oldLoction, newLoction, discardLoctions, includeLoctions)
+                await callback(action,
+                    oldLoction ? this._getLoctionByKey(oldLoction.key) : null,
+                    newLoction ? this._getLoctionByKey(newLoction.key) : null,
+                    discardLoctions.map(l=>this._getLoctionByKey(l.key)),
+                    includeLoctions.map(l=>this._getLoctionByKey(l.key)),
+                )
             })
 
             // 释放掉移除的地址数据。
@@ -79,7 +95,7 @@ export class MyRouter implements IMyRouter {
             //     }
             // })
 
-        }) as ChangeEventCallback
+        }
     }
 
     /**
@@ -121,6 +137,29 @@ export class MyRouter implements IMyRouter {
      * @memberOf MyRouter
      */
     private _stateCache: {[name: string]: LocationState} = Object.create(null)
+
+    /**
+     * 根据key获取state对象
+     * @private
+     * @param {string} key          historylocation的key
+     * @returns {LocationState}
+     * @memberof MyRouter
+     */
+    private _getStateByKey(key: string): LocationState{
+        return this._stateCache[key]
+    }
+
+    /**
+     * 根据key获取location对象
+     * @private
+     * @param {string} key          historylocation的key
+     * @returns {LocationState}
+     * @memberof MyRouter
+     */
+    private _getLoctionByKey(key: string): Location {
+        let state = this._getStateByKey(key)
+        return state ? LocationState.toLocation(state) : null
+    }
 
     /**
      * 初始化完成的promise
@@ -175,8 +214,8 @@ export class MyRouter implements IMyRouter {
      * 注册BeforeChange生命周期
      * @param callback
      */
-    private _beforeChanges: ChangeEventCallback[] = []
-    addBeforeURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
+    private _beforeChanges: BeforeChangeEventCallback[] = []
+    addBeforeURLChange(callback: BeforeChangeEventCallback | BeforeChangeEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
                 .map(callback=>this._beforeChanges.push(callback))

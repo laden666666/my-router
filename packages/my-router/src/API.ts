@@ -1,13 +1,4 @@
-import {Location as _Location, ChangeEventCallback} from 'my-router-history'
-
-/**
- * PopLocation事件回调
- * @export
- * @interface PopEventCallback
- */
-export interface PopEventCallback {
-    (locations: Location[]): void
-}
+import {Location as _Location} from 'my-router-history'
 
 /**
  * MyRouter类
@@ -171,7 +162,7 @@ export interface MyRouterOptions {
     // 一部分浏览器按住返回按钮，会显示全部历史记录信息。该字段用于配置历史信息中返回页面的名字
     gobackName?: string;
     // 注册
-    onBeforeURLChange?: ChangeEventCallback | ChangeEventCallback[]
+    onBeforeURLChange?: BeforeChangeEventCallback | BeforeChangeEventCallback[]
     //
     onURLChange?: ChangeEventCallback | ChangeEventCallback[]
     //
@@ -257,18 +248,75 @@ export interface MyRouteConfig{
     lunchMode: 'standard' | 'single' | 'singleCache'
 }
 
+// 供相关程序调用的私有属性的key
+export const LocationKey = Symbol('MyRouter::LocationKey')
+
+/**
+ * 地址对象
+ * @export
+ * @interface Location
+ */
 export interface Location {
-    // 当前地址的抽象
+    /**
+     * hash
+     * @type {string}
+     * @memberof Location
+     */
     readonly hash: string;
+    /**
+     * hash
+     * @type {string}
+     * @memberof Location
+     */
     readonly pathname: string;
     readonly search: string;
+    /**
+     * 路径参数
+     * @type {Record<string, string>}
+     * @memberof Location
+     */
     readonly params: Record<string, string>;
     readonly href: string;
+    /**
+     * session参数
+     * @type {*}
+     * @memberof Location
+     */
     readonly session: any
+    /**
+     * 给第三方程序集成使用的
+     * @type {*}
+     * @memberof Location
+     */
+    [LocationKey]: any
 }
 
 
-export const LocationKey: Symbol = Symbol('MyRouter::LocationKey')
+/**
+ * onChange事件回调函数
+ * @export
+ * @interface ChangeEventCallback
+ */
+export type ChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Location,
+    newLoction: Location, discardLoctions: Location[], includeLoctions: Location[]): void | Promise<void> };
+
+/**
+ * onBeforeChange事件回调函数
+ * @export
+ * @interface BeforeChangeEventCallback
+ */
+export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Location,
+    newLoction: Location, discardLoctions: Location[], includeLoctions: Location[])
+    : boolean | void | Error | Function | Promise<boolean | void | Error | Function> };
+
+/**
+ * PopLocation事件回调
+ * @export
+ * @interface PopEventCallback
+ */
+export interface PopEventCallback {
+    (locations: Location[]): void
+}
 
 /**
  * 一个URL匹配工具，系统默认会使用path-to-regexp实现，但是用户可以根据自己需要，定制化path-to-regexp

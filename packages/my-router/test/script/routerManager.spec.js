@@ -77,46 +77,44 @@ describe('路由的模块测试', function() {
         })
     });
 
-    // it('路由getCurrentRouteData函数和RouteData测试', function() {
-    //     return new Promise((resolve, reject)=>{
-    //         routerManager = new MyRouter({
-    //             // 用内存history模拟浏览器路由
-    //             routes: [{
-    //                 path: '/xxx/:testPath',
-    //                 meta: {
-    //                     id: 1
-    //                 }
-    //             }],
-    //             onURLChange: ()=>{
-    //                 var routeData = routerManager.getCurrentRouteData()
+    it('路由getCurrentRouteData函数和RouteData测试', function() {
+        return new Promise((resolve, reject)=>{
+            routerManager = new MyRouter({
+                // 用内存history模拟浏览器路由
+                routes: [{
+                    path: '/xxx/:testPath',
+                    meta: {
+                        id: 1
+                    }
+                }],
+                onURLChange: ()=>{
+                    var routeData = routerManager.getCurrentRouteData()
 
 
-    //                 // 获取url全路径
-    //                 assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
-    //                 // 获取查询参数
-    //                 assert.deepEqual(routeData.queryData.testQuery, 'testQuery')
-    //                 // 获取session参数
-    //                 assert.deepEqual(routeData.sessionData.testSession, 'testSession')
-    //                 // 获取路径参数
-    //                 assert.deepEqual(routeData.pathData.testPath, 'testPath')
-    //                 // 获取查询参数和路径参数的混合参数
-    //                 assert.deepEqual(routeData.routeData.testQuery, 'testQuery')
-    //                 assert.deepEqual(routeData.routeData.testPath, 'testPath')
-    //                 // 获取当前页信息对应的配置
-    //                 assert.deepEqual(routeData.routeConfig, {
-    //                     path: '/xxx/:testPath',
-    //                     meta: {
-    //                         id: 1
-    //                     }
-    //                 })
-    //                 resolve()
-    //             }
-    //         })
-    //         routerManager.push('/xxx/testPath', {testQuery: 'testQuery'}, {testSession: 'testSession'})
-    //     })
-    // });
-
-
+                    // 获取url全路径
+                    assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
+                    // 获取查询参数
+                    assert.deepEqual(routeData.queryData.testQuery, 'testQuery')
+                    // 获取session参数
+                    assert.deepEqual(routeData.sessionData.testSession, 'testSession')
+                    // 获取路径参数
+                    assert.deepEqual(routeData.pathData.testPath, 'testPath')
+                    // 获取查询参数和路径参数的混合参数
+                    assert.deepEqual(routeData.routeData.testQuery, 'testQuery')
+                    assert.deepEqual(routeData.routeData.testPath, 'testPath')
+                    // 获取当前页信息对应的配置
+                    assert.deepEqual(routeData.routeConfig, {
+                        path: '/xxx/:testPath',
+                        meta: {
+                            id: 1
+                        }
+                    })
+                    resolve()
+                }
+            })
+            routerManager.push('/xxx/testPath', {testQuery: 'testQuery'}, {testSession: 'testSession'})
+        })
+    });
 
     // it('测试路由session的push', ()=> {
     //     routerManager = new MyRouter({
