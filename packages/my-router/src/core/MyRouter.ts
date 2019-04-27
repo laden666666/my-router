@@ -49,6 +49,8 @@ export class MyRouter implements IMyRouter {
         this.addURLChange(this._options.onURLChange)
         this.addPopLocation(this._options.onPopLocation)
 
+        this._pathRegexp.addRoutes(this._options.routes)
+
         this._history.onBeforeChange = async (action: 'push' | 'goback' | 'replace' | 'reload',
             oldLoction: HLocation, newLoction: HLocation,
             discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
@@ -58,13 +60,16 @@ export class MyRouter implements IMyRouter {
 
             // 将新增的地址放入_cacheSession，在onChange中，再将他们放入_stateCache中
             includeLoctions.forEach((location)=>{
-                this._cacheSession.map[location.key] = new LocationState(location)
+                let state = new LocationState(location)
+                state.recognizeResult = this._pathRegexp.recognize(state.hLocation.href)
+                this._cacheSession.map[location.key] = state
             })
 
             // 将缓存的push、replace的session数据，放入缓存的LocationState对象中
             if(this._cacheSession.data !== undefined && newLoction){
                 this._cacheSession.map[newLoction.key].data = this._cacheSession.data
                 this._cacheSession.data = null
+                this._cacheSession.map[newLoction.key].sessionDeferred = this._cacheSession.backDeferred
             }
         }
 
@@ -72,6 +77,7 @@ export class MyRouter implements IMyRouter {
             oldLoction: HLocation, newLoction: HLocation,
             discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
 
+            let newState = this._getStateByKey(newLoction.key, false)
 
             if(action === 'init'){
                 this._stateCache[newLoction.key] = new LocationState(newLoction)
@@ -111,6 +117,14 @@ export class MyRouter implements IMyRouter {
                 )
             })
 
+            if(newState){
+                if(newState.backValue instanceof Error){
+                    newState.sessionDeferred.reject(newState.backValue)
+                } else {
+                    newState.sessionDeferred.resolve(newState.backValue)
+                }
+            }
+
             // 释放掉移除的地址数据。
             // discardLoctions.forEach((location)=>{
             //     let state = this._stateCache[location.key]
@@ -140,14 +154,6 @@ export class MyRouter implements IMyRouter {
     private _history: MyHistory
 
     /**
-     * 一个专门用于保存系统session参数的地方
-     * @private
-     * @type {Record<string, object>}
-     * @memberof MyRouter
-     */
-    private _session: Record<string, object> = {}
-
-    /**
      * 地址查找函数
      * @private
      * @type {IPathRegexp}
@@ -170,8 +176,8 @@ export class MyRouter implements IMyRouter {
      * @returns {LocationState}
      * @memberof MyRouter
      */
-    private _getStateByKey(key: string): LocationState{
-        return (this._cacheSession && this._cacheSession.map && this._cacheSession.map[key])
+    private _getStateByKey(key: string, hasCache: boolean = true): LocationState{
+        return (hasCache && this._cacheSession && this._cacheSession.map && this._cacheSession.map[key])
             || this._stateCache[key] || null
     }
 
@@ -286,6 +292,7 @@ export class MyRouter implements IMyRouter {
      */
     _cacheSession: {
         data?: any,
+        backDeferred?: Deferred<any>
         map?: Record<string, LocationState>
     };
 
@@ -306,21 +313,10 @@ export class MyRouter implements IMyRouter {
         // 跳转到新页面,并且从页面再跳转回来的Deferred
         const backDeferred = new Deferred<any>()
 
-        // 如同url获取对应的路由信息
-        var result = this._pathRegexp.recognize(path)
-
-        this._cacheSession = {data: sessionData}
+        this._cacheSession = {data: sessionData, backDeferred}
 
         // 真正的跳转
         await this._history.push(path, state)
-
-
-        if(this._currentState){
-            this._currentState.sessionDeferred = backDeferred
-            this._currentState.recognizeResult = result
-            this._currentState.data = sessionData
-            return this._currentState.sessionDeferred.promise
-        }
     }
 
     /**

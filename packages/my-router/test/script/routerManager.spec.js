@@ -64,7 +64,7 @@ describe('路由的模块测试', function() {
                 }],
                 onURLChange: (result, from, to, clears, news)=>{
                     try{
-                        if(to && to.href == '/xxx'){
+                        if(to && to.path == '/xxx'){
                             assert.deepEqual(result, RouterAction.PUSH)
                             assert.deepEqual(to.query.test, 'testQuery')
                             assert.deepEqual(to.session.test, 'testSession')
@@ -75,7 +75,7 @@ describe('路由的模块测试', function() {
                     }
                 }
             })
-            routerManager.push('/xxx', {test: 'testQuery'}, {test: 'testSession'})
+            routerManager.push('/xxx?test=testQuery', {test: 'testSession'})
         })
     });
 
@@ -90,58 +90,58 @@ describe('路由的模块测试', function() {
                     }
                 }],
                 onURLChange: (action)=>{
-                    if(action != 'push'){
-                        return
+                    try{
+                        if(action != 'push'){
+                            return
+                        }
+
+                        var routeData = routerManager.currentRoute
+
+                        // 获取url全路径
+                        assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
+                        // 获取查询参数
+                        assert.deepEqual(routeData.query.testQuery, 'testQuery')
+                        // 获取session参数
+                        assert.deepEqual(routeData.session.testSession, 'testSession')
+                        // 获取路径参数
+                        assert.deepEqual(routeData.params.testPath, 'testPath')
+                        // 获取当前页信息对应的配置
+                        assert.deepEqual(routeData.routeConfig, {
+                            path: '/xxx/:testPath',
+                            meta: {
+                                id: 1
+                            }
+                        })
+                        resolve()
+                    } catch (e){
+                        reject(e)
                     }
-
-                    var routeData = routerManager.currentRoute
-
-                    // 获取url全路径
-                    assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
-                    // 获取查询参数
-                    assert.deepEqual(routeData.query.testQuery, 'testQuery')
-                    // 获取session参数
-                    assert.deepEqual(routeData.session.testSession, 'testSession')
-                    // 获取路径参数
-                    // assert.deepEqual(routeData.params.testPath, 'testPath')
-                    // 获取当前页信息对应的配置
-                    // assert.deepEqual(routeData.routeConfig, {
-                    //     path: '/xxx/:testPath',
-                    //     meta: {
-                    //         id: 1
-                    //     }
-                    // })
-                    resolve()
                 }
             })
             routerManager.push('/xxx/testPath?testQuery=testQuery', {testSession: 'testSession'})
         })
     });
 
-
-    // it('测试路由session的push', ()=> {
-    //     routerManager = new MyRouter({
-    //
-
-    //         routes: [{
-    //             path: '/xxx',
-    //         }],
-    //         onURLChange: (result, from, to, clears, news)=>{
-    //             try{
-    //                 console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
-    //                 if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-    //                     routerManager.navigateBack()
-    //                 }
-    //             } catch (e){
-    //                 console.error(e)
-    //             }
-    //         }
-    //     })
-    //     return new Promise(async (resolve, reject)=>{
-    //         await routerManager.push('/xxx')
-    //         resolve()
-    //     })
-    // });
+    it('测试路由session的push', ()=> {
+        routerManager = new MyRouter({
+            routes: [{
+                path: '/xxx',
+            }],
+            onURLChange: (result, from, to, clears, news)=>{
+                try{
+                    if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
+                        routerManager.goback()
+                    }
+                } catch (e){
+                    console.error(e)
+                }
+            }
+        })
+        return new Promise(async (resolve, reject)=>{
+            await routerManager.push('/xxx')
+            resolve()
+        })
+    });
 
     // it('测试路由session的push，浏览器退回', ()=> {
     //     routerManager = new MyRouter({
@@ -183,7 +183,7 @@ describe('路由的模块测试', function() {
     //                     routerManager.redirectTo('yyy')
     //                 } else if(to && to.routeConfig && to.routeConfig.path == '/yyy'){
     //                     assert.equal(clearList.length, 1)
-    //                     routerManager.navigateBack()
+    //                     routerManager.goback()
     //                 }
     //             } catch (e){
     //                 console.error(e)
@@ -213,7 +213,7 @@ describe('路由的模块测试', function() {
     //                     routerManager.reload()
     //                 } else if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 1){
     //                     // assert.equal(clearList.length, 1)
-    //                     routerManager.navigateBack()
+    //                     routerManager.goback()
     //                 }
     //             } catch (e){
     //                 console.error(e)
@@ -240,7 +240,7 @@ describe('路由的模块测试', function() {
     //             onURLChange: (result, from, to, clears, news, clearState)=>{
     //                 try{
     //                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-    //                         routerManager.navigateBack()
+    //                         routerManager.goback()
     //                     } else if(clearState.length == 1 && clearState[0].routeConfig == from.routeConfig && from.routeConfig.path == '/xxx'){
     //                         resolve()
     //                     }
@@ -275,7 +275,7 @@ describe('路由的模块测试', function() {
     //                 try{
     //                     if(to && to.routeConfig && to.routeConfig.path == '/token'){
     //                         hasToken = true;
-    //                         routerManager.navigateBack()
+    //                         routerManager.goback()
     //                     } else if(to && to.routeConfig && to.routeConfig.path == '/'){
     //                         resolve()
     //                     }
@@ -320,7 +320,7 @@ describe('路由的模块测试', function() {
     //                     if(to && to.routeConfig && to.routeConfig.path == '/token'){
     //                         console.log('go login')
     //                         hasToken = true;
-    //                         routerManager.navigateBack()
+    //                         routerManager.goback()
     //                     } else if(to && to.routeConfig && to.routeConfig.path == '/' && hasToken){
     //                         console.log('has login')
     //                         resolve()
