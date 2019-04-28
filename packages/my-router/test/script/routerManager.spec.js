@@ -143,89 +143,82 @@ describe('路由的模块测试', function() {
         })
     });
 
-    // it('测试路由session的push，浏览器退回', ()=> {
-    //     routerManager = new MyRouter({
-    //
+    it('测试路由session的push，浏览器退回', ()=> {
+        routerManager = new MyRouter({
+            routes: [{
+                path: '/xxx',
+            }],
+            onURLChange: (result, from, to, clears, news)=>{
+                try{
+                    if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
+                        history.go(-1)
+                    }
+                } catch (e){
+                    console.error(e)
+                }
+            }
+        })
+        return new Promise(async (resolve, reject)=>{
+            await routerManager.push('/xxx')
+            resolve()
+        })
+    });
 
-    //         routes: [{
-    //             path: '/xxx',
-    //         }],
-    //         onURLChange: (result, from, to, clears, news)=>{
-    //             try{
-    //                 console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
-    //                 if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-    //                     routerManager.history.go(-1)
-    //                 }
-    //             } catch (e){
-    //                 console.error(e)
-    //             }
-    //         }
-    //     })
-    //     return new Promise(async (resolve, reject)=>{
-    //         await routerManager.push('/xxx')
-    //         resolve()
-    //     })
-    // });
+    it('测试路由session的replace', function() {
+        routerManager = new MyRouter({
+            routes: [{
+                path: '/xxx',
+            }, {
+                path: '/yyy',
+            }],
+            onURLChange: (result, from, to, clears, news)=>{
+                try{
+                    if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
+                        routerManager.replace('yyy')
+                        console.log(33)
+                    } else if(to && to.routeConfig && to.routeConfig.path == '/yyy'){
+                        assert.equal(clears.length, 1)
+                        routerManager.goback()
+                        console.log(22)
+                    }
+                } catch (e){
+                    console.error(e)
+                }
+            }
+        })
 
-    // it('测试路由session的redirectTo', function() {
-    //     routerManager = new MyRouter({
-    //
+        return new Promise(async (resolve, reject)=>{
+            await routerManager.push('/xxx')
+            console.log(11)
+            resolve()
+        })
+    });
 
-    //         routes: [{
-    //             path: '/xxx',
-    //         }, {
-    //             path: '/yyy',
-    //         }],
-    //         onURLChange: (result, from, to, clears, news, clearList)=>{
-    //             try{
-    //                 console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
-    //                 if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-    //                     routerManager.redirectTo('yyy')
-    //                 } else if(to && to.routeConfig && to.routeConfig.path == '/yyy'){
-    //                     assert.equal(clearList.length, 1)
-    //                     routerManager.goback()
-    //                 }
-    //             } catch (e){
-    //                 console.error(e)
-    //             }
-    //         }
-    //     })
+    it('测试路由session的reload', function() {
+        let count = 0
+        routerManager = new MyRouter({
+            routes: [{
+                path: '/xxx',
+            }],
+            onURLChange: (result, from, to, clears, news)=>{
+                try{
+                    if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 0){
+                        count++
+                        routerManager.reload()
+                    } else if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 1){
+                        routerManager.goback()
+                    }
+                } catch (e){
+                    console.error(e)
+                }
+            }
+        })
 
-    //     return new Promise(async (resolve, reject)=>{
-    //         await routerManager.push('/xxx')
-    //         resolve()
-    //     })
-    // });
-
-    // it('测试路由session的reload', function() {
-    //     let count = 0
-    //     routerManager = new MyRouter({
-    //         //用内存history模拟浏览器路由
-
-    //         routes: [{
-    //             path: '/xxx',
-    //         }],
-    //         onURLChange: (result, from, to, clears, news, clearList)=>{
-    //             try{
-    //                 console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
-    //                 if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 0){
-    //                     count++
-    //                     routerManager.reload()
-    //                 } else if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 1){
-    //                     // assert.equal(clearList.length, 1)
-    //                     routerManager.goback()
-    //                 }
-    //             } catch (e){
-    //                 console.error(e)
-    //             }
-    //         }
-    //     })
-
-    //     return new Promise(async (resolve, reject)=>{
-    //         await routerManager.push('/xxx')
-    //         resolve()
-    //     })
-    // });
+        return new Promise(async (resolve, reject)=>{
+            await routerManager.push('/xxx')
+            resolve()
+        })
+    });
 
     // it('测试路由缓存移除', function() {
     //     return new Promise((resolve, reject)=>{

@@ -331,17 +331,12 @@ export class MyRouter implements IMyRouter {
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
-        // 如同url获取对应的路由信息
-        const result = this._pathRegexp.recognize(path)
-        const backDeferred = new Deferred<any>()
+        this._history.checkBusy()
+
+        const backDeferred = this._getStateByKey(this._history.location.key).sessionDeferred
+        this._cacheSession = {data: sessionData, backDeferred}
 
         await this._history.replace(path, state)
-
-        if(this._currentState){
-            this._currentState.sessionDeferred = backDeferred
-            this._currentState.recognizeResult = result
-            return this._currentState.sessionDeferred.promise
-        }
     }
 
     /**
