@@ -8,7 +8,8 @@ import {
     Location,
     PopEventCallback,
     BeforeChangeEventCallback,
-    ChangeEventCallback
+    ChangeEventCallback,
+    RouterActionResult
 } from '../API'
 import { LocationState } from './LocationState';
 import { Deferred } from './util/Deferred';
@@ -69,7 +70,24 @@ export class MyRouter implements IMyRouter {
             if(this._cacheSession.data !== undefined && newLoction){
                 this._cacheSession.map[newLoction.key].data = this._cacheSession.data
                 this._cacheSession.data = null
-                this._cacheSession.map[newLoction.key].sessionDeferred = this._cacheSession.backDeferred
+            }
+
+            for(let i = 0 ; i < this._beforeChanges.length; i++){
+                let callback = this._beforeChanges[i]
+                let result: ReturnType<BeforeChangeEventCallback>
+                try {
+                    result = await callback(action,
+                        oldLoction ? this._getLoctionByKey(oldLoction.key) : null,
+                        newLoction ? this._getLoctionByKey(newLoction.key) : null,
+                        discardLoctions.map(l=>this._getLoctionByKey(l.key)),
+                        includeLoctions.map(l=>this._getLoctionByKey(l.key)))
+                } catch (e){
+                    result = e
+                }
+
+                if(result === false || typeof result === 'function' || result instanceof Error){
+                    return result
+                }
             }
         }
 
@@ -97,12 +115,12 @@ export class MyRouter implements IMyRouter {
                     break;
                 case('goback'):
                     let oldState = oldLoction ? this._stateCache[oldLoction.key] : null
-                    if(oldState){
+                    if(oldState && newState){
                         var backValue = oldState.backValue;
                         if(backValue instanceof Error){
-                            oldState.sessionDeferred.reject(backValue)
+                            newState.sessionDeferred.reject(backValue)
                         } else {
-                            oldState.sessionDeferred.resolve(backValue)
+                            newState.sessionDeferred.resolve(backValue)
                         }
                     }
                     break;
@@ -116,14 +134,6 @@ export class MyRouter implements IMyRouter {
                     includeLoctions.map(l=>this._getLoctionByKey(l.key)),
                 )
             })
-
-            if(newState){
-                if(newState.backValue instanceof Error){
-                    newState.sessionDeferred.reject(newState.backValue)
-                } else {
-                    newState.sessionDeferred.resolve(newState.backValue)
-                }
-            }
 
             // 释放掉移除的地址数据。
             // discardLoctions.forEach((location)=>{
@@ -292,7 +302,6 @@ export class MyRouter implements IMyRouter {
      */
     _cacheSession: {
         data?: any,
-        backDeferred?: Deferred<any>
         map?: Record<string, LocationState>
     };
 
@@ -301,22 +310,34 @@ export class MyRouter implements IMyRouter {
      * @param {string} path                 去往的地址
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<any>}
+     * @returns RouterActionResult
      * @memberOf MyRouter
      */
-    async push(path: string, sessionData?: any, state?: any): Promise<any>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    push(path: string, sessionData?: any, state?: any): RouterActionResult{
 
-        this._history.checkBusy()
+        let result: RouterActionResult = Promise.resolve()
+        .then(()=>{
+            // 必须要在初始化之后才能执行
+            return this._initDeferred.promise
+        })
+        .then(()=>{
+            this._history.checkBusy()
+        })
+        .then(()=>{
+            this._cacheSession = { data: sessionData }
 
-        // 跳转到新页面,并且从页面再跳转回来的Deferred
-        const backDeferred = new Deferred<any>()
+            // 跳转到新页面,并且从页面再跳转回来的Deferred
 
-        this._cacheSession = {data: sessionData, backDeferred}
+            let currentState = this._getStateByKey(this._history.location.key, true)
+            currentState.sessionDeferred = backDeferred
 
-        // 真正的跳转
-        await this._history.push(path, state)
+        })
+        .then(()=>{
+            return this._history.push(path, state)
+        }) as RouterActionResult
+        const backDeferred = new Deferred()
+        result.comeBack = backDeferred.promise
+        return result
     }
 
     /**
@@ -331,10 +352,9 @@ export class MyRouter implements IMyRouter {
         // 必须要在初始化之后才能执行
         await this._initDeferred.promise
 
-        this._history.checkBusy()
+        this._cacheSession = { data: sessionData }
 
-        const backDeferred = this._getStateByKey(this._history.location.key).sessionDeferred
-        this._cacheSession = {data: sessionData, backDeferred}
+        this._history.checkBusy()
 
         await this._history.replace(path, state)
     }

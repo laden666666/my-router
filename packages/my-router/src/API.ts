@@ -32,11 +32,11 @@ export interface MyRouter{
      * @param {string} path                 去往的地址
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<any>}
+     * @returns {RouterActionResult}
      *
      * @memberOf MyRouter
      */
-    push(path: string, sessionData?: any,state?: any): Promise<any>
+    push(path: string, sessionData?: any,state?: any): RouterActionResult
 
     /**
      * 用一个URL代替当前的URL，跳转不产生历史记录，名字取自history.replace
@@ -246,6 +246,19 @@ export interface MyRouteConfig{
      * @memberOf MyRouteConfig
      */
     lunchMode: 'standard' | 'single' | 'singleCache'
+}
+
+/**
+ * 路由跳转的结果
+ * @interface RouterActionResult
+ */
+export interface RouterActionResult extends Promise<any> {
+    /**
+     * 回来后的promise
+     * @type {Promise<any>}
+     * @memberof RouterActionResult
+     */
+    comeBack: Promise<any>
 }
 
 // 供相关程序调用的私有属性的key
