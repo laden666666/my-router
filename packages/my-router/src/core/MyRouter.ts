@@ -82,6 +82,7 @@ export class MyRouter implements IMyRouter {
                         discardLoctions.map(l=>this._getLoctionByKey(l.key)),
                         includeLoctions.map(l=>this._getLoctionByKey(l.key)))
                 } catch (e){
+                    console.error(e)
                     result = e
                 }
 

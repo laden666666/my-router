@@ -301,7 +301,6 @@ describe('路由的模块测试', function() {
 
                 onBeforeURLChange: (action, from, to)=>{
                     console.log(action, from, to)
-
                     try{
                         if(to.routeConfig.meta.hasToken){
                             return ()=>routerManager.push('/token')
@@ -309,7 +308,6 @@ describe('路由的模块测试', function() {
                     } catch (e){
                         reject(e)
                     }
-
                 },
             })
         })
