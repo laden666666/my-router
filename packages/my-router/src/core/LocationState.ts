@@ -1,13 +1,27 @@
-import { Location } from 'my-router-history'
-import { PathRegexpResult } from '../API';
+import { PathRegexpResult, Location } from '../API';
 import { Deferred } from './util/Deferred';
+import { Location as HistoryLocation } from 'my-router-history';
+import { LocationKey } from './../API';
+
+/**
+ * 地址栏search字符串转map
+ * @param {string} search
+ * @returns {Record<string, string>}
+ */
+function search2Map(search: string): Record<string, string>{
+    return search && search[0] === '?' ? search.substr(1).split('&')
+        .map(str=> str.split('=')).reduce((map, arr)=>{
+            map[arr[0]] = arr[1]
+            return map
+        }, {}) : {}
+}
 
 export class LocationState {
-    
+
     /**
      * 当前的location
      */
-    location: Location
+    hLocation: HistoryLocation
 
     /**
      * 路由匹配的结果
@@ -20,26 +34,27 @@ export class LocationState {
      * @type {*}
      */
     data: any
+
     /**
      * session的promise的控制器
      * @type {Deferred<any>}
      */
     sessionDeferred: Deferred<any>
-    
+
     /**
     * 页面返回值
     * @type {*}
     */
     backValue: any = null
-    
+
     /**
      * 其他信息（如果dom）
      * @type {*}
      */
     otherData: any = {}
 
-    constructor(location: Location){
-        this.location = location
+    constructor(historyLocation: HistoryLocation){
+        this.hLocation = historyLocation
     }
 
     /**
@@ -56,5 +71,27 @@ export class LocationState {
         this.sessionDeferred = null
         this.backValue = null
         this.otherData = null
+    }
+
+    /**
+     * 将LocationState转为Location对象
+     * @static
+     * @param {LocationState} state
+     * @returns {Location}
+     * @memberof LocationState
+     */
+    static toLocation(state: LocationState): Location{
+        let {recognizeResult, hLocation} = state
+        return {
+            hash: hLocation.hash,
+            fullPath: hLocation.href,
+            query: search2Map(hLocation.search),
+            params: recognizeResult ? state.recognizeResult.pathData : {},
+            path: hLocation.pathname,
+            session: state.data,
+            routeConfig: recognizeResult ? recognizeResult.routeConfig : null,
+            routeConfigPath: recognizeResult ? recognizeResult.routeConfigPath : null,
+            [LocationKey]: state.otherData
+        }
     }
 }

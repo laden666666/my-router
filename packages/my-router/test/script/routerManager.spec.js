@@ -1,7 +1,11 @@
 import { MyRouter } from '../../src/core/MyRouter'
 
+const RouterAction = {
+    PUSH: 'push',
+}
+
 describe('路由的模块测试', function() {
-    this.timeout(8000);
+    this.timeout(4000);
 
     let routerManager = new MyRouter()
     beforeEach(async function() {
@@ -9,9 +13,10 @@ describe('路由的模块测试', function() {
             await routerManager.destroy()
             routerManager = null
         }
+        location.href = '#/'
+        await new Promise(r=>setTimeout(r, 100))
     });
     afterEach(async function() {
-        // console.log('afterEach-before', location.href, history.state, sessionStorage)
         if(routerManager){
             await routerManager.destroy()
             routerManager = null
@@ -22,22 +27,23 @@ describe('路由的模块测试', function() {
     it('初始化测试', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
+
                 routes: [{
                     path: '/',
                     meta: {
                         id: 1
                     }
                 }],
-                onURLChange: (result, from, to, news, clears)=>{
+                onURLChange: (result, from, to, clears, news)=>{
                     try{
-                        assert.deepEqual(result, RouterAction.PUSH)
                         assert.isArray(clears)
                         assert.isEmpty(clears)
                         assert.isNull(from)
-                        assert.deepEqual(to.routeConfig.path, '/')
+                        assert.equal(result, 'replace')
+                        assert.deepEqual(to.path, '/')
                         resolve()
                     } catch(e){
+                        console.error('初始化测试', e)
                         reject(e)
                     }
                 }
@@ -48,20 +54,19 @@ describe('路由的模块测试', function() {
     it('设置路由，匹配路由', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
-                mode: 'm',
+
                 routes: [{
                     path: '/xxx',
                     meta: {
                         id: 1
                     }
                 }],
-                onURLChange: (result, from, to)=>{
+                onURLChange: (result, from, to, clears, news)=>{
                     try{
-                        if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
+                        if(to && to.path == '/xxx'){
                             assert.deepEqual(result, RouterAction.PUSH)
-                            assert.deepEqual(to.queryData.test, 'testQuery')
-                            assert.deepEqual(to.sessionData.test, 'testSession')
+                            assert.deepEqual(to.query.test, 'testQuery')
+                            assert.deepEqual(to.session.test, 'testSession')
                             resolve()
                         }
                     } catch (e){
@@ -69,64 +74,64 @@ describe('路由的模块测试', function() {
                     }
                 }
             })
-            routerManager.navigateTo('/xxx', {test: 'testQuery'}, {test: 'testSession'})
+            routerManager.push('/xxx?test=testQuery', {test: 'testSession'})
         })
     });
 
-    it('路由getCurrentRouteData函数和RouteData测试', function() {
+    it('路由currentRoute函数和route测试', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                // 用内存history模拟浏览器路由
-                mode: 'm',
+
                 routes: [{
                     path: '/xxx/:testPath',
                     meta: {
                         id: 1
                     }
                 }],
-                onURLChange: ()=>{
-                    var routeData = routerManager.getCurrentRouteData()
-
-
-                    // 获取url全路径
-                    assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
-                    // 获取查询参数
-                    assert.deepEqual(routeData.queryData.testQuery, 'testQuery')
-                    // 获取session参数
-                    assert.deepEqual(routeData.sessionData.testSession, 'testSession')
-                    // 获取路径参数
-                    assert.deepEqual(routeData.pathData.testPath, 'testPath')
-                    // 获取查询参数和路径参数的混合参数
-                    assert.deepEqual(routeData.routeData.testQuery, 'testQuery')
-                    assert.deepEqual(routeData.routeData.testPath, 'testPath')
-                    // 获取当前页信息对应的配置
-                    assert.deepEqual(routeData.routeConfig, {
-                        path: '/xxx/:testPath',
-                        meta: {
-                            id: 1
+                onURLChange: (action)=>{
+                    try{
+                        if(action != 'push'){
+                            return
                         }
-                    })
-                    resolve()
+
+                        var routeData = routerManager.currentRoute
+
+                        // 获取url全路径
+                        assert.deepEqual(routeData.fullPath, '/xxx/testPath?testQuery=testQuery')
+                        // 获取查询参数
+                        assert.deepEqual(routeData.query.testQuery, 'testQuery')
+                        // 获取session参数
+                        assert.deepEqual(routeData.session.testSession, 'testSession')
+                        // 获取路径参数
+                        assert.deepEqual(routeData.params.testPath, 'testPath')
+                        // 获取当前页信息对应的配置
+                        assert.deepEqual(routeData.routeConfig, {
+                            path: '/xxx/:testPath',
+                            meta: {
+                                id: 1
+                            }
+                        })
+                        resolve()
+                    } catch (e){
+                        reject(e)
+                    }
                 }
             })
-            routerManager.navigateTo('/xxx/testPath', {testQuery: 'testQuery'}, {testSession: 'testSession'})
+            routerManager.push('/xxx/testPath?testQuery=testQuery', {testSession: 'testSession'})
         })
     });
 
-
-
-    it('测试路由session的navigateTo', ()=> {
+    it('测试路由session的push', ()=> {
+        let tracker = []
         routerManager = new MyRouter({
-            // 用内存history模拟浏览器路由
-            mode: 'm',
             routes: [{
                 path: '/xxx',
             }],
-            onURLChange: (result, from, to)=>{
+            onURLChange: (result, from, to, clears, news)=>{
                 try{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-                        routerManager.navigateBack()
+                        tracker.push(1)
+                        routerManager.goback()
                     }
                 } catch (e){
                     console.error(e)
@@ -134,23 +139,29 @@ describe('路由的模块测试', function() {
             }
         })
         return new Promise(async (resolve, reject)=>{
-            await routerManager.navigateTo('/xxx')
-            resolve()
+            await routerManager.push('/xxx')
+            tracker.push(2)
+
+            try{
+                assert.deepEqual(tracker, [1, 2])
+                resolve()
+            } catch(e){
+                console.error('测试路由session的push', e)
+            }
         })
     });
 
-    it('测试路由session的navigateTo，浏览器退回', ()=> {
+    it('测试路由session的push，浏览器退回', ()=> {
+        let tracker = []
         routerManager = new MyRouter({
-            // 用内存history模拟浏览器路由
-            mode: 'm',
             routes: [{
                 path: '/xxx',
             }],
-            onURLChange: (result, from, to)=>{
+            onURLChange: (result, from, to, clears, news)=>{
                 try{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-                        routerManager.history.go(-1)
+                        tracker.push(1)
+                        history.go(-1)
                     }
                 } catch (e){
                     console.error(e)
@@ -158,58 +169,68 @@ describe('路由的模块测试', function() {
             }
         })
         return new Promise(async (resolve, reject)=>{
-            await routerManager.navigateTo('/xxx')
-            resolve()
+            await routerManager.push('/xxx')
+            tracker.push(2)
+
+            try{
+                assert.deepEqual(tracker, [1, 2])
+                resolve()
+            } catch(e){
+                console.error('测试路由session的push，浏览器退回', e)
+            }
         })
     });
 
-    it('测试路由session的redirectTo', function() {
+    it('测试路由session的replace', function() {
+        let tracker = []
         routerManager = new MyRouter({
-            // 用内存history模拟浏览器路由
-            mode: 'm',
             routes: [{
                 path: '/xxx',
             }, {
                 path: '/yyy',
             }],
-            onURLChange: (result, from, to, clearList)=>{
+            onURLChange: (result, from, to, clears, news)=>{
                 try{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-                        routerManager.redirectTo('yyy')
+                        routerManager.replace('yyy')
+                        tracker.push(1)
                     } else if(to && to.routeConfig && to.routeConfig.path == '/yyy'){
-                        assert.equal(clearList.length, 1)
-                        routerManager.navigateBack()
+                        assert.equal(clears.length, 1)
+                        routerManager.goback()
+                        tracker.push(2)
                     }
                 } catch (e){
                     console.error(e)
                 }
             }
         })
-
         return new Promise(async (resolve, reject)=>{
-            await routerManager.navigateTo('/xxx')
-            resolve()
+            await routerManager.push('/xxx').comeBack
+            tracker.push(3)
+
+            try{
+                assert.deepEqual(tracker, [1, 2, 3])
+                resolve()
+            } catch(e){
+                console.error('测试路由session的replace', e)
+            }
+
         })
     });
 
     it('测试路由session的reload', function() {
         let count = 0
         routerManager = new MyRouter({
-            //用内存history模拟浏览器路由
-            mode: 'm',
             routes: [{
                 path: '/xxx',
             }],
-            onURLChange: (result, from, to, clearList)=>{
+            onURLChange: (result, from, to, clears, news)=>{
                 try{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
                     if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 0){
                         count++
                         routerManager.reload()
                     } else if(to && to.routeConfig && to.routeConfig.path == '/xxx' && count == 1){
-                        // assert.equal(clearList.length, 1)
-                        routerManager.navigateBack()
+                        routerManager.goback()
                     }
                 } catch (e){
                     console.error(e)
@@ -218,7 +239,7 @@ describe('路由的模块测试', function() {
         })
 
         return new Promise(async (resolve, reject)=>{
-            await routerManager.navigateTo('/xxx')
+            await routerManager.push('/xxx')
             resolve()
         })
     });
@@ -226,18 +247,16 @@ describe('路由的模块测试', function() {
     it('测试路由缓存移除', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                //用内存history模拟浏览器路由
-                mode: 'm',
                 routes: [{
                     path: '/',
                 }, {
                     path: '/xxx',
                 }],
-                onURLChange: (result, from, to, clearState)=>{
+                onURLChange: (result, from, to, clears, news)=>{
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/xxx'){
-                            routerManager.navigateBack()
-                        } else if(clearState.length == 1 && clearState[0].routeConfig == from.routeConfig && from.routeConfig.path == '/xxx'){
+                            routerManager.goback()
+                        } else if(clears.length == 1 && clears[0].routeConfig == from.routeConfig && from.routeConfig.path == '/xxx'){
                             resolve()
                         }
                     } catch (e){
@@ -246,16 +265,45 @@ describe('路由的模块测试', function() {
                 },
             })
 
-            routerManager.navigateTo('/xxx')
+            routerManager.push('/xxx')
         })
     });
 
-    it('测试路由监听beforeUpdateListener', function() {
-        var hasToken = false
+    it('测试路由监听BeforeURLChange跳转', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
-                //用内存history模拟浏览器路由
-                mode: 'm',
+                routes: [{
+                    path: '/',
+                    meta: {
+                        hasToken: true
+                    }
+                }],
+                onURLChange: (result, from, to, clears, news)=>{
+                    if(to && to.path == '/'){
+                        routerManager.push('/test')
+                    }
+                },
+                onBeforeURLChange: async (action, from, to)=>{
+                    try{
+                        if(to && to.path == '/test'){
+                            try{
+                                routerManager.replace('/reject')
+                            } catch (e){
+                                resolve(e)
+                            }
+                        }
+                    } catch (e){
+                        reject(e)
+                    }
+                },
+            })
+        })
+    });
+
+    it('第一种路由实现方案', function() {
+        let hasToken = false
+        return new Promise((resolve, reject)=>{
+            routerManager = new MyRouter({
                 routes: [{
                     path: '/',
                     meta: {
@@ -266,73 +314,64 @@ describe('路由的模块测试', function() {
                     meta: {
                     }
                 }],
-                onURLChange: (result, from, to, clearState)=>{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
+                onURLChange: (result, from, to, clears, news)=>{
                     try{
                         if(to && to.routeConfig && to.routeConfig.path == '/token'){
                             hasToken = true;
-                            routerManager.navigateBack()
-                        } else if(to && to.routeConfig && to.routeConfig.path == '/'){
+                            routerManager.replace('/')
+                        } else if(hasToken && to.routeConfig.path == '/'){
                             resolve()
                         }
                     } catch (e){
                         reject(e)
                     }
                 },
-
-                onBeforeURLChange: (from, to)=>{
-                    try{
-                        if(to.routeConfig.meta.hasToken){
-                            return routerManager.navigateTo('/token')
-                        }
-                    } catch (e){
-                        reject(e)
-                    }
-
-                },
-            })
-        })
-    });
-
-    it('测试路由监听beforeRouteEnterListener', function() {
-        var hasToken = false
-        return new Promise((resolve, reject)=>{
-            routerManager = new MyRouter({
-                //用内存history模拟浏览器路由
-                mode: 'm',
-                routes: [{
-                    path: '/',
-                    meta: {
-                        hasToken: true
-                    }
-                }, {
-                    path: '/token',
-                    meta: {
-                    }
-                }],
-                onURLChange: (result, from, to, clearState)=>{
-                    console.log(result, from && from.routeConfig && from.routeConfig.path, to && to.routeConfig && to.routeConfig.path)
-                    try{
-                        if(to && to.routeConfig && to.routeConfig.path == '/token'){
-                            console.log('go login')
-                            hasToken = true;
-                            routerManager.navigateBack()
-                        } else if(to && to.routeConfig && to.routeConfig.path == '/' && hasToken){
-                            console.log('has login')
-                            resolve()
-                        }
-                    } catch (e){
-                        reject(e)
-                    }
-                },
-
-                onBeforeRouteEnter: (result, from, to, clearState)=>{
+                onBeforeURLChange: (action, from, to)=>{
                     try{
                         if(to.routeConfig.meta.hasToken && !hasToken){
+                            return ()=> routerManager.replace('/token')
+                        }
+                    } catch (e){
+                        reject(e)
+                    }
+                },
+            })
+        })
+    });
+
+    it('第二种路由实现方案', function() {
+        var hasToken = false
+        return new Promise((resolve, reject)=>{
+            routerManager = new MyRouter({
+                routes: [{
+                    path: '/',
+                    meta: {
+                        hasToken: true
+                    }
+                }, {
+                    path: '/token',
+                    meta: {
+                    }
+                }],
+                onURLChange: (result, from, to, clears, news)=>{
+                    try{
+                        if(to && to.routeConfig && to.routeConfig.path == '/token'){
+                            hasToken = true;
+                            routerManager.goback()
+                        } else if(to && to.routeConfig && to.routeConfig.path == '/' && hasToken){
+                            resolve()
+                        }
+                    } catch (e){
+                        reject(e)
+                    }
+                },
+
+                onBeforeURLChange: (result, from, to, clears, news)=>{
+                    try{
+                        if(to && to.routeConfig.meta.hasToken && !hasToken){
                             setTimeout(()=>{
-                                routerManager.navigateTo('/token')
+                                routerManager.push('/token')
                             })
-                            return false
                         }
                     } catch (e){
                         reject(e)
@@ -347,49 +386,37 @@ describe('路由的模块测试', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
                 //用内存history模拟浏览器路由
-                mode: 'm',
+
                 routes: [{
                     path: '/',
-                    meta: {
-                        hasToken: true
-                    }
                 }, {
                     path: '/xxx',
                 }, {
                     path: '/yyy',
                 }],
-                onDestroyState: (clearState)=>{
-                    // console.log(routerManager.getCurrentURL().path)
-                    // console.log(clearState.length)
-                    if(routerManager.getCurrentURL().path != '/yyy'){
-                        step++
-                        assert.equal(clearState.length, 0)
-                    } else {
-                        if(clearState.length != 0){
-                            assert.equal(step, 3)
+                onPopLocation: (clearState)=>{
+                    try{
+                        if(routerManager.currentRoute.path == '/' && step > 1){
                             assert.equal(clearState.length, 2)
                             resolve()
-                        } else {
-                            step++
-                        }
-                    }
-                },
-                onURLChange: (result, from, to, clearState)=>{
-                    try{
-                        if(to.routeConfig.path == '/'){
-                            setTimeout(()=>{
-                                routerManager.navigateTo('/xxx')
-                            }, 1)
-                        } else if(to.routeConfig.path == '/xxx'){
-                            setTimeout(()=>{
-                                routerManager.navigateTo('/yyy')
-                            }, 1)
-                        } else if(to.routeConfig.path == '/yyy'){
-                            setTimeout(()=>{
-                                routerManager.destroyState()
-                            }, 100)
                         }
                     } catch (e){
+                        console.error('测试路由监听clearCacheListener', e)
+                        reject(e)
+                    }
+                },
+                onURLChange: (result, from, to, clears, news, clearState)=>{
+                    step++
+                    try{
+                        if(to.routeConfig.path == '/' && step == 1){
+                            routerManager.push('/xxx')
+                        } else if(to.routeConfig.path == '/xxx'){
+                            routerManager.push('/yyy')
+                        } else if(to.routeConfig.path == '/yyy'){
+                            routerManager.goback(2)
+                        }
+                    } catch (e){
+                        console.error('测试路由监听clearCacheListener', e)
                         reject(e)
                     }
                 },

@@ -260,6 +260,7 @@ var MyHistory = function () {
                     // 这里用任务队列而不用微任务队列，希望整个promise执行完再执行result
                     if (isFunction) {
                         DOMUtils_1.nextTick(function () {
+                            ;
                             result.call(_this2);
                         });
                     }
@@ -292,7 +293,7 @@ var MyHistory = function () {
                                                 newLocation = toReadonly(state);
                                                 oldLocation = toReadonly(_this3._stackTop);
                                                 _context.next = 8;
-                                                return _this3._execCallback(_this3.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation]);
+                                                return _this3._execCallback(_this3.onBeforeChange, true)('push', oldLocation, newLocation, [], [newLocation]);
 
                                             case 8:
                                                 result = _context.sent;
@@ -349,7 +350,7 @@ var MyHistory = function () {
                                                 newLocation = toReadonly(state);
                                                 oldLocation = toReadonly(_this3._stackTop);
                                                 _context2.next = 9;
-                                                return _this3._execCallback(_this3.onBeforeChange)('replace', oldLocation, newLocation, [oldLocation], [newLocation]);
+                                                return _this3._execCallback(_this3.onBeforeChange, true)('replace', oldLocation, newLocation, [oldLocation], [newLocation]);
 
                                             case 9:
                                                 result = _context2.sent;
@@ -481,7 +482,7 @@ var MyHistory = function () {
                                                     }).reverse();
                                                 }
                                                 _context3.next = 22;
-                                                return _this3._execCallback(_this3.onBeforeChange)('goback', oldLocation, newLocation, discardLoctions, needInclude ? [newLocation] : []);
+                                                return _this3._execCallback(_this3.onBeforeChange, true)('goback', oldLocation, newLocation, discardLoctions, needInclude ? [newLocation] : []);
 
                                             case 22:
                                                 result = _context3.sent;
@@ -750,8 +751,8 @@ var MyHistory = function () {
         // 检查路由是否处于可以跳转状态（state为1或7，如果处于7仅能跳转1次）
 
     }, {
-        key: "_checkState",
-        value: function _checkState() {
+        key: "checkBusy",
+        value: function checkBusy() {
             if (this.isBusy) {
                 var error = new Error('MyHistory busy');
                 error.isBusy = true;
@@ -936,35 +937,37 @@ var MyHistory = function () {
     }, {
         key: "push",
         value: function push(path, data) {
-            this._checkState();
+            this.checkBusy();
             return this._state.push(path, data);
         }
     }, {
         key: "replace",
         value: function replace(path, data) {
-            this._checkState();
+            this.checkBusy();
             return this._state.replace(path, data);
         }
     }, {
         key: "goback",
         value: function goback(n) {
-            this._checkState();
+            this.checkBusy();
             return this._state.goback(n);
         }
     }, {
         key: "reload",
         value: function reload() {
-            this._checkState();
+            this.checkBusy();
             return this._state.reload();
         }
     }, {
         key: "destroy",
         value: function () {
-            var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10() {
-                var error, state;
-                return regeneratorRuntime.wrap(function _callee10$(_context10) {
+            var _ref10 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11() {
+                var _this4 = this;
+
+                var error, goGoBackPage;
+                return regeneratorRuntime.wrap(function _callee11$(_context11) {
                     while (1) {
-                        switch (_context10.prev = _context10.next) {
+                        switch (_context11.prev = _context11.next) {
                             case 0:
                                 this._destroyEventListener();
                                 this.onBeforeChange = null;
@@ -976,32 +979,78 @@ var MyHistory = function () {
                                     this._notBusyDef.reject(error);
                                     this._notBusyDef = null;
                                 }
-                                state = this._win.history.state;
-
                                 sessionStorage[MY_ROUTER_HISTORY_GOBACK_INIT] = false;
 
-                                if (!(state && state.type === 'NORMAL')) {
-                                    _context10.next = 10;
-                                    break;
-                                }
+                                goGoBackPage = function () {
+                                    var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee10() {
+                                        return regeneratorRuntime.wrap(function _callee10$(_context10) {
+                                            while (1) {
+                                                switch (_context10.prev = _context10.next) {
+                                                    case 0:
+                                                        if (!(_this4._win.history.state && _this4._win.history.state.type === 'NORMAL')) {
+                                                            _context10.next = 8;
+                                                            break;
+                                                        }
 
-                                this._win.history.back();
-                                // 延时，等back执行完
-                                _context10.next = 10;
-                                return new Promise(function (r) {
-                                    return DOMUtils_1.nextTick(r);
-                                });
+                                                        _this4._win.history.back();
+                                                        _context10.next = 4;
+                                                        return new Promise(function (r) {
+                                                            return setTimeout(r, 50);
+                                                        });
 
-                            case 10:
-                                console.log(666, this._stackTop.location.href, history.state);
-                                this._win.history.replaceState(null, null, this._stackTop.location.href);
+                                                    case 4:
+                                                        _context10.next = 6;
+                                                        return goGoBackPage();
+
+                                                    case 6:
+                                                        _context10.next = 19;
+                                                        break;
+
+                                                    case 8:
+                                                        if (!_this4._win.history.state) {
+                                                            _context10.next = 17;
+                                                            break;
+                                                        }
+
+                                                        _this4._win.history.replaceState(null, null, '#' + _this4._stackTop.location.href);
+                                                        _this4._win.location.hash = '#' + _this4._stackTop.location.href;
+                                                        _context10.next = 13;
+                                                        return new Promise(function (r) {
+                                                            return setTimeout(r, 50);
+                                                        });
+
+                                                    case 13:
+                                                        _context10.next = 15;
+                                                        return goGoBackPage();
+
+                                                    case 15:
+                                                        _context10.next = 19;
+                                                        break;
+
+                                                    case 17:
+                                                        _context10.next = 19;
+                                                        return new Promise(function (r) {
+                                                            return setTimeout(r, 50);
+                                                        });
+
+                                                    case 19:
+                                                    case "end":
+                                                        return _context10.stop();
+                                                }
+                                            }
+                                        }, _callee10, _this4);
+                                    }));
+
+                                    return function goGoBackPage() {
+                                        return _ref11.apply(this, arguments);
+                                    };
+                                }();
+
+                                _context11.next = 8;
+                                return goGoBackPage();
+
+                            case 8:
                                 // 延时，等pushState执行完
-                                _context10.next = 14;
-                                return new Promise(function (r) {
-                                    return DOMUtils_1.nextTick(r);
-                                });
-
-                            case 14:
                                 this._stateStack = null;
                                 this._config = null;
                                 this._stateData = null;
@@ -1010,14 +1059,13 @@ var MyHistory = function () {
                                     delete this._win[MY_ROUTER_HISTORY_WINDOW_INIT];
                                 }
                                 this._win = null;
-                                console.log(history.state);
 
-                            case 21:
+                            case 14:
                             case "end":
-                                return _context10.stop();
+                                return _context11.stop();
                         }
                     }
-                }, _callee10, this);
+                }, _callee11, this);
             }));
 
             function destroy() {
@@ -1029,50 +1077,54 @@ var MyHistory = function () {
     }, {
         key: "_execCallback",
         value: function _execCallback(callback) {
-            var _this4 = this;
+            var _this5 = this;
+
+            var isBeforeChange = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
 
             if (typeof callback === 'function') {
                 return function () {
-                    var _ref11 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee11() {
+                    var _ref12 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee12() {
                         for (var _len = arguments.length, args = Array(_len), _key = 0; _key < _len; _key++) {
                             args[_key] = arguments[_key];
                         }
 
                         var state, result;
-                        return regeneratorRuntime.wrap(function _callee11$(_context11) {
+                        return regeneratorRuntime.wrap(function _callee12$(_context12) {
                             while (1) {
-                                switch (_context11.prev = _context11.next) {
+                                switch (_context12.prev = _context12.next) {
                                     case 0:
-                                        state = _this4._state.type;
-                                        _context11.prev = 1;
+                                        state = _this5._state.type;
+                                        _context12.prev = 1;
 
-                                        _this4._switchState(7);
-                                        _context11.next = 5;
-                                        return callback.apply(_this4, args);
+                                        if (!isBeforeChange) {
+                                            _this5._switchState(7);
+                                        }
+                                        _context12.next = 5;
+                                        return callback.apply(_this5, args);
 
                                     case 5:
-                                        result = _context11.sent;
+                                        result = _context12.sent;
 
-                                        _this4._switchState(state);
-                                        return _context11.abrupt("return", result);
+                                        _this5._switchState(state);
+                                        return _context12.abrupt("return", result);
 
                                     case 10:
-                                        _context11.prev = 10;
-                                        _context11.t0 = _context11["catch"](1);
+                                        _context12.prev = 10;
+                                        _context12.t0 = _context12["catch"](1);
 
-                                        _this4._switchState(state);
-                                        throw _context11.t0;
+                                        _this5._switchState(state);
+                                        throw _context12.t0;
 
                                     case 14:
                                     case "end":
-                                        return _context11.stop();
+                                        return _context12.stop();
                                 }
                             }
-                        }, _callee11, _this4, [[1, 10]]);
+                        }, _callee12, _this5, [[1, 10]]);
                     }));
 
                     return function () {
-                        return _ref11.apply(this, arguments);
+                        return _ref12.apply(this, arguments);
                     };
                 }();
             } else {
@@ -1093,10 +1145,10 @@ var MyHistory = function () {
     }, {
         key: "stack",
         get: function get() {
-            var _this5 = this;
+            var _this6 = this;
 
             return this._stateStack.map(function (state) {
-                return _this5._readonlyLocation(state);
+                return _this6._readonlyLocation(state);
             });
         }
     }, {
@@ -1107,7 +1159,7 @@ var MyHistory = function () {
     }, {
         key: "isBusy",
         get: function get() {
-            return this._state.type !== 1 && this._state.type !== 7 || this._notBusyDef && this._state.type === 7;
+            return this._state.type !== 1 && this._state.type !== 7 || !!(this._notBusyDef && this._state.type === 7);
         }
     }, {
         key: "location",

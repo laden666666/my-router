@@ -40,6 +40,34 @@ describe('history的push', function(){
         assert.equal(myHistory.location.href, '/test')
     });
 
+    it('测试push带查询参数', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.push('test?test=test')
+        assert.equal(myHistory.stack.length, 2)
+        assert.deepEqual(myHistory.stack[1], myHistory.location)
+        assert.equal(myHistory.location.href, '/test?test=test')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.search, '?test=test')
+    });
+
+    it('测试push带hash', async function() {
+
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        await myHistory.push('test#hash')
+        assert.equal(myHistory.stack.length, 2)
+        assert.deepEqual(myHistory.stack[1], myHistory.location)
+        assert.equal(myHistory.location.href, '/test#hash')
+        assert.equal(myHistory.location.pathname, '/test')
+        assert.equal(myHistory.location.hash, '#hash')
+    });
+
     it('测试push state', async function() {
         myHistory = new MyHistory({
             root: '/'
@@ -95,10 +123,6 @@ describe('history的push', function(){
         let promise = new Promise(r=>{
             myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
                 try{
-                    if(action === 'init'){
-                        return
-                    }
-
                     assert.equal(action, 'push')
                     assert.equal(oldLocation.href, '/')
                     assert.equal(location.href, '/test')
@@ -151,9 +175,11 @@ describe('history的push', function(){
                     assert.deepEqual(newLocation[0], location)
                     assert.equal(myHistory.location.href, '/')
 
+                    r()
+
                     myHistory.onBeforeChange = null
 
-                    return Promise.resolve(r)
+                    return ()=>{}
                 } catch(e){
                     console.error('测试onBeforeChange的push监听器，function取消', e, action, oldLocation, location, discardLoctions, newLocation)
                 }

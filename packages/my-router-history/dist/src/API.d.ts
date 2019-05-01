@@ -113,6 +113,12 @@ export interface History {
      */
     readonly isBusy: boolean;
     /**
+     * 判断是否是空闲，如果不是空闲会抛出异常
+     * @type {boolean}
+     * @memberOf History
+     */
+    checkBusy(): void;
+    /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由
      * @memberOf History
      */

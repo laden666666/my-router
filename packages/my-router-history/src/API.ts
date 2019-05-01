@@ -5,7 +5,6 @@ type Readonly<T> = {
     readonly [P in keyof T]: Readonly<T[P]>;
 }
 
-
 /**
  * 一个浏览记录的对象的封装，参考了window.location对象。该属性不暴露给外部用户，仅内部使用
  * @export
@@ -142,6 +141,13 @@ export interface History{
     readonly isBusy: boolean
 
     /**
+     * 判断是否是空闲，如果不是空闲会抛出异常
+     * @type {boolean}
+     * @memberOf History
+     */
+    checkBusy(): void;
+
+    /**
      * 销毁路由。路由是一个单例，必须要将当前实例销毁才能创建新的路由
      * @memberOf History
      */
@@ -180,3 +186,4 @@ export interface History{
     onBeforeChange: BeforeChangeEventCallback
 
 }
+

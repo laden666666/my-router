@@ -1,6 +1,6 @@
 /**
  * 反转promise的异步控制的对象模型——Deferred
- * @returns 
+ * @returns
  */
 export class Deferred<T>{
     /**
@@ -17,7 +17,7 @@ export class Deferred<T>{
      * @type {Promise<T>}
      */
     promise: Promise<T>
-    
+
     /**
      * promise正常完成
      * @type {{(args:T):void}}
@@ -32,7 +32,7 @@ export class Deferred<T>{
 
     /**
      * 对外暴露的接口，promise正常完成
-     * @param {T} args 
+     * @param {T} args
      */
     resolve(args:T){
         this.$isFinished = true;
@@ -42,7 +42,7 @@ export class Deferred<T>{
 
     /**
      * 对外暴露的接口，promise异常结束
-     * @param {any} args 
+     * @param {any} args
      */
     reject(args:any){
         this.$isFinished = true;

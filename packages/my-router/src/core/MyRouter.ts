@@ -1,8 +1,21 @@
-import MyHistory, {ChangeEventCallback} from 'my-router-history'
-import {MyRouter as IMyRouter, MyRouterOptions, MyRouteConfig, Adapter, IPathRegexp, Location, PopEventCallback} from '../API'
+import MyHistory, { Location as HLocation } from 'my-router-history'
+import {
+    MyRouter as IMyRouter,
+    MyRouterOptions,
+    MyRouteConfig,
+    Adapter,
+    IPathRegexp,
+    Location,
+    PopEventCallback,
+    BeforeChangeEventCallback,
+    ChangeEventCallback,
+    RouterActionResult
+} from '../API'
 import { LocationState } from './LocationState';
 import { Deferred } from './util/Deferred';
+import { PathRegexp } from './PathRegexp';
 
+// 默认配置
 let defaultOptions: MyRouterOptions = {
     routes: [],
     // precisionMatch?: boolean;
@@ -23,7 +36,7 @@ export class MyRouter implements IMyRouter {
 
     /**
      * 构造函数
-     * @param {MyRouterOptions} options 
+     * @param {MyRouterOptions} options
      * @memberOf MyRouter
      */
     constructor(options: MyRouterOptions){
@@ -37,44 +50,123 @@ export class MyRouter implements IMyRouter {
         this.addURLChange(this._options.onURLChange)
         this.addPopLocation(this._options.onPopLocation)
 
-        this._history.onChange = ((action: 'init' | 'push' | 'goback' | 'replace' | 'reload', 
-            oldLoction: Location, newLoction: Location, 
-            discardLoctions: Location[], includeLoctions: Location[]) => {
+        this._pathRegexp.addRoutes(this._options.routes)
 
-            // 将新增的地址放入_stateCache
-            includeLoctions.forEach((location)=>{
-                this._stateCache[location.key] = new LocationState(location)
+        this._history.onBeforeChange = async (action: 'push' | 'goback' | 'replace' | 'reload',
+            oldHLoction: HLocation, newHLoction: HLocation,
+            discardHLoctions: HLocation[], includeHLoctions: HLocation[]) => {
+
+            this._cacheSession = this._cacheSession || {}
+            this._cacheSession.map = this._cacheSession.map || {}
+
+            // 将新增的地址放入_cacheSession，在onChange中，再将他们放入_stateCache中
+            includeHLoctions.forEach((location)=>{
+                let state = new LocationState(location)
+                state.recognizeResult = this._pathRegexp.recognize(state.hLocation.href)
+                this._cacheSession.map[location.key] = state
             })
-                
+
+            // 将缓存的push、replace的session数据，放入缓存的LocationState对象中
+            if(this._cacheSession.data !== undefined && newHLoction){
+                this._cacheSession.map[newHLoction.key].data = this._cacheSession.data
+                this._cacheSession.data = null
+            }
+
+            let oldLoction = oldHLoction ? this._getLoctionByKey(oldHLoction.key) : null
+            let newLoction = newHLoction? this._getLoctionByKey(newHLoction.key) : null
+            let discardLoctions = discardHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            let includeLoctions = includeHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            this._isBeforeChanging = true
+            for(let i = 0 ; i < this._beforeChanges.length; i++){
+                let callback = this._beforeChanges[i]
+                let result: ReturnType<BeforeChangeEventCallback>
+                try {
+                    result = await callback(action,
+                        oldLoction,
+                        newLoction,
+                        discardLoctions,
+                        includeLoctions)
+                } catch (e){
+                    console.error(e)
+                    result = e
+                }
+
+                if(result === false || typeof result === 'function' || result instanceof Error){
+                    this._isBeforeChanging = false
+                    return result
+                }
+            }
+            this._isBeforeChanging = false
+        }
+
+        this._history.onChange = async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
+            oldHLoction: HLocation, newHLoction: HLocation,
+            discardHLoctions: HLocation[], includeHLoctions: HLocation[]) => {
+
+            if(action === 'init'){
+                let href = newHLoction.href
+                ;(async ()=>{
+                    try{
+                        await this._history.replace(href)
+                    }catch(e){
+                        // this._stateCache[this._history.location.key] = new
+                        this._initDeferred.resolve(null)
+                    }
+                })()
+                return
+            } else if(!this._initDeferred.isFinished){
+                this._initDeferred.resolve(null)
+            }
+
+            // 将缓存的_cacheSession对象放入_stateCache中
+            for(let key in this._cacheSession.map){
+                this._stateCache[key] = this._cacheSession.map[key]
+            }
+            this._cacheSession = null
+
+            let newState = this._getStateByKey(newHLoction.key, false)
+
             // 处理不同跳转类型的情况
             switch(action){
-                case('init'):
-                    this._currentId = newLoction.key
-                    this._initDeferred.resolve(null)
-                    break;
                 case('goback'):
-                    let oldState = oldLoction ? this._stateCache[oldLoction.key] : null
-                    if(oldState){
+                    let oldState = oldHLoction ? this._getStateByKey(oldHLoction.key) : null
+                    if(oldState && newState){
                         var backValue = oldState.backValue;
                         if(backValue instanceof Error){
-                            oldState.sessionDeferred.reject(backValue)
+                            newState.sessionDeferred.reject(backValue)
                         } else {
-                            oldState.sessionDeferred.resolve(backValue)
+                            newState.sessionDeferred.resolve(backValue)
                         }
                     }
                     break;
             }
 
+            let oldLoction = oldHLoction ? this._getLoctionByKey(oldHLoction.key) : null
+            let newLoction = newHLoction? this._getLoctionByKey(newHLoction.key) : null
+            let discardLoctions = discardHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            let includeLoctions = includeHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            this._changes.forEach(async callback=>{
+                await callback(action,
+                    oldLoction,
+                    newLoction,
+                    discardLoctions,
+                    includeLoctions,
+                )
+            })
+
             // 释放掉移除的地址数据。
-            // discardLoctions.forEach((location)=>{
-            //     let state = this._stateCache[location.key]
-            //     if(state){
-            //         state.destroy()
-            //         delete this._stateCache[location.key]
-            //     }
-            // })
-            
-        }) as ChangeEventCallback
+            discardHLoctions.forEach((location)=>{
+                let state = this._stateCache[location.key]
+                if(state){
+                    state.destroy()
+                    delete this._stateCache[location.key]
+                }
+            })
+            this._popEvent.forEach(async (event)=>{
+                await event.call(this, discardLoctions)
+            })
+
+        }
     }
 
     /**
@@ -99,7 +191,7 @@ export class MyRouter implements IMyRouter {
      * @type {IPathRegexp}
      * @memberOf MyRouter
      */
-    private _pathRegexp: IPathRegexp
+    private _pathRegexp: IPathRegexp = new PathRegexp()
 
     /**
      * 状态缓存
@@ -110,6 +202,30 @@ export class MyRouter implements IMyRouter {
     private _stateCache: {[name: string]: LocationState} = Object.create(null)
 
     /**
+     * 根据key获取state对象
+     * @private
+     * @param {string} key          historylocation的key
+     * @returns {LocationState}
+     * @memberof MyRouter
+     */
+    private _getStateByKey(key: string, hasCache: boolean = true): LocationState{
+        return (hasCache && this._cacheSession && this._cacheSession.map && this._cacheSession.map[key])
+            || this._stateCache[key] || null
+    }
+
+    /**
+     * 根据key获取location对象
+     * @private
+     * @param {string} key          historylocation的key
+     * @returns {LocationState}
+     * @memberof MyRouter
+     */
+    private _getLoctionByKey(key: string): Location {
+        let state = this._getStateByKey(key)
+        return state ? LocationState.toLocation(state) : null
+    }
+
+    /**
      * 初始化完成的promise
      * @private
      * @type {Deferred<any>}
@@ -118,21 +234,13 @@ export class MyRouter implements IMyRouter {
     private _initDeferred: Deferred<any> = new Deferred<any>()
 
     /**
-     * 当前state的ID
-     * @private
-     * @type {string}
-     * @memberOf MyRouter
-     */
-    private _currentId: string
-
-    /**
      * 当前state
      * @private
      * @type {IPathRegexp}
      * @memberOf MyRouter
      */
     private get _currentState(): LocationState{
-        return this._stateCache[this._currentId] || null
+        return this._stateCache[this._history.location.key] || null
     }
 
     /**
@@ -149,33 +257,38 @@ export class MyRouter implements IMyRouter {
      * @type {Location}
      * @memberOf MyRouter
      */
-    readonly currentRoute: Location;
+    get currentRoute(): Location{
+        let loction = this._history.location
+        return this._getLoctionByKey(loction.key)
+    }
 
     /**
      * 缓存的路由队列
      * @type {Location[]}
      * @memberOf MyRouter
      */
-    readonly routeStack: Location[];
-    
+    get routeStack(): Location[] {
+        return this._history.stack.map(l=> this._getLoctionByKey(l.key))
+    }
+
     /**
      * 注册BeforeChange生命周期
-     * @param callback 
+     * @param callback
      */
-    private _beforeChanges: ChangeEventCallback[]
-    addBeforeURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
+    private _beforeChanges: BeforeChangeEventCallback[] = []
+    addBeforeURLChange(callback: BeforeChangeEventCallback | BeforeChangeEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
                 .map(callback=>this._beforeChanges.push(callback))
         }
     }
-    
+
     /**
      * 注册URLChange生命周期
-     * @param {ChangeEventCallback} callback 
+     * @param {ChangeEventCallback} callback
      * @memberOf MyRouter
      */
-    private _changes: ChangeEventCallback[]
+    private _changes: ChangeEventCallback[] = []
     addURLChange(callback: ChangeEventCallback | ChangeEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
@@ -188,11 +301,32 @@ export class MyRouter implements IMyRouter {
      * @type {{(locations: Location[]): void}}
      * @memberOf MyRouter
      */
-    private _popEvent: PopEventCallback[]
+    private _popEvent: PopEventCallback[] = []
     addPopLocation(callback: PopEventCallback | PopEventCallback[]){
         if(callback){
             ;(Array.isArray(callback) ? callback : [callback])
                 .map(callback=>this._popEvent.push(callback))
+        }
+    }
+
+    /**
+     * 用于临时保存session
+     * @type {*}
+     * @memberof MyRouter
+     */
+    _cacheSession: {
+        data?: any,
+        map?: Record<string, LocationState>
+    };
+
+    _isBeforeChanging: boolean = false
+    /**
+     * 校验是否空闲
+     * @memberof MyRouter
+     */
+    _checkBusy(){
+        if(this._isBeforeChanging){
+            throw new Error()
         }
     }
 
@@ -201,27 +335,34 @@ export class MyRouter implements IMyRouter {
      * @param {string} path                 去往的地址
      * @param {*} [sessionData]             session数据
      * @param {*} [state]                   跳转的数据，要求可以被JSON.stringify
-     * @returns {Promise<any>} 
+     * @returns RouterActionResult
      * @memberOf MyRouter
      */
-    async push(path: string, sessionData?: any,state?: any): Promise<any>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    push(path: string, sessionData?: any, state?: any): RouterActionResult{
+        this._checkBusy()
 
-        // 跳转到新页面,并且从页面再跳转回来的Deferred
-        const backDeferred = new Deferred<any>()
+        let result: RouterActionResult = Promise.resolve()
+        .then(()=>{
+            // 必须要在初始化之后才能执行
+            return this._initDeferred.promise
+        })
+        .then(()=>{
+            this._history.checkBusy()
 
-        // 如同url获取对应的路由信息
-        const result = this._pathRegexp.recognize(path)
-        
-        // 真正的跳转
-        await this._history.push(path, state)
+            this._cacheSession = { data: sessionData }
 
-        if(this._currentState){
-            this._currentState.sessionDeferred = backDeferred
-            this._currentState.recognizeResult = result
-            return this._currentState.sessionDeferred.promise
-        }
+            // 跳转到新页面,并且从页面再跳转回来的Deferred
+            if(this._currentState){
+                this._currentState.sessionDeferred = backDeferred
+            }
+
+        })
+        .then(()=>{
+            return this._history.push(path, state).then(()=>{})
+        }) as RouterActionResult
+        const backDeferred = new Deferred()
+        result.comeBack = backDeferred.promise
+        return result
     }
 
     /**
@@ -232,21 +373,16 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<void>}         回调的promise
      * @memberOf MyRouter
      */
-    async replace(path: string, sessionData?: any, state?: any): Promise<void>{
+    replace(path: string, sessionData?: any, state?: any): Promise<void>{
+        this._checkBusy()
+
         // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+        return this._initDeferred.promise.then(()=>{
+            this._history.checkBusy()
 
-        // 如同url获取对应的路由信息
-        const result = this._pathRegexp.recognize(path)
-        const backDeferred = new Deferred<any>()
-
-        await this._history.replace(path, state)
-
-        if(this._currentState){
-            this._currentState.sessionDeferred = backDeferred
-            this._currentState.recognizeResult = result
-            return this._currentState.sessionDeferred.promise
-        }
+            this._cacheSession = { data: sessionData }
+            return this._history.replace(path, state).then(()=>{})
+        })
     }
 
     /**
@@ -255,11 +391,13 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf MyRouter
      */
-    async goback(...arg: any[]): Promise<void>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    goback(...arg: any[]): Promise<void>{
+        this._checkBusy()
 
-        await this._history.goback(...arg)
+        // 必须要在初始化之后才能执行
+        return this._initDeferred.promise
+        .then(()=>this._history.goback(...arg))
+        .then(()=>{})
     }
 
     /**
@@ -267,25 +405,28 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    async reload(): Promise<void>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    reload(): Promise<void>{
+        this._checkBusy()
 
-        await this._history.reload()
+        // 必须要在初始化之后才能执行
+        return this._initDeferred.promise
+        .then(()=>this._history.reload())
+        .then(()=>{})
+
     }
-    
+
     /**
      * 增加一组MyRouteConfig
-     * @param {MyRouteConfig[]} routes 
+     * @param {MyRouteConfig[]} routes
      * @memberOf MyRouter
      */
     addRoutes (routes: MyRouteConfig[]): void{
         this._pathRegexp.addRoutes(routes)
     }
-    
+
     /**
      * 增加MyRouteConfig配置
-     * @param {MyRouteConfig} routes 
+     * @param {MyRouteConfig} routes
      * @memberOf MyRouter
      */
     addRoute (route: MyRouteConfig): void{
@@ -296,17 +437,17 @@ export class MyRouter implements IMyRouter {
      * 销毁路由实例
      * @memberOf IMyRouter
      */
-    destroy(): void{
-        this._history.destroy()
+    async destroy(): Promise<void>{
+        await this._history.destroy()
         this._history = null
         this._options = null
         this._pathRegexp = null
     }
 
     /**
-     * 
-     * @param {String} url 
-     * @returns {any[]} 
+     *
+     * @param {String} url
+     * @returns {any[]}
      * @memberOf MyRouter
      */
     getMatchedComponents (url: String): any[]{
@@ -314,8 +455,8 @@ export class MyRouter implements IMyRouter {
     }
 
     /**
-     * 
-     * @param {*} adapter 
+     *
+     * @param {*} adapter
      * @memberOf IMyRouter
      */
     getAdapterInstance<T>(adapter: Adapter): T{

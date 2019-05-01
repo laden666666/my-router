@@ -246,7 +246,7 @@ export class MyHistory implements IHistory {
                 // 这里用任务队列而不用微任务队列，希望整个promise执行完再执行result
                 if(isFunction){
                     nextTick(()=>{
-                        (result as Function).call(this)
+                        ;(result as Function).call(this)
                     })
                 }
 
@@ -276,7 +276,7 @@ export class MyHistory implements IHistory {
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
 
-                            let result = await (this._execCallback(this.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation]))
+                            let result = await (this._execCallback(this.onBeforeChange, true)('push', oldLocation, newLocation, [], [newLocation]))
 
                             // 处理取消情况
                             handleCancell(result)
@@ -306,7 +306,7 @@ export class MyHistory implements IHistory {
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
 
-                            let result = await (this._execCallback(this.onBeforeChange)('replace', oldLocation,
+                            let result = await (this._execCallback(this.onBeforeChange, true)('replace', oldLocation,
                             newLocation, [oldLocation], [newLocation]))
 
                             // 处理取消情况
@@ -378,7 +378,7 @@ export class MyHistory implements IHistory {
                                 discardLoctions = this._stateStack.slice(index + 1).map(item=> toReadonly(item)).reverse()
                             }
 
-                            let result = await (this._execCallback(this.onBeforeChange)('goback', oldLocation, newLocation,
+                            let result = await (this._execCallback(this.onBeforeChange, true)('goback', oldLocation, newLocation,
                                 discardLoctions, needInclude ? [newLocation] : []))
 
                             // 处理取消情况
@@ -565,7 +565,7 @@ export class MyHistory implements IHistory {
     }
 
     // 检查路由是否处于可以跳转状态（state为1或7，如果处于7仅能跳转1次）
-    private _checkState(){
+    checkBusy(){
         if(this.isBusy){
             let error: HistoryError = new Error('MyHistory busy')
             error.isBusy = true
@@ -709,22 +709,22 @@ export class MyHistory implements IHistory {
     }
 
     push(path: string, data?: any): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.push(path, data)
     }
 
     replace(path: string, data?: any): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.replace(path, data)
     }
 
     goback(n?: number | string | {(fn: Readonly<Location>): boolean}): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.goback(n as any)
     }
 
     reload(): Promise<Location>{
-        this._checkState()
+        this.checkBusy()
         return this._state.reload()
     }
 
@@ -778,7 +778,7 @@ export class MyHistory implements IHistory {
     }
 
     get isBusy(){
-        return (this._state.type !== 1 && this._state.type !== 7) || (this._notBusyDef && this._state.type === 7)
+        return (this._state.type !== 1 && this._state.type !== 7) || !!(this._notBusyDef && this._state.type === 7)
     }
 
     get location(){
@@ -789,12 +789,14 @@ export class MyHistory implements IHistory {
 
     onChange: ChangeEventCallback = null
 
-    _execCallback<T extends Function>(callback: T): T{
+    _execCallback<T extends Function>(callback: T, isBeforeChange = false): T{
         if(typeof callback === 'function'){
             return (async (...args)=>{
                 let state = this._state.type
                 try{
-                    this._switchState(7)
+                    if(!isBeforeChange){
+                        this._switchState(7)
+                    }
                     let result = await callback.apply(this, args)
                     this._switchState(state)
                     return result

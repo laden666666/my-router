@@ -41,6 +41,15 @@ describe('history的生命周期', function(){
         })
     });
 
+    it('checkBusy测试', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        myHistory.push('test')
+        assert.throw(()=>myHistory.checkBusy())
+    });
+
     it('onChange生命周期跳转', async function() {
         myHistory = new MyHistory({
             root: '/'
@@ -87,5 +96,71 @@ describe('history的生命周期', function(){
             myHistory.push('test')
         })
         await errorPromise
+    });
+
+    it('onChange和onBeforeChange', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        let p1 = new Promise(r=>{
+            myHistory.onChange = ()=>{
+                r()
+            }
+        })
+
+        let p2 = new Promise(r=>{
+            myHistory.onBeforeChange = ()=>{
+                r()
+            }
+        })
+
+        myHistory.push('test')
+
+        await Promise.all([p1, p2])
+    });
+
+    it('测试onBeforeChange的function取消中跳转', async function() {
+        myHistory = new MyHistory({
+            root: '/'
+        })
+
+        let promise = new Promise(r=>{
+            myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
+                try{
+                    if(action === 'replace'){
+                        return
+                    }
+
+                    assert.equal(action, 'push')
+                    assert.equal(oldLocation.href, '/')
+                    assert.equal(location.href, '/test')
+                    assert.equal(discardLoctions.length, 0)
+                    assert.equal(newLocation.length, 1)
+                    assert.deepEqual(newLocation[0], location)
+                    assert.equal(myHistory.location.href, '/')
+                    myHistory.onBeforeChange = null
+
+                    return ()=>{ myHistory.replace('/replace').then(r) }
+                } catch(e){
+                    console.error('测试onBeforeChange的function取消中跳转', e, action, oldLocation, location, discardLoctions, newLocation)
+                }
+            }
+        })
+
+        await new Promise(r=>{
+            myHistory.push('test')
+                .catch(e=>{
+                    if(e.isCancelled){
+                        r(e)
+                    }
+                })
+        })
+
+        await promise
+
+        assert.equal(myHistory.location.href, '/replace')
+        assert.equal(myHistory.stack.length, 1)
+
     });
 })
