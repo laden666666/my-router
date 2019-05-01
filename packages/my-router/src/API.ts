@@ -326,7 +326,7 @@ export type ChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replac
  * @export
  * @interface BeforeChangeEventCallback
  */
-export type BeforeChangeEventCallback = {(action: 'push' | 'goback' | 'replace' | 'reload', oldLoction: Location,
+export type BeforeChangeEventCallback = {(action: 'init' | 'push' | 'goback' | 'replace' | 'reload', oldLoction: Location,
     newLoction: Location, discardLoctions: Location[], includeLoctions: Location[])
     : boolean | void | Error | Function | Promise<boolean | void | Error | Function> };
 

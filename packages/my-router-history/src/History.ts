@@ -231,22 +231,31 @@ export class MyHistory implements IHistory {
     private _notBusyDef: Deferred<void> = null
 
     /**
+     * 如果在状态等于7时候，在beforeChange里面执行push、relace、goback等函数，会将这个标记为true，让beforeChange终止change
+     * @private
+     * @type {boolean}
+     * @memberOf MyHistory
+     */
+    private _flag: boolean = false
+
+    /**
      * 切换状态
      * @private
      * @param {any} stateType
      * @memberOf MyHistory
      */
     private _switchState(stateType){
-
+        let _this = this
         // 处理beforeChange中的取消逻辑。如果用户返回false、Error、Function都视为取消跳转。其中Function会在跳转结束后自执行
         let handleCancell = function(result: boolean | void | Error | Function){
 
             let isFalse = result === false, isFunction = typeof result === 'function'
-            if(isFalse || isFunction){
+            console.log( _this._flag)
+            if(isFalse || isFunction || _this._flag){
                 // 这里用任务队列而不用微任务队列，希望整个promise执行完再执行result
                 if(isFunction){
                     nextTick(()=>{
-                        (result as Function).call(this)
+                        ;(result as Function).call(this)
                     })
                 }
 
@@ -276,6 +285,7 @@ export class MyHistory implements IHistory {
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
 
+                            this._flag = false
                             let result = await (this._execCallback(this.onBeforeChange)('push', oldLocation, newLocation, [], [newLocation]))
 
                             // 处理取消情况
@@ -306,6 +316,7 @@ export class MyHistory implements IHistory {
                             let newLocation = toReadonly(state)
                             let oldLocation = toReadonly(this._stackTop)
 
+                            this._flag = false
                             let result = await (this._execCallback(this.onBeforeChange)('replace', oldLocation,
                             newLocation, [oldLocation], [newLocation]))
 
@@ -378,6 +389,7 @@ export class MyHistory implements IHistory {
                                 discardLoctions = this._stateStack.slice(index + 1).map(item=> toReadonly(item)).reverse()
                             }
 
+                            this._flag = false
                             let result = await (this._execCallback(this.onBeforeChange)('goback', oldLocation, newLocation,
                                 discardLoctions, needInclude ? [newLocation] : []))
 
@@ -500,24 +512,29 @@ export class MyHistory implements IHistory {
                     },
                     push: async (path: string, state?: any)=> {
                         this._notBusyDef = new Deferred
+                        console.log(2222)
+                        this._flag = true
                         return this._notBusyDef.promise.then(()=>{
                             return this.push(path, state)
                         })
                     },
                     replace: async (path: string, state?: any)=> {
                         this._notBusyDef = new Deferred
+                        this._flag = true
                         return this._notBusyDef.promise.then(()=>{
                             return this.replace(path, state)
                         })
                     },
                     goback: async (arg: any)=> {
                         this._notBusyDef = new Deferred
+                        this._flag = true
                         return this._notBusyDef.promise.then(()=>{
                             return this.goback(arg)
                         })
                     },
                     reload: async ()=> {
                         this._notBusyDef = new Deferred
+                        this._flag = true
                         return this._notBusyDef.promise.then(()=>{
                             return this.reload()
                         })
@@ -778,7 +795,7 @@ export class MyHistory implements IHistory {
     }
 
     get isBusy(){
-        return (this._state.type !== 1 && this._state.type !== 7) || (this._notBusyDef && this._state.type === 7)
+        return (this._state.type !== 1 && this._state.type !== 7) || !!(this._notBusyDef && this._state.type === 7)
     }
 
     get location(){

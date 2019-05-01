@@ -53,34 +53,38 @@ export class MyRouter implements IMyRouter {
         this._pathRegexp.addRoutes(this._options.routes)
 
         this._history.onBeforeChange = async (action: 'push' | 'goback' | 'replace' | 'reload',
-            oldLoction: HLocation, newLoction: HLocation,
-            discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
+            oldHLoction: HLocation, newHLoction: HLocation,
+            discardHLoctions: HLocation[], includeHLoctions: HLocation[]) => {
 
             this._cacheSession = this._cacheSession || {}
             this._cacheSession.map = this._cacheSession.map || {}
 
             // 将新增的地址放入_cacheSession，在onChange中，再将他们放入_stateCache中
-            includeLoctions.forEach((location)=>{
+            includeHLoctions.forEach((location)=>{
                 let state = new LocationState(location)
                 state.recognizeResult = this._pathRegexp.recognize(state.hLocation.href)
                 this._cacheSession.map[location.key] = state
             })
 
             // 将缓存的push、replace的session数据，放入缓存的LocationState对象中
-            if(this._cacheSession.data !== undefined && newLoction){
-                this._cacheSession.map[newLoction.key].data = this._cacheSession.data
+            if(this._cacheSession.data !== undefined && newHLoction){
+                this._cacheSession.map[newHLoction.key].data = this._cacheSession.data
                 this._cacheSession.data = null
             }
 
+            let oldLoction = oldHLoction ? this._getLoctionByKey(oldHLoction.key) : null
+            let newLoction = newHLoction? this._getLoctionByKey(newHLoction.key) : null
+            let discardLoctions = discardHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            let includeLoctions = includeHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
             for(let i = 0 ; i < this._beforeChanges.length; i++){
                 let callback = this._beforeChanges[i]
                 let result: ReturnType<BeforeChangeEventCallback>
                 try {
                     result = await callback(action,
-                        oldLoction ? this._getLoctionByKey(oldLoction.key) : null,
-                        newLoction ? this._getLoctionByKey(newLoction.key) : null,
-                        discardLoctions.map(l=>this._getLoctionByKey(l.key)),
-                        includeLoctions.map(l=>this._getLoctionByKey(l.key)))
+                        oldLoction,
+                        newLoction,
+                        discardLoctions,
+                        includeLoctions)
                 } catch (e){
                     console.error(e)
                     result = e
@@ -93,29 +97,37 @@ export class MyRouter implements IMyRouter {
         }
 
         this._history.onChange = async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
-            oldLoction: HLocation, newLoction: HLocation,
-            discardLoctions: HLocation[], includeLoctions: HLocation[]) => {
-
-            let newState = this._getStateByKey(newLoction.key, false)
+            oldHLoction: HLocation, newHLoction: HLocation,
+            discardHLoctions: HLocation[], includeHLoctions: HLocation[]) => {
 
             if(action === 'init'){
-                this._stateCache[newLoction.key] = new LocationState(newLoction)
-            } else {
-                // 将缓存的_cacheSession对象放入_stateCache中
-                for(let key in this._cacheSession.map){
-                    this._stateCache[key] = this._cacheSession.map[key]
-                }
-                this._cacheSession = null
+                let href = newHLoction.href
+                ;(async ()=>{
+                    try{
+                        await this._history.replace(href)
+                    }catch(e){
+                        // this._stateCache[this._history.location.key] = new
+                        this._initDeferred.resolve(null)
+                    }
+                })()
+                return
+            } else if(!this._initDeferred.isFinished){
+                this._initDeferred.resolve(null)
             }
+
+            // 将缓存的_cacheSession对象放入_stateCache中
+            for(let key in this._cacheSession.map){
+                console.log(11, action, key)
+                this._stateCache[key] = this._cacheSession.map[key]
+            }
+            this._cacheSession = null
+
+            let newState = this._getStateByKey(newHLoction.key, false)
 
             // 处理不同跳转类型的情况
             switch(action){
-                case('init'):
-                    this._currentId = newLoction.key
-                    this._initDeferred.resolve(null)
-                    break;
                 case('goback'):
-                    let oldState = oldLoction ? this._stateCache[oldLoction.key] : null
+                    let oldState = oldHLoction ? this._getStateByKey(oldHLoction.key) : null
                     if(oldState && newState){
                         var backValue = oldState.backValue;
                         if(backValue instanceof Error){
@@ -127,12 +139,16 @@ export class MyRouter implements IMyRouter {
                     break;
             }
 
+            let oldLoction = oldHLoction ? this._getLoctionByKey(oldHLoction.key) : null
+            let newLoction = newHLoction? this._getLoctionByKey(newHLoction.key) : null
+            let discardLoctions = discardHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            let includeLoctions = includeHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
             this._changes.forEach(async callback=>{
                 await callback(action,
-                    oldLoction ? this._getLoctionByKey(oldLoction.key) : null,
-                    newLoction ? this._getLoctionByKey(newLoction.key) : null,
-                    discardLoctions.map(l=>this._getLoctionByKey(l.key)),
-                    includeLoctions.map(l=>this._getLoctionByKey(l.key)),
+                    oldLoction,
+                    newLoction,
+                    discardLoctions,
+                    includeLoctions,
                 )
             })
 
@@ -213,21 +229,13 @@ export class MyRouter implements IMyRouter {
     private _initDeferred: Deferred<any> = new Deferred<any>()
 
     /**
-     * 当前state的ID
-     * @private
-     * @type {string}
-     * @memberOf MyRouter
-     */
-    private _currentId: string
-
-    /**
      * 当前state
      * @private
      * @type {IPathRegexp}
      * @memberOf MyRouter
      */
     private get _currentState(): LocationState{
-        return this._stateCache[this._currentId] || null
+        return this._stateCache[this._history.location.key] || null
     }
 
     /**
@@ -328,9 +336,9 @@ export class MyRouter implements IMyRouter {
             this._cacheSession = { data: sessionData }
 
             // 跳转到新页面,并且从页面再跳转回来的Deferred
-
-            let currentState = this._getStateByKey(this._history.location.key, true)
-            currentState.sessionDeferred = backDeferred
+            // if(this._currentState){
+                this._currentState.sessionDeferred = backDeferred
+            // }
 
         })
         .then(()=>{

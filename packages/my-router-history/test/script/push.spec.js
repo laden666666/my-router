@@ -123,10 +123,6 @@ describe('history的push', function(){
         let promise = new Promise(r=>{
             myHistory.onBeforeChange = (action, oldLocation, location, discardLoctions, newLocation)=>{
                 try{
-                    if(action === 'init'){
-                        return
-                    }
-
                     assert.equal(action, 'push')
                     assert.equal(oldLocation.href, '/')
                     assert.equal(location.href, '/test')
@@ -179,9 +175,11 @@ describe('history的push', function(){
                     assert.deepEqual(newLocation[0], location)
                     assert.equal(myHistory.location.href, '/')
 
+                    r()
+
                     myHistory.onBeforeChange = null
 
-                    return Promise.resolve(r)
+                    return ()=>{}
                 } catch(e){
                     console.error('测试onBeforeChange的push监听器，function取消', e, action, oldLocation, location, discardLoctions, newLocation)
                 }

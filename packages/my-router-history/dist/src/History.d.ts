@@ -65,6 +65,13 @@ export declare class MyHistory implements IHistory {
      */
     private _notBusyDef;
     /**
+     * 如果在状态等于7时候，在beforeChange里面执行push、relace、goback等函数，会将这个标记为true，让beforeChange终止change
+     * @private
+     * @type {boolean}
+     * @memberOf MyHistory
+     */
+    private _flag;
+    /**
      * 切换状态
      * @private
      * @param {any} stateType
