@@ -76,6 +76,7 @@ export class MyRouter implements IMyRouter {
             let newLoction = newHLoction? this._getLoctionByKey(newHLoction.key) : null
             let discardLoctions = discardHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
             let includeLoctions = includeHLoctions.map(l=>this._getLoctionByKey(l.key)).filter(i=>!!i)
+            this._isBeforeChanging = true
             for(let i = 0 ; i < this._beforeChanges.length; i++){
                 let callback = this._beforeChanges[i]
                 let result: ReturnType<BeforeChangeEventCallback>
@@ -91,9 +92,11 @@ export class MyRouter implements IMyRouter {
                 }
 
                 if(result === false || typeof result === 'function' || result instanceof Error){
+                    this._isBeforeChanging = false
                     return result
                 }
             }
+            this._isBeforeChanging = false
         }
 
         this._history.onChange = async (action: 'init' | 'push' | 'goback' | 'replace' | 'reload',
@@ -117,7 +120,6 @@ export class MyRouter implements IMyRouter {
 
             // 将缓存的_cacheSession对象放入_stateCache中
             for(let key in this._cacheSession.map){
-                console.log(11, action, key)
                 this._stateCache[key] = this._cacheSession.map[key]
             }
             this._cacheSession = null
@@ -153,13 +155,16 @@ export class MyRouter implements IMyRouter {
             })
 
             // 释放掉移除的地址数据。
-            // discardLoctions.forEach((location)=>{
-            //     let state = this._stateCache[location.key]
-            //     if(state){
-            //         state.destroy()
-            //         delete this._stateCache[location.key]
-            //     }
-            // })
+            discardHLoctions.forEach((location)=>{
+                let state = this._stateCache[location.key]
+                if(state){
+                    state.destroy()
+                    delete this._stateCache[location.key]
+                }
+            })
+            this._popEvent.forEach(async (event)=>{
+                await event.call(this, discardLoctions)
+            })
 
         }
     }
@@ -314,6 +319,17 @@ export class MyRouter implements IMyRouter {
         map?: Record<string, LocationState>
     };
 
+    _isBeforeChanging: boolean = false
+    /**
+     * 校验是否空闲
+     * @memberof MyRouter
+     */
+    _checkBusy(){
+        if(this._isBeforeChanging){
+            throw new Error()
+        }
+    }
+
      /**
      * 前进去往一个页面，名字取自history.push，他可返回的是一个promise，当页面返回到当前页面，他能把backValue的返回值返回
      * @param {string} path                 去往的地址
@@ -323,6 +339,7 @@ export class MyRouter implements IMyRouter {
      * @memberOf MyRouter
      */
     push(path: string, sessionData?: any, state?: any): RouterActionResult{
+        this._checkBusy()
 
         let result: RouterActionResult = Promise.resolve()
         .then(()=>{
@@ -331,18 +348,17 @@ export class MyRouter implements IMyRouter {
         })
         .then(()=>{
             this._history.checkBusy()
-        })
-        .then(()=>{
+
             this._cacheSession = { data: sessionData }
 
             // 跳转到新页面,并且从页面再跳转回来的Deferred
-            // if(this._currentState){
+            if(this._currentState){
                 this._currentState.sessionDeferred = backDeferred
-            // }
+            }
 
         })
         .then(()=>{
-            return this._history.push(path, state)
+            return this._history.push(path, state).then(()=>{})
         }) as RouterActionResult
         const backDeferred = new Deferred()
         result.comeBack = backDeferred.promise
@@ -357,15 +373,16 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<void>}         回调的promise
      * @memberOf MyRouter
      */
-    async replace(path: string, sessionData?: any, state?: any): Promise<void>{
+    replace(path: string, sessionData?: any, state?: any): Promise<void>{
+        this._checkBusy()
+
         // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+        return this._initDeferred.promise.then(()=>{
+            this._history.checkBusy()
 
-        this._cacheSession = { data: sessionData }
-
-        this._history.checkBusy()
-
-        await this._history.replace(path, state)
+            this._cacheSession = { data: sessionData }
+            return this._history.replace(path, state).then(()=>{})
+        })
     }
 
     /**
@@ -374,11 +391,13 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf MyRouter
      */
-    async goback(...arg: any[]): Promise<void>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    goback(...arg: any[]): Promise<void>{
+        this._checkBusy()
 
-        await this._history.goback(...arg)
+        // 必须要在初始化之后才能执行
+        return this._initDeferred.promise
+        .then(()=>this._history.goback(...arg))
+        .then(()=>{})
     }
 
     /**
@@ -386,11 +405,14 @@ export class MyRouter implements IMyRouter {
      * @returns {Promise<Location>}        跳转完成的promise，并返回新创建的ILocation
      * @memberOf IHistory
      */
-    async reload(): Promise<void>{
-        // 必须要在初始化之后才能执行
-        await this._initDeferred.promise
+    reload(): Promise<void>{
+        this._checkBusy()
 
-        await this._history.reload()
+        // 必须要在初始化之后才能执行
+        return this._initDeferred.promise
+        .then(()=>this._history.reload())
+        .then(()=>{})
+
     }
 
     /**

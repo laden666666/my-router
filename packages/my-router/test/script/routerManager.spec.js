@@ -269,8 +269,7 @@ describe('路由的模块测试', function() {
         })
     });
 
-    it('测试路由监听BeforeURLChange', function() {
-        let hasToken = false
+    it('测试路由监听BeforeURLChange跳转', function() {
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
                 routes: [{
@@ -278,27 +277,20 @@ describe('路由的模块测试', function() {
                     meta: {
                         hasToken: true
                     }
-                }, {
-                    path: '/token',
-                    meta: {
-                    }
                 }],
                 onURLChange: (result, from, to, clears, news)=>{
-                    try{
-                        if(to && to.routeConfig && to.routeConfig.path == '/token'){
-                            hasToken = true;
-                            routerManager.replace('/')
-                        } else if(hasToken && to.routeConfig.path == '/'){
-                            resolve()
-                        }
-                    } catch (e){
-                        reject(e)
+                    if(to && to.path == '/'){
+                        routerManager.push('/test')
                     }
                 },
-                onBeforeURLChange: (action, from, to)=>{
+                onBeforeURLChange: async (action, from, to)=>{
                     try{
-                        if(to.routeConfig.meta.hasToken && !hasToken){
-                            routerManager.replace('/token')
+                        if(to && to.path == '/test'){
+                            try{
+                                routerManager.replace('/reject')
+                            } catch (e){
+                                resolve(e)
+                            }
                         }
                     } catch (e){
                         reject(e)
@@ -308,7 +300,7 @@ describe('路由的模块测试', function() {
         })
     });
 
-    it('测试路由监听BeforeURLChange2', function() {
+    it('第一种路由实现方案', function() {
         let hasToken = false
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
@@ -347,7 +339,7 @@ describe('路由的模块测试', function() {
         })
     });
 
-    it('测试路由监听onBeforeURLChange', function() {
+    it('第二种路由实现方案', function() {
         var hasToken = false
         return new Promise((resolve, reject)=>{
             routerManager = new MyRouter({
@@ -377,10 +369,9 @@ describe('路由的模块测试', function() {
                 onBeforeURLChange: (result, from, to, clears, news)=>{
                     try{
                         if(to && to.routeConfig.meta.hasToken && !hasToken){
-                            // return ()=>{
-                                console.log(1111)
+                            setTimeout(()=>{
                                 routerManager.push('/token')
-                            // }
+                            })
                         }
                     } catch (e){
                         reject(e)
@@ -390,58 +381,46 @@ describe('路由的模块测试', function() {
         })
     });
 
-    // it('测试路由监听clearCacheListener', function() {
-    //     var step = 0
-    //     return new Promise((resolve, reject)=>{
-    //         routerManager = new MyRouter({
-    //             //用内存history模拟浏览器路由
+    it('测试路由监听clearCacheListener', function() {
+        var step = 0
+        return new Promise((resolve, reject)=>{
+            routerManager = new MyRouter({
+                //用内存history模拟浏览器路由
 
-    //             routes: [{
-    //                 path: '/',
-    //                 meta: {
-    //                     hasToken: true
-    //                 }
-    //             }, {
-    //                 path: '/xxx',
-    //             }, {
-    //                 path: '/yyy',
-    //             }],
-    //             onDestroyState: (clearState)=>{
-    //                 // console.log(routerManager.getCurrentURL().path)
-    //                 // console.log(clearState.length)
-    //                 if(routerManager.getCurrentURL().path != '/yyy'){
-    //                     step++
-    //                     assert.equal(clearState.length, 0)
-    //                 } else {
-    //                     if(clearState.length != 0){
-    //                         assert.equal(step, 3)
-    //                         assert.equal(clearState.length, 2)
-    //                         resolve()
-    //                     } else {
-    //                         step++
-    //                     }
-    //                 }
-    //             },
-    //             onURLChange: (result, from, to, clears, news, clearState)=>{
-    //                 try{
-    //                     if(to.routeConfig.path == '/'){
-    //                         setTimeout(()=>{
-    //                             routerManager.push('/xxx')
-    //                         }, 1)
-    //                     } else if(to.routeConfig.path == '/xxx'){
-    //                         setTimeout(()=>{
-    //                             routerManager.push('/yyy')
-    //                         }, 1)
-    //                     } else if(to.routeConfig.path == '/yyy'){
-    //                         setTimeout(()=>{
-    //                             routerManager.destroyState()
-    //                         }, 100)
-    //                     }
-    //                 } catch (e){
-    //                     reject(e)
-    //                 }
-    //             },
-    //         })
-    //     })
-    // });
+                routes: [{
+                    path: '/',
+                }, {
+                    path: '/xxx',
+                }, {
+                    path: '/yyy',
+                }],
+                onPopLocation: (clearState)=>{
+                    try{
+                        if(routerManager.currentRoute.path == '/' && step > 1){
+                            assert.equal(clearState.length, 2)
+                            resolve()
+                        }
+                    } catch (e){
+                        console.error('测试路由监听clearCacheListener', e)
+                        reject(e)
+                    }
+                },
+                onURLChange: (result, from, to, clears, news, clearState)=>{
+                    step++
+                    try{
+                        if(to.routeConfig.path == '/' && step == 1){
+                            routerManager.push('/xxx')
+                        } else if(to.routeConfig.path == '/xxx'){
+                            routerManager.push('/yyy')
+                        } else if(to.routeConfig.path == '/yyy'){
+                            routerManager.goback(2)
+                        }
+                    } catch (e){
+                        console.error('测试路由监听clearCacheListener', e)
+                        reject(e)
+                    }
+                },
+            })
+        })
+    });
 });
