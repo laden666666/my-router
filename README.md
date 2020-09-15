@@ -37,7 +37,7 @@ WebApp、App与my-router的比较。
 旨在用于浏览器上实现高仿APP式的单页面路由。**my-reoute-history**屏蔽了浏览器的诸多行为：记录用户历史记录、前进按钮等，并监听用户返回动作，使得WebApp路由变得更像App。可用于PWA路由开发、WebApp路由开发、微信小程序路由移植等场景。
 
 
-该项目并不依赖**my-router**，因此如果你感兴趣开发一个仿App的路由，可以直接参考甚至使用**my-reoute-history**。
+该项目并不依赖**my-router**，因此如果你感兴趣开发一个仿App的路由，可以直接参考甚至使用**my-router-history**。
 
 
 
